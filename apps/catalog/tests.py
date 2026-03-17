@@ -247,3 +247,29 @@ class PreviewSeedCommandTests(TestCase):
 
 		self.assertGreater(count_after_seed, 0)
 		self.assertEqual(count_after_seed, count_after_clear_seed)
+
+	def test_seed_marketing_dataset_creates_larger_profile_set(self):
+		call_command('seed_preview_data', dataset='preview', clear=True)
+		preview_profile_count = ProfessionalProfile.objects.filter(is_visible=True).count()
+
+		call_command('seed_preview_data', dataset='marketing', clear=True)
+		marketing_profile_count = ProfessionalProfile.objects.filter(
+			user__username__startswith='marketing_',
+			is_visible=True,
+		).count()
+
+		self.assertGreaterEqual(marketing_profile_count, 20)
+		self.assertGreater(marketing_profile_count, preview_profile_count)
+
+	def test_seed_marketing_dataset_is_idempotent(self):
+		call_command('seed_preview_data', dataset='marketing', clear=True)
+		first_marketing_service_count = Service.objects.filter(
+			professional__user__username__startswith='marketing_'
+		).count()
+
+		call_command('seed_preview_data', dataset='marketing')
+		second_marketing_service_count = Service.objects.filter(
+			professional__user__username__startswith='marketing_'
+		).count()
+
+		self.assertEqual(first_marketing_service_count, second_marketing_service_count)
