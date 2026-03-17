@@ -25,7 +25,7 @@ class AvailabilityWindow(models.Model):
 		ordering = ['professional', 'weekday', 'start_time']
 
 	def __str__(self) -> str:
-		return f'{self.professional.business_name} {self.get_weekday_display()} {self.start_time}-{self.end_time}'
+		return f'{self.professional.display_name} {self.get_weekday_display()} {self.start_time}-{self.end_time}'
 
 	@property
 	def status_suffix(self) -> str:
@@ -72,7 +72,7 @@ class Booking(models.Model):
 		]
 
 	def __str__(self) -> str:
-		return f'{self.service.name} with {self.professional.business_name} at {self.start_at}'
+		return f'{self.service.name} with {self.professional.display_name} at {self.start_at}'
 
 	@property
 	def price_display(self) -> str:

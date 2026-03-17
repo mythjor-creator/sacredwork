@@ -14,7 +14,7 @@
             {% if view_type == 'professional' %}
             Client: {{ booking.client.display_name|default:booking.client.username }}
             {% else %}
-            Professional: {{ booking.professional.business_name }}
+            Professional: {{ booking.professional.display_name }}{{ booking.professional.business_name_suffix }}
             {% endif %}
         </p>
         <p>{{ booking.start_at|date:"D, M j, Y" }} at {{ booking.start_at|time:"g:i A" }}</p>

@@ -21,9 +21,9 @@ class PractitionerWaitlistForm(forms.ModelForm):
             'notes',
         )
         labels = {
-            'full_name': 'Full name',
+            'full_name': 'Practitioner name',
             'email': 'Email',
-            'business_name': 'Business name',
+            'business_name': 'Business name (optional)',
             'headline': 'Headline',
             'modalities': 'Modalities',
             'practice_type': 'Primary practice type',
@@ -34,6 +34,10 @@ class PractitionerWaitlistForm(forms.ModelForm):
             'website_url': 'Website URL',
             'notes': 'Anything else we should know?',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['business_name'].required = False
 
     def clean_email(self):
         email = self.cleaned_data['email'].strip().lower()

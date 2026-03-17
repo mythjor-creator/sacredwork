@@ -49,6 +49,29 @@ class WaitlistLandingTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_practitioner_can_join_waitlist_without_business_name(self):
+        response = self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Solo Healer',
+                'email': 'solo@example.com',
+                'business_name': '',
+                'headline': 'Independent practitioner',
+                'modalities': 'energy work',
+                'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
+                'location': 'Remote',
+                'is_virtual': True,
+                'offers_in_person': False,
+                'years_experience': 4,
+                'website_url': '',
+                'notes': '',
+            },
+            follow=False,
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(PractitionerWaitlistProfile.objects.filter(email='solo@example.com').exists())
+
     def test_at_least_one_delivery_format_is_required(self):
         response = self.client.post(
             reverse('waitlist:landing'),

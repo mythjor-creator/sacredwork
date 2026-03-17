@@ -15,7 +15,7 @@ def _fmt_dt(dt):
 def send_booking_requested(booking):
     """Notify both parties that a new booking request was made."""
     service_name = booking.service.name
-    pro_name = booking.professional.business_name
+    pro_name = booking.professional.display_name
     client_name = booking.client.display_name or booking.client.username
     when = _fmt_dt(booking.start_at)
 
@@ -54,7 +54,7 @@ def send_booking_requested(booking):
 def send_booking_confirmed(booking):
     """Notify the client that the professional confirmed their booking."""
     service_name = booking.service.name
-    pro_name = booking.professional.business_name
+    pro_name = booking.professional.display_name
     client_name = booking.client.display_name or booking.client.username
     when = _fmt_dt(booking.start_at)
 
@@ -75,7 +75,7 @@ def send_booking_confirmed(booking):
 def send_booking_cancelled(booking, cancelled_by):
     """Notify both parties that a booking was cancelled."""
     service_name = booking.service.name
-    pro_name = booking.professional.business_name
+    pro_name = booking.professional.display_name
     client_name = booking.client.display_name or booking.client.username
     when = _fmt_dt(booking.start_at)
     canceller = 'the practitioner' if cancelled_by == booking.professional.user else client_name

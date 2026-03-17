@@ -11,7 +11,7 @@ class PractitionerWaitlistProfile(models.Model):
 
     full_name = models.CharField(max_length=120)
     email = models.EmailField(unique=True)
-    business_name = models.CharField(max_length=180)
+    business_name = models.CharField(max_length=180, blank=True, default='')
     headline = models.CharField(max_length=220)
     modalities = models.CharField(max_length=255, help_text='Comma-separated offerings')
     practice_type = models.CharField(max_length=20, choices=PracticeType.choices)
@@ -27,4 +27,4 @@ class PractitionerWaitlistProfile(models.Model):
         ordering = ['-created_at']
 
     def __str__(self) -> str:
-        return f'{self.business_name} ({self.email})'
+        return f'{self.full_name} ({self.email})'

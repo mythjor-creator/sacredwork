@@ -23,7 +23,8 @@
 <section style="display: grid; gap: 1rem; margin-top: 1rem;">
     {% for profile in profiles %}
     <article class="card">
-        <h2 style="margin-top: 0;">{{ profile.business_name }}</h2>
+        <h2 style="margin-top: 0;">{{ profile.display_name }}</h2>
+        <p class="hint">{{ profile.business_name_suffix }}</p>
         <p><strong>{{ profile.headline }}</strong></p>
         <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual
             available{% endif %}</p>

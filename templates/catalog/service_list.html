@@ -2,8 +2,9 @@
 
 {% block content %}
 <section class="card">
-    <h1>{{ profile.business_name }} services</h1>
+    <h1>{{ profile.display_name }} services</h1>
     <p class="hint">Manage the services clients will discover and book.</p>
+    <p class="hint">{{ profile.business_name_suffix }}</p>
     <a class="button" href="{% url 'catalog:service_create' %}">Add service</a>
     <a class="button" href="{% url 'booking:availability' %}">Manage availability</a>
     <a class="button" href="{% url 'booking:list' %}">View bookings</a>

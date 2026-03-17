@@ -26,7 +26,9 @@ def marketplace_view(request):
 
 	if query:
 		profiles = profiles.filter(
-			Q(business_name__icontains=query)
+			Q(user__display_name__icontains=query)
+			| Q(user__username__icontains=query)
+			| Q(business_name__icontains=query)
 			| Q(headline__icontains=query)
 			| Q(modalities__icontains=query)
 			| Q(services__name__icontains=query)

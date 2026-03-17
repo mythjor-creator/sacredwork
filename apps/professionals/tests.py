@@ -49,6 +49,33 @@ class ProfessionalOnboardingTests(TestCase):
 		)
 		self.assertFalse(profile.is_visible)
 
+	def test_professional_can_submit_onboarding_without_business_name(self):
+		professional_user = User.objects.create_user(
+			username='solo_pro_user',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		self.client.force_login(professional_user)
+
+		response = self.client.post(
+			reverse('professionals:onboarding'),
+			{
+				'business_name': '',
+				'headline': 'Solo wellness practitioner',
+				'bio': 'I offer private sessions.',
+				'modalities': 'mindfulness, breathwork',
+				'location': 'Remote',
+				'is_virtual': True,
+				'years_experience': 5,
+				'profile_image_url': '',
+			},
+		)
+
+		self.assertRedirects(response, reverse('accounts:dashboard'))
+		profile = ProfessionalProfile.objects.get(user=professional_user)
+		self.assertEqual(profile.business_name, '')
+		self.assertEqual(profile.display_name, professional_user.username)
+
 
 class ProfileEditTests(TestCase):
 	def setUp(self):

@@ -2,7 +2,8 @@
 
 {% block content %}
 <section class="card">
-    <h1>Availability for {{ profile.business_name }}</h1>
+    <h1>Availability for {{ profile.display_name }}</h1>
+    <p class="hint">{{ profile.business_name_suffix }}</p>
     <p class="hint">Set the recurring windows clients can book from.</p>
     <form method="post">
         {% csrf_token %}

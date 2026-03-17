@@ -3,7 +3,8 @@
 {% block content %}
 <section class="card">
     <h1>{{ form_title }}</h1>
-    <p class="hint">This service will appear on {{ profile.business_name }} once your profile is visible.</p>
+    <p class="hint">This service will appear on {{ profile.display_name }}{{ profile.business_name_suffix }} once your
+        profile is visible.</p>
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}

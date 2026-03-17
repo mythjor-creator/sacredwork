@@ -13,7 +13,7 @@ class ProfessionalProfile(models.Model):
 		on_delete=models.CASCADE,
 		related_name='professional_profile',
 	)
-	business_name = models.CharField(max_length=180)
+	business_name = models.CharField(max_length=180, blank=True, default='')
 	headline = models.CharField(max_length=220)
 	bio = models.TextField()
 	modalities = models.CharField(max_length=255, help_text='Comma-separated offerings')
@@ -31,7 +31,24 @@ class ProfessionalProfile(models.Model):
 	updated_at = models.DateTimeField(auto_now=True)
 
 	class Meta:
-		ordering = ['business_name']
+		ordering = ['user__display_name', 'business_name']
 
+	@property
+	def practitioner_name(self) -> str:
+		if self.user.display_name:
+			return self.user.display_name
+		if self.business_name:
+			return self.business_name
+		return self.user.username
+
+	@property
+	def display_name(self) -> str:
+		return self.practitioner_name
+
+	@property
+	def business_name_suffix(self) -> str:
+		if self.business_name and self.business_name != self.display_name:
+			return f' · {self.business_name}'
+		return ''
 	def __str__(self) -> str:
-		return self.business_name
+		return self.display_name

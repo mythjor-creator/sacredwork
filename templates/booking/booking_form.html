@@ -3,7 +3,8 @@
 {% block content %}
 <section class="card">
     <h1>Book {{ service.name }}</h1>
-    <p class="hint">{{ profile.business_name }} · {{ service.get_delivery_format_display }} · ${{ service.price_display
+    <p class="hint">{{ profile.display_name }}{{ profile.business_name_suffix }} · {{
+        service.get_delivery_format_display }} · ${{ service.price_display
         }}</p>
     <p>{{ service.description }}</p>
     <form method="post">

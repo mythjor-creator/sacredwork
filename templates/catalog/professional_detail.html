@@ -2,7 +2,8 @@
 
 {% block content %}
 <section class="card">
-    <h1>{{ profile.business_name }}</h1>
+    <h1>{{ profile.display_name }}</h1>
+    <p class="hint">{{ profile.business_name_suffix }}</p>
     <p><strong>{{ profile.headline }}</strong></p>
     <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual sessions
         available{% endif %}</p>

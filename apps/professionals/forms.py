@@ -16,3 +16,10 @@ class ProfessionalOnboardingForm(forms.ModelForm):
             'years_experience',
             'profile_image_url',
         )
+        labels = {
+            'business_name': 'Business name (optional)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['business_name'].required = False
