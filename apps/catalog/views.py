@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from django.db.models import Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -45,6 +46,12 @@ def marketplace_view(request):
 		],
 		'active_category': category_slug,
 		'query': query,
+		'sample_badge_text': 'Preview mode: sample data'
+		if settings.DEBUG and request.GET.get('sample') == '1'
+		else '',
+		'sample_badge_style': 'display: inline-block; margin: 0.3rem 0 0.6rem; padding: 0.2rem 0.6rem; border-radius: 999px; border: 1px solid #f59e0b; color: #92400e; background: #fef3c7;'
+		if settings.DEBUG and request.GET.get('sample') == '1'
+		else 'display: none;',
 	}
 	return render(request, 'catalog/marketplace_list.html', context)
 

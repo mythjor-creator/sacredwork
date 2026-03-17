@@ -1,5 +1,7 @@
 from django.test import TestCase
+from django.test import override_settings
 from django.urls import reverse
+from django.core.management import call_command
 
 from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
@@ -79,6 +81,14 @@ class MarketplaceDiscoveryTests(TestCase):
 
 		self.assertContains(response, 'Visible Healing Studio')
 		self.assertContains(response, 'Reiki Reset')
+
+	def test_marketplace_preview_badge_shows_only_in_sample_mode(self):
+		response_without_sample = self.client.get(reverse('catalog:marketplace'))
+		self.assertNotContains(response_without_sample, 'Preview mode: sample data')
+
+		with override_settings(DEBUG=True):
+			response_with_sample = self.client.get(reverse('catalog:marketplace'), {'sample': '1'})
+		self.assertContains(response_with_sample, 'Preview mode: sample data')
 
 
 class ServiceManagementTests(TestCase):
@@ -213,3 +223,27 @@ class ServiceEditTests(TestCase):
 		self.client.force_login(client_user)
 		response = self.client.get(reverse('catalog:service_edit', args=[self.service.pk]))
 		self.assertRedirects(response, reverse('accounts:dashboard'))
+
+
+class PreviewSeedCommandTests(TestCase):
+	def test_seed_preview_data_is_idempotent(self):
+		call_command('seed_preview_data')
+		first_profile_count = ProfessionalProfile.objects.filter(is_visible=True).count()
+		first_service_count = Service.objects.count()
+
+		call_command('seed_preview_data')
+		second_profile_count = ProfessionalProfile.objects.filter(is_visible=True).count()
+		second_service_count = Service.objects.count()
+
+		self.assertEqual(first_profile_count, second_profile_count)
+		self.assertEqual(first_service_count, second_service_count)
+
+	def test_seed_preview_data_clear_rebuilds(self):
+		call_command('seed_preview_data')
+		count_after_seed = Service.objects.count()
+
+		call_command('seed_preview_data', clear=True)
+		count_after_clear_seed = Service.objects.count()
+
+		self.assertGreater(count_after_seed, 0)
+		self.assertEqual(count_after_seed, count_after_clear_seed)
