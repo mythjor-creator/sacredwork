@@ -27,9 +27,9 @@
     <h2 style="margin-top: 0;">Practitioner waitlist profile</h2>
     <p class="hint">This is not client-facing yet. It helps us prioritize onboarding and category rollout.</p>
     <p class="hint"><strong>* Required fields</strong></p>
-    <form method="post">
+    <form method="post" data-waitlist-form>
         {% csrf_token %}
-        <div
+        <div data-non-field-errors
             style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 12px; padding: 0.8rem; margin-bottom: 0.9rem;">
             {{ form.non_field_errors }}
         </div>
@@ -238,13 +238,22 @@
 
 <script>
     (function () {
+        const form = document.querySelector('[data-waitlist-form]');
         const panels = Array.from(document.querySelectorAll('[data-step-panel]'));
         const pills = Array.from(document.querySelectorAll('[data-step-pill]'));
         const prevBtn = document.querySelector('[data-step-prev]');
         const nextBtn = document.querySelector('[data-step-next]');
         const submitBtn = document.querySelector('[data-step-submit]');
-        if (!panels.length || !pills.length || !prevBtn || !nextBtn || !submitBtn) {
+        const nonFieldErrors = document.querySelector('[data-non-field-errors]');
+        if (!form || !panels.length || !pills.length || !prevBtn || !nextBtn || !submitBtn) {
             return;
+        }
+
+        const draftKey = 'waitlist_draft_v1';
+        const stepKey = 'waitlist_step_v1';
+
+        if (nonFieldErrors && nonFieldErrors.textContent.trim() === '') {
+            nonFieldErrors.style.display = 'none';
         }
 
         let step = 1;
@@ -260,15 +269,74 @@
             prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
             nextBtn.style.display = step === panels.length ? 'none' : 'inline-block';
             submitBtn.style.display = step === panels.length ? 'inline-block' : 'none';
+            window.localStorage.setItem(stepKey, String(step));
         }
 
-        const fieldError = document.querySelector('.field-error');
+        function saveDraft() {
+            const values = {};
+            Array.from(form.elements).forEach((element) => {
+                if (!element.name || element.name === 'csrfmiddlewaretoken') {
+                    return;
+                }
+                if (element.type === 'checkbox') {
+                    values[element.name] = element.checked;
+                    return;
+                }
+                values[element.name] = element.value;
+            });
+            window.localStorage.setItem(draftKey, JSON.stringify(values));
+        }
+
+        function restoreDraft() {
+            const raw = window.localStorage.getItem(draftKey);
+            if (!raw) {
+                return;
+            }
+            let values = {};
+            try {
+                values = JSON.parse(raw);
+            } catch (error) {
+                return;
+            }
+
+            Array.from(form.elements).forEach((element) => {
+                if (!element.name || !(element.name in values)) {
+                    return;
+                }
+                if (element.type === 'checkbox') {
+                    element.checked = Boolean(values[element.name]);
+                    return;
+                }
+                element.value = values[element.name];
+            });
+        }
+
+        function clearDraft() {
+            window.localStorage.removeItem(draftKey);
+            window.localStorage.removeItem(stepKey);
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('submitted') === '1') {
+            clearDraft();
+        } else {
+            restoreDraft();
+            const savedStep = Number(window.localStorage.getItem(stepKey) || '1');
+            if (savedStep >= 1 && savedStep <= panels.length) {
+                step = savedStep;
+            }
+        }
+
+        const fieldError = document.querySelector('.errorlist');
         if (fieldError) {
             const parentPanel = fieldError.closest('[data-step-panel]');
             if (parentPanel) {
                 step = Number(parentPanel.dataset.stepPanel);
             }
         }
+
+        form.addEventListener('input', saveDraft);
+        form.addEventListener('change', saveDraft);
 
         prevBtn.addEventListener('click', function () {
             if (step > 1) {

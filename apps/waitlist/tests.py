@@ -30,12 +30,24 @@ class WaitlistLandingTests(TestCase):
                 'website_url': 'https://example.com',
                 'notes': 'Interested in early beta access.',
             },
-            follow=True,
+            follow=False,
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'You are on the practitioner waitlist.')
+        self.assertRedirects(
+            response,
+            f"{reverse('waitlist:landing')}?submitted=1",
+            fetch_redirect_response=False,
+        )
+
+        follow_response = self.client.get(response['Location'])
+        self.assertEqual(follow_response.status_code, 200)
+        self.assertContains(follow_response, 'You are on the practitioner waitlist.')
         self.assertTrue(PractitionerWaitlistProfile.objects.filter(email='ari@example.com').exists())
+
+    def test_submitted_query_param_renders_page(self):
+        response = self.client.get(f"{reverse('waitlist:landing')}?submitted=1")
+
+        self.assertEqual(response.status_code, 200)
 
     def test_at_least_one_delivery_format_is_required(self):
         response = self.client.post(
