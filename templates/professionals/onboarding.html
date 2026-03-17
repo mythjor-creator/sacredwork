@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>Professional onboarding</h1>
+    <p class="hint">Tell clients about your work. New profiles are queued for moderation review.</p>
+    <p class="hint">After this step, you can add the services clients will discover on your profile.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit profile</button>
+    </form>
+</section>
+{% endblock %}

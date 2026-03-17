@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>Availability for {{ profile.business_name }}</h1>
+    <p class="hint">Set the recurring windows clients can book from.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add availability window</button>
+    </form>
+</section>
+
+<section style="display: grid; gap: 1rem; margin-top: 1rem;">
+    {% for window in availability_windows %}
+    <article class="card">
+        <h2 style="margin-top: 0;">{{ window.get_weekday_display }}</h2>
+        <p class="hint">{{ window.start_time }} to {{ window.end_time }}{{ window.status_suffix }}</p>
+    </article>
+    {% empty %}
+    <section class="card">
+        <h2 style="margin-top: 0;">No availability yet</h2>
+        <p class="hint">Add at least one weekly window so clients can book you.</p>
+    </section>
+    {% endfor %}
+</section>
+{% endblock %}

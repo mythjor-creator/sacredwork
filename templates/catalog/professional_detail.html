@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>{{ profile.business_name }}</h1>
+    <p><strong>{{ profile.headline }}</strong></p>
+    <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual sessions
+        available{% endif %}</p>
+    <p>{{ profile.bio }}</p>
+    <p class="hint">Modalities: {{ profile.modalities }}</p>
+    <p class="hint">Experience: {{ profile.years_experience }} years</p>
+</section>
+
+<section class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">Services</h2>
+    <div style="display: grid; gap: 0.9rem;">
+        {% for service in profile.services.all %}
+        <article style="padding: 1rem; border: 1px solid var(--border); border-radius: 14px;">
+            <h3 style="margin-top: 0;">{{ service.name }}</h3>
+            <p>{{ service.description }}</p>
+            <p class="hint">{{ service.get_delivery_format_display }} · {{ service.duration_minutes }} min · ${{
+                service.price_display }}</p>
+            <p class="hint">Category: {{ service.category.name }}</p>
+            {% if user.is_authenticated and user.role == 'client' %}
+            <a class="button" href="{% url 'booking:create' service.pk %}">Book this service</a>
+            {% elif not user.is_authenticated %}
+            <a class="button" href="{% url 'accounts:login' %}?next={% url 'booking:create' service.pk %}">Log in to
+                book</a>
+            {% endif %}
+        </article>
+        {% empty %}
+        <p class="hint">This professional has not published services yet.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

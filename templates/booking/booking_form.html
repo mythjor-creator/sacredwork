@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>Book {{ service.name }}</h1>
+    <p class="hint">{{ profile.business_name }} · {{ service.get_delivery_format_display }} · ${{ service.price_display
+        }}</p>
+    <p>{{ service.description }}</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Request booking</button>
+    </form>
+    {% if not slots %}
+    <p class="hint">This professional has not opened any bookable slots yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

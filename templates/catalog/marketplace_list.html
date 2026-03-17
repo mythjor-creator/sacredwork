@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>Discover practitioners</h1>
+    <p class="hint">Browse approved professionals across wellness, spirituality, beauty, and coaching.</p>
+    <form method="get">
+        <label for="search-query">Search by modality, headline, or service</label>
+        <input id="search-query" type="text" name="q" value="{{ query }}" placeholder="reiki, breathwork, life coach">
+        <label for="category-select">Category</label>
+        <select id="category-select" name="category">
+            <option value="">All categories</option>
+            {% for category_option in categories %}
+            <option value="{{ category_option.category.slug }}" {{ category_option.selected_attr }}>{{
+                category_option.category.name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Search</button>
+    </form>
+</section>
+
+<section style="display: grid; gap: 1rem; margin-top: 1rem;">
+    {% for profile in profiles %}
+    <article class="card">
+        <h2 style="margin-top: 0;">{{ profile.business_name }}</h2>
+        <p><strong>{{ profile.headline }}</strong></p>
+        <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual
+            available{% endif %}</p>
+        <p>{{ profile.bio|truncatewords:28 }}</p>
+        {% if profile.services.all %}
+        <p class="hint">
+            Services:
+            {% for service in profile.services.all %}
+            {{ service.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        {% endif %}
+        <a class="button" href="{% url 'catalog:professional_detail' profile.pk %}">View profile</a>
+    </article>
+    {% empty %}
+    <section class="card">
+        <h2 style="margin-top: 0;">No professionals match this search</h2>
+        <p class="hint">Try a broader modality or remove the category filter.</p>
+    </section>
+    {% endfor %}
+</section>
+{% endblock %}

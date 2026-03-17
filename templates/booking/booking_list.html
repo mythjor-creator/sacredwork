@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>{% if view_type == 'professional' %}Incoming bookings{% else %}My bookings{% endif %}</h1>
+    <p class="hint">Track upcoming and past sessions from one place.</p>
+</section>
+
+<section style="display: grid; gap: 1rem; margin-top: 1rem;">
+    {% for booking in bookings %}
+    <article class="card">
+        <h2 style="margin-top: 0;">{{ booking.service.name }}</h2>
+        <p class="hint">
+            {% if view_type == 'professional' %}
+            Client: {{ booking.client.display_name|default:booking.client.username }}
+            {% else %}
+            Professional: {{ booking.professional.business_name }}
+            {% endif %}
+        </p>
+        <p>{{ booking.start_at|date:"D, M j, Y" }} at {{ booking.start_at|time:"g:i A" }}</p>
+        <p class="hint">Status: {{ booking.get_status_display }} · ${{ booking.price_display }}</p>
+        {% if booking.intake_notes %}
+        <p class="hint">Intake notes: {{ booking.intake_notes }}</p>
+        {% endif %}
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem;">
+            {% if view_type == 'professional' and booking.is_requested %}
+            <form method="post" action="{% url 'booking:action' booking.pk 'confirm' %}">
+                {% csrf_token %}
+                <button type="submit">Confirm booking</button>
+            </form>
+            {% endif %}
+
+            {% if booking.is_requested or booking.is_confirmed %}
+            {% if view_type == 'professional' %}
+            <form method="post" action="{% url 'booking:action' booking.pk 'cancel' %}">
+                {% csrf_token %}
+                <button type="submit">Cancel booking</button>
+            </form>
+            {% else %}
+            <form method="post" action="{% url 'booking:action' booking.pk 'cancel' %}">
+                {% csrf_token %}
+                <button type="submit">Cancel booking</button>
+            </form>
+            {% endif %}
+            {% endif %}
+
+            {% if view_type == 'professional' and booking.is_confirmed %}
+            <form method="post" action="{% url 'booking:action' booking.pk 'complete' %}">
+                {% csrf_token %}
+                <button type="submit">Mark complete</button>
+            </form>
+            {% endif %}
+        </div>
+    </article>
+    {% empty %}
+    <section class="card">
+        <h2 style="margin-top: 0;">No bookings yet</h2>
+        <p class="hint">Bookings will appear here after a client requests one.</p>
+    </section>
+    {% endfor %}
+</section>
+{% endblock %}

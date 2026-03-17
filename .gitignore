@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Django
+*.sqlite3
+*.log
+local_settings.py
+media/
+
+# Environment variables — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store

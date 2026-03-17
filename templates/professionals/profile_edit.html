@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>Edit your profile</h1>
+    <p class="hint">Updates take effect immediately. Your visibility status is unchanged.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save changes</button>
+    </form>
+    <p style="margin-top: 1rem;"><a href="{% url 'accounts:dashboard' %}">← Back to dashboard</a></p>
+</section>
+{% endblock %}

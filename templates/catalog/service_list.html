@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>{{ profile.business_name }} services</h1>
+    <p class="hint">Manage the services clients will discover and book.</p>
+    <a class="button" href="{% url 'catalog:service_create' %}">Add service</a>
+    <a class="button" href="{% url 'booking:availability' %}">Manage availability</a>
+    <a class="button" href="{% url 'booking:list' %}">View bookings</a>
+</section>
+
+<section style="display: grid; gap: 1rem; margin-top: 1rem;">
+    {% for service in services %}
+    <article class="card">
+        <h2 style="margin-top: 0;">{{ service.name }}</h2>
+        <p>{{ service.description }}</p>
+        <p class="hint">{{ service.category.name }} · {{ service.get_delivery_format_display }} · {{
+            service.duration_minutes }} min</p>
+        <p class="hint">Price: ${{ service.price_display }}{% if not service.is_active %} · Inactive{% endif %}</p>
+        <a class="button" href="{% url 'catalog:service_edit' service.pk %}">Edit</a>
+    </article>
+    {% empty %}
+    <section class="card">
+        <h2 style="margin-top: 0;">No services yet</h2>
+        <p class="hint">Add your first service to start building your marketplace presence.</p>
+    </section>
+    {% endfor %}
+</section>
+{% endblock %}

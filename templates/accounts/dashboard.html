@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card">
+    <h1>Welcome, {{ request.user.display_name|default:request.user.username }}</h1>
+    <p class="hint">Role: {{ request.user.get_role_display }}</p>
+
+    {% if needs_onboarding %}
+    <p>Your professional profile is not set up yet.</p>
+    <a class="button" href="{% url 'professionals:onboarding' %}">Complete onboarding</a>
+    {% elif profile %}
+    <p>Your profile is in the system.</p>
+    <p class="hint">Status: {{ profile.get_approval_status_display }}{% if not profile.is_visible %} · Hidden until
+        approved{% endif %}</p>
+    <p class="hint">Services created: {{ service_count }}</p>
+    <a class="button" href="{% url 'catalog:service_list' %}">Manage services</a>
+    <a class="button" href="{% url 'professionals:profile_edit' %}">Edit profile</a>
+    <a class="button" href="{% url 'booking:availability' %}">Manage availability</a>
+    <a class="button" href="{% url 'booking:list' %}">View bookings</a>
+    {% else %}
+    <p>You are signed in and ready to explore the marketplace.</p>
+    <a class="button" href="{% url 'catalog:marketplace' %}">Browse professionals</a>
+    <a class="button" href="{% url 'booking:list' %}">My bookings</a>
+    {% endif %}
+</section>
+{% endblock %}
