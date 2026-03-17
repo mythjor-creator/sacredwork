@@ -129,6 +129,7 @@
             <a class="brand" href="{% url 'catalog:marketplace' %}">Sacred Work</a>
             <div class="links">
                 <a href="{% url 'catalog:marketplace' %}">Discover</a>
+                <a href="{% url 'waitlist:landing' %}">Practitioner Waitlist</a>
                 {% if user.is_authenticated %}
                 <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
                 <a href="{% url 'accounts:logout' %}">Log out</a>

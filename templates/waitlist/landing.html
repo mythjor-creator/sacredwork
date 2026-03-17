@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="card" style="padding: 1.6rem;">
+    <h1 style="margin-top: 0;">Build your early presence on Sacred Work</h1>
+    <p class="hint">Join the practitioner waitlist and get priority onboarding before public launch.</p>
+    <p>We are building a focused marketplace for trusted wellness, spiritual, beauty, and coaching professionals.
+        Early practitioners will shape category design, discovery filters, and booking workflows.</p>
+</section>
+
+<section style="display: grid; gap: 1rem; margin-top: 1rem;">
+    <div class="card">
+        <h2 style="margin-top: 0;">Service tracks we are launching first</h2>
+        <div style="display: grid; gap: 0.75rem; margin-top: 0.75rem;">
+            {% for track in service_tracks %}
+            <article
+                style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 12px; background: #fffbeb;">
+                <h3 style="margin: 0 0 0.35rem;">{{ track.title }}</h3>
+                <p style="margin: 0;" class="hint">{{ track.description }}</p>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">Practitioner waitlist profile</h2>
+    <p class="hint">This is not client-facing yet. It helps us prioritize onboarding and category rollout.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Join practitioner waitlist</button>
+    </form>
+</section>
+{% endblock %}

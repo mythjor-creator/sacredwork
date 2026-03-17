@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.catalog',
     'apps.booking',
     'apps.moderation',
+    'apps.waitlist',
 ]
 
 MIDDLEWARE = [
