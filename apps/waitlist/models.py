@@ -17,6 +17,7 @@ class PractitionerWaitlistProfile(models.Model):
     practice_type = models.CharField(max_length=20, choices=PracticeType.choices)
     location = models.CharField(max_length=120, blank=True)
     is_virtual = models.BooleanField(default=True)
+    offers_in_person = models.BooleanField(default=False)
     years_experience = models.PositiveSmallIntegerField(default=0)
     website_url = models.URLField(blank=True)
     notes = models.TextField(blank=True)

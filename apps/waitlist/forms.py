@@ -15,13 +15,36 @@ class PractitionerWaitlistForm(forms.ModelForm):
             'practice_type',
             'location',
             'is_virtual',
+            'offers_in_person',
             'years_experience',
             'website_url',
             'notes',
         )
+        labels = {
+            'full_name': 'Full name',
+            'email': 'Email',
+            'business_name': 'Business name',
+            'headline': 'Headline',
+            'modalities': 'Modalities',
+            'practice_type': 'Primary practice type',
+            'location': 'Location',
+            'is_virtual': 'Offer virtual sessions',
+            'offers_in_person': 'Offer in-person sessions',
+            'years_experience': 'Years of experience',
+            'website_url': 'Website URL',
+            'notes': 'Anything else we should know?',
+        }
 
     def clean_email(self):
         email = self.cleaned_data['email'].strip().lower()
         if PractitionerWaitlistProfile.objects.filter(email=email).exists():
             raise forms.ValidationError('This email is already on the waitlist.')
         return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        is_virtual = cleaned_data.get('is_virtual')
+        offers_in_person = cleaned_data.get('offers_in_person')
+        if not is_virtual and not offers_in_person:
+            raise forms.ValidationError('Select at least one session format: virtual or in-person.')
+        return cleaned_data

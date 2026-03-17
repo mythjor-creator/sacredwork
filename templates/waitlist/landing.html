@@ -26,10 +26,265 @@
 <section class="card" style="margin-top: 1rem;">
     <h2 style="margin-top: 0;">Practitioner waitlist profile</h2>
     <p class="hint">This is not client-facing yet. It helps us prioritize onboarding and category rollout.</p>
+    <p class="hint"><strong>* Required fields</strong></p>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Join practitioner waitlist</button>
+        <div
+            style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 12px; padding: 0.8rem; margin-bottom: 0.9rem;">
+            {{ form.non_field_errors }}
+        </div>
+
+        <style>
+            .errorlist {
+                margin: 0.35rem 0;
+                color: #991b1b;
+            }
+
+            .stepper {
+                display: grid;
+                gap: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .step-indicator {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
+            .step-pill {
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                padding: 0.45rem 0.7rem;
+                text-align: center;
+                font-size: 0.85rem;
+                background: #fff;
+            }
+
+            .step-pill.active {
+                background: var(--brand-soft);
+                border-color: var(--brand);
+                color: #134e4a;
+                font-weight: 600;
+            }
+
+            .step-panel {
+                display: none;
+            }
+
+            .step-panel.active {
+                display: block;
+            }
+
+            .field-block {
+                margin-bottom: 0.85rem;
+            }
+
+            .field-block label {
+                margin-top: 0;
+                font-weight: 600;
+            }
+
+            .field-required {
+                color: #b91c1c;
+            }
+
+            .step-actions {
+                display: flex;
+                justify-content: space-between;
+                gap: 0.6rem;
+                margin-top: 1rem;
+            }
+
+            .step-actions .button-secondary {
+                background: #334155;
+            }
+
+            .checkbox-field {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 0.5rem;
+            }
+
+            .checkbox-field input {
+                width: auto;
+                margin-top: 0;
+            }
+
+            .checkbox-field label {
+                margin-top: 0;
+                font-weight: 500;
+            }
+
+            .hint-inline {
+                margin: 0.3rem 0 0;
+            }
+        </style>
+
+        <div class="stepper" data-stepper>
+            <div class="step-indicator">
+                <div class="step-pill active" data-step-pill="1">1. Identity</div>
+                <div class="step-pill" data-step-pill="2">2. Practice</div>
+                <div class="step-pill" data-step-pill="3">3. Delivery</div>
+            </div>
+
+            <div class="step-panel active" data-step-panel="1">
+                <div class="field-block">
+                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.full_name }}
+                    <p class="hint hint-inline">{{ form.full_name.help_text }}</p>
+                    {{ form.full_name.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.email }}
+                    <p class="hint hint-inline">{{ form.email.help_text }}</p>
+                    {{ form.email.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.business_name.id_for_label }}">{{ form.business_name.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.business_name }}
+                    <p class="hint hint-inline">{{ form.business_name.help_text }}</p>
+                    {{ form.business_name.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.headline.id_for_label }}">{{ form.headline.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.headline }}
+                    <p class="hint hint-inline">{{ form.headline.help_text }}</p>
+                    {{ form.headline.errors }}
+                </div>
+            </div>
+
+            <div class="step-panel" data-step-panel="2">
+                <div class="field-block">
+                    <label for="{{ form.practice_type.id_for_label }}">{{ form.practice_type.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.practice_type }}
+                    <p class="hint hint-inline">{{ form.practice_type.help_text }}</p>
+                    {{ form.practice_type.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.modalities.id_for_label }}">{{ form.modalities.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.modalities }}
+                    <p class="hint hint-inline">{{ form.modalities.help_text }}</p>
+                    {{ form.modalities.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.years_experience.id_for_label }}">{{ form.years_experience.label }}
+                        <span class="field-required">*</span></label>
+                    {{ form.years_experience }}
+                    <p class="hint hint-inline">{{ form.years_experience.help_text }}</p>
+                    {{ form.years_experience.errors }}
+                </div>
+            </div>
+
+            <div class="step-panel" data-step-panel="3">
+                <div class="field-block">
+                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+                    {{ form.location }}
+                    <p class="hint hint-inline">{{ form.location.help_text }}</p>
+                    {{ form.location.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.website_url.id_for_label }}">{{ form.website_url.label }}</label>
+                    {{ form.website_url }}
+                    <p class="hint hint-inline">{{ form.website_url.help_text }}</p>
+                    {{ form.website_url.errors }}
+                </div>
+
+                <div class="field-block">
+                    <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                    {{ form.notes }}
+                    <p class="hint hint-inline">{{ form.notes.help_text }}</p>
+                    {{ form.notes.errors }}
+                </div>
+
+                <div class="field-block">
+                    <div class="checkbox-field">
+                        {{ form.is_virtual }}
+                        <label for="{{ form.is_virtual.id_for_label }}">{{ form.is_virtual.label }}</label>
+                    </div>
+                    {{ form.is_virtual.errors }}
+
+                    <div class="checkbox-field">
+                        {{ form.offers_in_person }}
+                        <label for="{{ form.offers_in_person.id_for_label }}">{{ form.offers_in_person.label }}</label>
+                    </div>
+                    {{ form.offers_in_person.errors }}
+                    <p class="hint" style="margin: 0.45rem 0 0;">Choose one or both formats for booking.</p>
+                </div>
+            </div>
+
+            <div class="step-actions">
+                <button type="button" class="button-secondary" data-step-prev style="visibility: hidden;">Back</button>
+                <button type="button" data-step-next>Next</button>
+                <button type="submit" data-step-submit style="display: none;">Join practitioner waitlist</button>
+            </div>
+        </div>
     </form>
 </section>
+
+<script>
+    (function () {
+        const panels = Array.from(document.querySelectorAll('[data-step-panel]'));
+        const pills = Array.from(document.querySelectorAll('[data-step-pill]'));
+        const prevBtn = document.querySelector('[data-step-prev]');
+        const nextBtn = document.querySelector('[data-step-next]');
+        const submitBtn = document.querySelector('[data-step-submit]');
+        if (!panels.length || !pills.length || !prevBtn || !nextBtn || !submitBtn) {
+            return;
+        }
+
+        let step = 1;
+
+        function renderStep() {
+            panels.forEach((panel) => {
+                panel.classList.toggle('active', Number(panel.dataset.stepPanel) === step);
+            });
+            pills.forEach((pill) => {
+                pill.classList.toggle('active', Number(pill.dataset.stepPill) === step);
+            });
+
+            prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
+            nextBtn.style.display = step === panels.length ? 'none' : 'inline-block';
+            submitBtn.style.display = step === panels.length ? 'inline-block' : 'none';
+        }
+
+        const fieldError = document.querySelector('.field-error');
+        if (fieldError) {
+            const parentPanel = fieldError.closest('[data-step-panel]');
+            if (parentPanel) {
+                step = Number(parentPanel.dataset.stepPanel);
+            }
+        }
+
+        prevBtn.addEventListener('click', function () {
+            if (step > 1) {
+                step -= 1;
+                renderStep();
+            }
+        });
+
+        nextBtn.addEventListener('click', function () {
+            if (step < panels.length) {
+                step += 1;
+                renderStep();
+            }
+        });
+
+        renderStep();
+    })();
+</script>
 {% endblock %}
