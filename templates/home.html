@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section style="text-align: center; padding: 5rem 1rem 6rem;">
+    <h1 style="font-size: clamp(2rem, 6vw, 3.25rem); font-weight: 800; line-height: 1.15; margin: 0 0 1rem; color: var(--ink);">
+        Find your practitioner.<br>
+        <span style="color: var(--brand);">Do sacred work.</span>
+    </h1>
+    <p style="font-size: 1.15rem; color: #475569; max-width: 460px; margin: 0 auto 2.5rem;">
+        A curated marketplace connecting seekers with healers, coaches, and wellness practitioners.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a class="button"
+           href="{% url 'catalog:marketplace' %}"
+           style="font-size: 1rem; padding: 0.8rem 1.75rem; margin-top: 0;">Browse practitioners</a>
+        <a class="button"
+           href="{% url 'waitlist:landing' %}"
+           style="font-size: 1rem; padding: 0.8rem 1.75rem; margin-top: 0; background: var(--surface); color: var(--brand); border: 2px solid var(--brand);">Join as a practitioner</a>
+    </div>
+</section>
+{% endblock %}

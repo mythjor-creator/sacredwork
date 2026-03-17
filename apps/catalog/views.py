@@ -58,6 +58,10 @@ def marketplace_view(request):
 	return render(request, 'catalog/marketplace_list.html', context)
 
 
+def home_view(request):
+	return render(request, 'home.html')
+
+
 def professional_detail_view(request, pk):
 	profile = get_object_or_404(
 		ProfessionalProfile.objects.select_related('user').prefetch_related(
