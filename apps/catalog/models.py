@@ -64,6 +64,36 @@ class Service(models.Model):
 		return f'{hours} hr {rem} min'
 
 
+class ServiceTier(models.Model):
+	service = models.ForeignKey(
+		Service,
+		on_delete=models.CASCADE,
+		related_name='tiers',
+	)
+	name = models.CharField(max_length=120)
+	description = models.TextField(blank=True)
+	duration_minutes = models.PositiveSmallIntegerField(null=True, blank=True)
+	price_cents = models.PositiveIntegerField()
+	is_active = models.BooleanField(default=True)
+	sort_order = models.PositiveSmallIntegerField(default=0)
+
+	class Meta:
+		ordering = ['sort_order', 'id']
+		constraints = [
+			models.UniqueConstraint(
+				fields=['service', 'name'],
+				name='unique_service_tier_name',
+			)
+		]
+
+	def __str__(self) -> str:
+		return f'{self.service.name}: {self.name}'
+
+	@property
+	def price_display(self) -> str:
+		return f'{self.price_cents / 100:.2f}'
+
+
 class AnalyticsEvent(models.Model):
 	"""Simple first-party analytics event store for funnel reporting."""
 

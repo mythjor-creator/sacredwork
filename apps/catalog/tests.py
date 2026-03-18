@@ -7,10 +7,10 @@ from django.core.management import call_command
 from django.utils import timezone
 
 from apps.accounts.models import User
-from apps.professionals.models import ProfessionalProfile
+from apps.professionals.models import ProfessionalCredential, ProfessionalProfile, ProfileGalleryImage
 from apps.waitlist.models import PractitionerWaitlistProfile
 
-from .models import AnalyticsEvent, Category, Service
+from .models import AnalyticsEvent, Category, Service, ServiceTier
 
 
 class MarketplaceDiscoveryTests(TestCase):
@@ -129,6 +129,16 @@ class ServiceManagementTests(TestCase):
 				'price_cents': 15000,
 				'delivery_format': Service.DeliveryFormat.VIRTUAL,
 				'is_active': True,
+				'tiers-TOTAL_FORMS': '1',
+				'tiers-INITIAL_FORMS': '0',
+				'tiers-MIN_NUM_FORMS': '0',
+				'tiers-MAX_NUM_FORMS': '1000',
+				'tiers-0-name': 'Standard',
+				'tiers-0-description': 'Core tier',
+				'tiers-0-duration_minutes': '75',
+				'tiers-0-price_cents': '15000',
+				'tiers-0-sort_order': '0',
+				'tiers-0-is_active': 'on',
 			},
 		)
 
@@ -186,6 +196,16 @@ class ServiceEditTests(TestCase):
 				'price_cents': 12000,
 				'delivery_format': Service.DeliveryFormat.VIRTUAL,
 				'is_active': True,
+				'tiers-TOTAL_FORMS': '1',
+				'tiers-INITIAL_FORMS': '0',
+				'tiers-MIN_NUM_FORMS': '0',
+				'tiers-MAX_NUM_FORMS': '1000',
+				'tiers-0-name': 'Intensive Tier',
+				'tiers-0-description': 'Long session option',
+				'tiers-0-duration_minutes': '105',
+				'tiers-0-price_cents': '18000',
+				'tiers-0-sort_order': '0',
+				'tiers-0-is_active': 'on',
 			},
 		)
 		self.assertRedirects(response, reverse('catalog:service_list'))
@@ -559,13 +579,23 @@ class ProfileCredibilityTests(TestCase):
 
 	def test_completeness_percent_full_profile(self):
 		self.profile.profile_image_url = 'https://example.com/photo.jpg'
+		self.profile.long_bio = 'Long form biography with practitioner background, process, and outcomes.' * 2
 		self.profile.save()
+		ProfileGalleryImage.objects.create(
+			profile=self.profile,
+			image='professionals/gallery/sample.jpg',
+			caption='Studio space',
+		)
+		ProfessionalCredential.objects.create(
+			profile=self.profile,
+			title='Board Certified Coach',
+			credential_type=ProfessionalCredential.CredentialType.CERTIFICATION,
+		)
 		self.assertEqual(self.profile.completeness_percent, 100)
 
 	def test_completeness_percent_missing_photo(self):
-		# profile_image_url is blank by default in setUp
-		# bio, location, modalities, service all present → 4/5 = 80%
-		self.assertEqual(self.profile.completeness_percent, 80)
+		# Without photo, long bio, gallery, or credentials the score reflects partial setup.
+		self.assertEqual(self.profile.completeness_percent, 50)
 
 	def test_completeness_panel_shown_to_profile_owner(self):
 		self.client.force_login(self.pro_user)
@@ -597,3 +627,15 @@ class ProfileCredibilityTests(TestCase):
 	def test_service_price_shown_on_profile_page(self):
 		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
 		self.assertContains(response, '$150.00')
+
+	def test_service_tiers_render_on_profile_page(self):
+		ServiceTier.objects.create(
+			service=self.service,
+			name='Deep Dive Tier',
+			description='Extended support and integration notes.',
+			price_cents=22000,
+			duration_minutes=120,
+		)
+		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
+		self.assertContains(response, 'Deep Dive Tier')
+		self.assertContains(response, '$220.00')

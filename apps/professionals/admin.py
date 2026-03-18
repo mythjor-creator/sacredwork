@@ -4,7 +4,7 @@ from django.contrib import messages as django_messages
 
 from apps.moderation.models import ModerationDecision
 
-from .models import ProfessionalProfile
+from .models import ProfessionalCredential, ProfessionalProfile, ProfileGalleryImage
 
 
 @admin.action(description='Mark selected as Verified')
@@ -61,3 +61,17 @@ class ProfessionalProfileAdmin(admin.ModelAdmin):
 				)
 				count += 1
 		self.message_user(request, f'{count} profile(s) rejected.')
+
+
+@admin.register(ProfileGalleryImage)
+class ProfileGalleryImageAdmin(admin.ModelAdmin):
+	list_display = ('profile', 'caption', 'sort_order', 'is_active', 'created_at')
+	list_filter = ('is_active',)
+	search_fields = ('profile__user__username', 'profile__business_name', 'caption')
+
+
+@admin.register(ProfessionalCredential)
+class ProfessionalCredentialAdmin(admin.ModelAdmin):
+	list_display = ('profile', 'credential_type', 'title', 'organization', 'is_active')
+	list_filter = ('credential_type', 'is_active')
+	search_fields = ('profile__user__username', 'profile__business_name', 'title', 'organization')

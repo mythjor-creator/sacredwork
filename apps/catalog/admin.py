@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import AnalyticsEvent, Category, Service
+from .models import AnalyticsEvent, Category, Service, ServiceTier
 
 
 @admin.register(Category)
@@ -15,6 +15,13 @@ class ServiceAdmin(admin.ModelAdmin):
 	list_display = ('name', 'professional', 'category', 'duration_minutes', 'price_cents', 'is_active')
 	list_filter = ('category', 'delivery_format', 'is_active')
 	search_fields = ('name', 'professional__business_name')
+
+
+@admin.register(ServiceTier)
+class ServiceTierAdmin(admin.ModelAdmin):
+	list_display = ('service', 'name', 'price_cents', 'duration_minutes', 'sort_order', 'is_active')
+	list_filter = ('is_active',)
+	search_fields = ('service__name', 'service__professional__business_name', 'name')
 
 
 @admin.register(AnalyticsEvent)

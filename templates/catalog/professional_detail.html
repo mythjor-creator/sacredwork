@@ -24,6 +24,13 @@
 
 {% block content %}
 <section class="card" data-track-profile-id="{{ profile.pk }}">
+    {% if profile.profile_photo %}
+    <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo"
+        style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
+    {% elif profile.profile_image_url %}
+    <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile photo"
+        style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
+    {% endif %}
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem;">
         <h1 style="margin: 0;">{{ profile.display_name }}</h1>
         {% if profile.is_verified %}
@@ -38,9 +45,60 @@
     <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual sessions
         available{% endif %}</p>
     <p>{{ profile.bio }}</p>
+    {% if profile.long_bio %}
+    <p style="white-space: pre-line;">{{ profile.long_bio }}</p>
+    {% endif %}
     <p class="hint">Modalities: {{ profile.modalities }}</p>
     <p class="hint">Experience: {{ profile.years_experience }} years</p>
 </section>
+
+{% with gallery=profile.gallery_images.all %}
+{% if gallery %}
+<section class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">In-person gallery</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem;">
+        {% for image in gallery %}
+        {% if image.is_active %}
+        <figure style="margin: 0;">
+            <img src="{{ image.image.url }}" alt="{{ image.caption|default:'Practice space photo' }}"
+                style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0;">
+            {% if image.caption %}
+            <figcaption class="hint" style="margin-top: 0.35rem;">{{ image.caption }}</figcaption>
+            {% endif %}
+        </figure>
+        {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endwith %}
+
+{% with credentials=profile.credentials.all %}
+{% if credentials %}
+<section class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">Credentials</h2>
+    <ul style="margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem;">
+        {% for credential in credentials %}
+        {% if credential.is_active %}
+        <li>
+            <strong>{{ credential.title }}</strong>
+            <span class="hint"> · {{ credential.get_credential_type_display }}</span>
+            {% if credential.organization %}
+            <div class="hint">{{ credential.organization }}</div>
+            {% endif %}
+            {% if credential.license_number %}
+            <div class="hint">License/ID: {{ credential.license_number }}</div>
+            {% endif %}
+            {% if credential.verification_url %}
+            <div><a href="{{ credential.verification_url }}" target="_blank" rel="noopener">Verify credential</a></div>
+            {% endif %}
+        </li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+{% endwith %}
 
 {% if is_own_profile %}
 <section class="card" style="margin-top: 1rem;">
@@ -89,6 +147,24 @@
             <p class="hint" style="margin: 0.3rem 0 0.6rem;">{{ service.get_delivery_format_display }} · {{
                 service.duration_display }} · {{ service.category.name }}</p>
             <p style="margin: 0 0 0.7rem;">{{ service.description }}</p>
+            {% if service.tiers.all %}
+            <div style="display: grid; gap: 0.45rem; margin-bottom: 0.8rem;">
+                {% for tier in service.tiers.all %}
+                {% if tier.is_active %}
+                <div style="padding: 0.6rem; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                    <strong>{{ tier.name }}</strong>
+                    <span class="hint"> · ${{ tier.price_display }}</span>
+                    {% if tier.duration_minutes %}
+                    <span class="hint"> · {{ tier.duration_minutes }} min</span>
+                    {% endif %}
+                    {% if tier.description %}
+                    <div class="hint" style="margin-top: 0.25rem;">{{ tier.description }}</div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
             {% if user.is_authenticated and user.role == 'client' %}
             <a class="button service-book-button" href="{% url 'booking:create' service.pk %}">Book this service</a>
             {% endif %}

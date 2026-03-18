@@ -2,11 +2,38 @@
 
 {% block content %}
 <section class="card">
-    <h1>Edit your profile</h1>
-    <p class="hint">Updates take effect immediately. Your visibility status is unchanged.</p>
-    <form method="post">
+    <h1>Practitioner setup</h1>
+    <p class="hint">Build your public profile, service gallery, and optional credentials in one place.</p>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.8rem 0 1rem;">
+        <a class="button" href="{% url 'catalog:service_list' %}">Manage services and tiers</a>
+        <a class="button" href="{% url 'booking:availability' %}" style="background: #334155;">Set hours</a>
+    </div>
+    <p class="hint">Active service count: {{ active_service_count }} · Active availability windows: {{
+        availability_count }}</p>
+    <p class="hint">In-person or hybrid services: {{ in_person_service_count }} (recommended for photo galleries)</p>
+
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        <h2 style="margin: 0.8rem 0 0.5rem;">Core profile</h2>
         {{ form.as_p }}
+
+        <h2 style="margin: 1.2rem 0 0.5rem;">Photo gallery (for in-person spaces)</h2>
+        {{ gallery_formset.management_form }}
+        {% for gallery_form in gallery_formset %}
+        <section style="border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; margin-bottom: 0.7rem;">
+            {{ gallery_form.as_p }}
+        </section>
+        {% endfor %}
+
+        <h2 style="margin: 1.2rem 0 0.5rem;">Credentials (optional)</h2>
+        <p class="hint" style="margin-top: 0;">You can add certifications, education, licenses, or leave this blank.</p>
+        {{ credential_formset.management_form }}
+        {% for credential_form in credential_formset %}
+        <section style="border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; margin-bottom: 0.7rem;">
+            {{ credential_form.as_p }}
+        </section>
+        {% endfor %}
+
         <button type="submit">Save changes</button>
     </form>
     <p style="margin-top: 1rem;"><a href="{% url 'accounts:dashboard' %}">← Back to dashboard</a></p>

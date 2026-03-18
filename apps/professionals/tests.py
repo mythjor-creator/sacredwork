@@ -4,7 +4,7 @@ from django.urls import reverse
 from apps.accounts.models import User
 from apps.moderation.models import ModerationDecision
 
-from .models import ProfessionalProfile
+from .models import ProfessionalCredential, ProfessionalProfile
 
 
 class ProfessionalOnboardingTests(TestCase):
@@ -100,16 +100,78 @@ class ProfileEditTests(TestCase):
 				'business_name': 'Updated Name',
 				'headline': 'Updated headline',
 				'bio': 'Updated bio.',
+				'long_bio': 'Long form story for deeper context.',
 				'modalities': 'sound healing',
 				'location': 'Denver',
 				'is_virtual': True,
 				'years_experience': 3,
 				'profile_image_url': '',
+				'gallery-TOTAL_FORMS': '1',
+				'gallery-INITIAL_FORMS': '0',
+				'gallery-MIN_NUM_FORMS': '0',
+				'gallery-MAX_NUM_FORMS': '1000',
+				'gallery-0-caption': '',
+				'gallery-0-sort_order': '0',
+				'gallery-0-is_active': 'on',
+				'credentials-TOTAL_FORMS': '1',
+				'credentials-INITIAL_FORMS': '0',
+				'credentials-MIN_NUM_FORMS': '0',
+				'credentials-MAX_NUM_FORMS': '1000',
+				'credentials-0-credential_type': ProfessionalCredential.CredentialType.CERTIFICATION,
+				'credentials-0-title': 'Certified Breathwork Facilitator',
+				'credentials-0-organization': 'Sacred Institute',
+				'credentials-0-license_number': '',
+				'credentials-0-issued_on': '',
+				'credentials-0-expires_on': '',
+				'credentials-0-verification_url': '',
+				'credentials-0-notes': '',
+				'credentials-0-sort_order': '0',
+				'credentials-0-is_active': 'on',
 			},
 		)
 		self.assertRedirects(response, reverse('accounts:dashboard'))
 		self.profile.refresh_from_db()
 		self.assertEqual(self.profile.business_name, 'Updated Name')
+		self.assertEqual(self.profile.long_bio, 'Long form story for deeper context.')
+		self.assertEqual(self.profile.credentials.count(), 1)
+
+	def test_credential_validation_blocks_bad_expiration_date(self):
+		self.client.force_login(self.professional_user)
+		response = self.client.post(
+			reverse('professionals:profile_edit'),
+			{
+				'business_name': 'Original Name',
+				'headline': 'Original headline',
+				'bio': 'Original bio.',
+				'long_bio': '',
+				'modalities': 'reiki',
+				'location': '',
+				'is_virtual': True,
+				'years_experience': 0,
+				'profile_image_url': '',
+				'gallery-TOTAL_FORMS': '1',
+				'gallery-INITIAL_FORMS': '0',
+				'gallery-MIN_NUM_FORMS': '0',
+				'gallery-MAX_NUM_FORMS': '1000',
+				'gallery-0-caption': '',
+				'gallery-0-sort_order': '0',
+				'credentials-TOTAL_FORMS': '1',
+				'credentials-INITIAL_FORMS': '0',
+				'credentials-MIN_NUM_FORMS': '0',
+				'credentials-MAX_NUM_FORMS': '1000',
+				'credentials-0-credential_type': ProfessionalCredential.CredentialType.LICENSE,
+				'credentials-0-title': 'License Test',
+				'credentials-0-organization': 'Board',
+				'credentials-0-license_number': 'ABC-123',
+				'credentials-0-issued_on': '2025-01-01',
+				'credentials-0-expires_on': '2024-01-01',
+				'credentials-0-verification_url': '',
+				'credentials-0-notes': '',
+				'credentials-0-sort_order': '0',
+			},
+		)
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Expiration date must be after issued date.')
 
 	def test_client_cannot_access_profile_edit(self):
 		client_user = User.objects.create_user(

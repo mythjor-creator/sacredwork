@@ -12,3 +12,6 @@ dj-database-url==2.3.0
 
 # Production static file serving (eliminates need for separate nginx for static)
 whitenoise==6.8.2
+
+# Image uploads for profile photos and galleries
+Pillow==12.1.1

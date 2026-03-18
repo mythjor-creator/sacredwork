@@ -18,7 +18,7 @@ from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
 
-from .forms import ServiceForm
+from .forms import ServiceForm, ServiceTierFormSet
 from .models import AnalyticsEvent, Category, Service
 
 
@@ -100,8 +100,12 @@ def professional_detail_view(request, pk):
 		ProfessionalProfile.objects.select_related('user').prefetch_related(
 			Prefetch(
 				'services',
-				queryset=Service.objects.filter(is_active=True).select_related('category'),
-			)
+				queryset=Service.objects.filter(is_active=True)
+				.select_related('category')
+				.prefetch_related('tiers'),
+			),
+			'gallery_images',
+			'credentials',
 		),
 		pk=pk,
 		approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
@@ -147,18 +151,22 @@ def service_create_view(request):
 
 	if request.method == 'POST':
 		form = ServiceForm(request.POST)
-		if form.is_valid():
+		tier_formset = ServiceTierFormSet(request.POST, prefix='tiers')
+		if form.is_valid() and tier_formset.is_valid():
 			service = form.save(commit=False)
 			service.professional = profile
 			service.save()
+			tier_formset.instance = service
+			tier_formset.save()
 			return redirect('catalog:service_list')
 	else:
 		form = ServiceForm()
+		tier_formset = ServiceTierFormSet(prefix='tiers')
 
 	return render(
 		request,
 		'catalog/service_form.html',
-		{'form': form, 'profile': profile, 'form_title': 'Add a service'},
+		{'form': form, 'profile': profile, 'form_title': 'Add a service', 'tier_formset': tier_formset},
 	)
 
 
@@ -175,16 +183,25 @@ def service_edit_view(request, pk):
 
 	if request.method == 'POST':
 		form = ServiceForm(request.POST, instance=service)
-		if form.is_valid():
+		tier_formset = ServiceTierFormSet(request.POST, instance=service, prefix='tiers')
+		if form.is_valid() and tier_formset.is_valid():
 			form.save()
+			tier_formset.save()
 			return redirect('catalog:service_list')
 	else:
 		form = ServiceForm(instance=service)
+		tier_formset = ServiceTierFormSet(instance=service, prefix='tiers')
 
 	return render(
 		request,
 		'catalog/service_form.html',
-		{'form': form, 'profile': profile, 'service': service, 'form_title': f'Edit: {service.name}'},
+		{
+			'form': form,
+			'profile': profile,
+			'service': service,
+			'form_title': f'Edit: {service.name}',
+			'tier_formset': tier_formset,
+		},
 	)
 
 

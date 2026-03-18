@@ -142,6 +142,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # WhiteNoise: Compresses and caches static files for production
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# User-uploaded media (profile photos, galleries).
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'accounts:login'
