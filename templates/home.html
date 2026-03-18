@@ -2,130 +2,272 @@
 
 {% block extra_head %}
 <style>
-    .home-hero {
-        position: relative;
+    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+
+    .home-stage {
+        border-radius: 18px;
         overflow: hidden;
-        border: 1px solid #dfd8cd;
-        border-radius: 28px;
-        background:
-            radial-gradient(circle at 8% 10%, #fdf4d6 0%, transparent 32%),
-            radial-gradient(circle at 90% 14%, #d9f0eb 0%, transparent 35%),
-            linear-gradient(160deg, #fffef8 0%, #f2f6f5 100%);
-        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.09);
-        padding: clamp(2rem, 5.5vw, 4.25rem) clamp(1rem, 4.5vw, 3.5rem);
-        text-align: center;
+        border: 1px solid #dbdee5;
+        box-shadow: 0 16px 42px rgba(15, 30, 35, 0.09);
+        background: #fff;
     }
 
-    .home-hero::after {
-        content: "";
-        position: absolute;
-        right: -70px;
-        bottom: -90px;
-        width: 260px;
-        height: 260px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(15, 118, 110, 0.14) 0%, rgba(15, 118, 110, 0.02) 70%, transparent 100%);
-        pointer-events: none;
+    .home-hero {
+        background: linear-gradient(180deg, #e8e8f1 0%, #f4f1ed 100%);
+        padding: clamp(1.1rem, 3.4vw, 3.5rem);
     }
 
-    .home-kicker {
-        display: inline-block;
-        margin: 0 0 1.2rem;
-        font-size: 0.76rem;
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-        font-weight: 800;
-        color: #0f766e;
-        background: #e7f7f4;
-        border: 1px solid #b9e4db;
-        border-radius: 999px;
-        padding: 0.35rem 0.75rem;
+    .hero-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        max-width: 860px;
     }
 
     .home-title {
-        font-size: clamp(2.05rem, 6vw, 3.85rem);
-        font-weight: 700;
-        line-height: 1.06;
         margin: 0;
-        color: #17212f;
-    }
-
-    .home-title-accent {
-        color: var(--brand);
+        font-family: "Instrument Sans", "Inter", sans-serif;
+        font-size: clamp(2.1rem, 7vw, 4rem);
+        line-height: 1.06;
+        font-weight: 500;
+        color: #033c44;
     }
 
     .home-subtitle {
-        font-size: clamp(1.02rem, 2.3vw, 1.2rem);
-        color: #475569;
-        max-width: 620px;
-        margin: 1.05rem auto 0;
+        margin: 0;
+        max-width: 560px;
+        color: #384551;
+        font-size: clamp(1.02rem, 2.4vw, 1.25rem);
+        line-height: 1.4;
     }
 
-    .home-cta-row {
-        margin-top: 2rem;
-        display: flex;
-        gap: 0.9rem;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
+    .hero-search {
+        margin-top: 1.65rem;
+        display: grid;
+        grid-template-columns: minmax(220px, 1fr) minmax(160px, 0.35fr) minmax(160px, 0.35fr) auto;
+        gap: 0.75rem;
+        align-items: stretch;
     }
 
-    .home-cta {
+    .hero-search input,
+    .hero-search select {
         margin-top: 0;
-        padding: 0.82rem 1.5rem;
+        border: 1px solid #d7dde3;
+        border-radius: 8px;
+        min-height: 56px;
+        font-size: 1rem;
+        color: #1f2a37;
+        background: #fff;
+        padding: 0.8rem 0.95rem;
+    }
+
+    .hero-search input::placeholder {
+        color: rgba(56, 69, 81, 0.7);
+    }
+
+    .hero-search button {
+        margin-top: 0;
+        min-height: 56px;
+        border-radius: 8px;
+        padding: 0.8rem 1.45rem;
+        background: #051e23;
+        box-shadow: none;
+        font-size: 1rem;
+    }
+
+    .hero-search button:hover {
+        box-shadow: none;
+        transform: none;
+        background: #08323a;
+    }
+
+    .home-featured {
+        background: #fff;
+        padding: clamp(1rem, 2.8vw, 3rem);
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .featured-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 0.8rem;
+    }
+
+    .featured-title {
+        margin: 0;
+        color: #111315;
+        font-size: clamp(1.2rem, 3vw, 1.5rem);
+        font-weight: 600;
+    }
+
+    .featured-subtitle {
+        margin: 0.25rem 0 0;
+        color: #48515d;
         font-size: 0.98rem;
     }
 
-    .home-cta-secondary {
-        background: var(--surface-soft);
-        color: var(--brand);
-        border: 2px solid rgba(15, 118, 110, 0.5);
+    .featured-link {
+        margin-top: 0;
+        padding: 0.45rem 0.8rem;
+        border-radius: 8px;
+        background: #e8e8f1;
+        color: #051e23;
         box-shadow: none;
-    }
-
-    .home-cta-secondary:hover {
-        background: #ecf8f5;
-        box-shadow: none;
-    }
-
-    .home-notes {
-        margin: 1.7rem auto 0;
-        max-width: 520px;
-        color: #596679;
         font-size: 0.95rem;
     }
 
-    @media (max-width: 600px) {
-        .home-hero {
-            border-radius: 20px;
+    .featured-link:hover {
+        transform: none;
+        box-shadow: none;
+        background: #dde0ee;
+    }
+
+    .featured-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(160px, 1fr));
+        gap: 0.72rem;
+    }
+
+    .featured-card {
+        border-radius: 10px;
+        overflow: hidden;
+        min-height: 252px;
+        background: linear-gradient(180deg, #d8ddee 0%, #cce9ec 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        text-decoration: none;
+        color: #fff;
+        padding: 0.78rem;
+        position: relative;
+    }
+
+    .featured-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(9, 24, 29, 0) 44%, rgba(9, 24, 29, 0.78) 100%);
+        pointer-events: none;
+    }
+
+    .featured-text {
+        position: relative;
+        z-index: 1;
+    }
+
+    .featured-name {
+        margin: 0;
+        font-family: "Instrument Sans", "Inter", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .featured-meta {
+        margin: 0.3rem 0 0;
+        color: rgba(255, 255, 255, 0.88);
+        font-size: 0.87rem;
+        line-height: 1.35;
+    }
+
+    @media (max-width: 1080px) {
+        .featured-grid {
+            grid-template-columns: repeat(3, minmax(160px, 1fr));
+        }
+    }
+
+    @media (max-width: 880px) {
+        .hero-search {
+            grid-template-columns: 1fr 1fr;
         }
 
-        .home-cta-row {
+        .hero-search button {
+            grid-column: span 2;
+        }
+    }
+
+    @media (max-width: 660px) {
+        .featured-head {
+            align-items: flex-start;
             flex-direction: column;
         }
 
-        .home-cta {
-            width: min(100%, 290px);
+        .featured-grid {
+            grid-template-columns: repeat(2, minmax(130px, 1fr));
+        }
+    }
+
+    @media (max-width: 520px) {
+        .hero-search {
+            grid-template-columns: 1fr;
+        }
+
+        .hero-search button {
+            grid-column: span 1;
+        }
+
+        .featured-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="home-hero">
-    <p class="home-kicker">Curated practitioner marketplace</p>
-    <h1 class="home-title">
-        Find your practitioner.<br>
-        <span class="home-title-accent">Do sacred work.</span>
-    </h1>
-    <p class="home-subtitle">
-        Sacred Work connects seekers with trusted healers, coaches, and guides across wellness, spirituality, and
-        personal transformation.
-    </p>
-    <div class="home-cta-row">
-        <a class="button home-cta" href="{% url 'catalog:marketplace' %}">Browse practitioners</a>
-        <a class="button home-cta home-cta-secondary" href="{% url 'waitlist:landing' %}">Join as a practitioner</a>
-    </div>
-    <p class="home-notes">Thoughtful profiles, clear offerings, and easy booking all in one place.</p>
+<section class="home-stage">
+    <section class="home-hero">
+        <div class="hero-copy">
+            <h1 class="home-title">Find your inner compass</h1>
+            <p class="home-subtitle">Connect with experienced spiritual coaches, healers, and wellness practitioners to
+                guide you on your journey.</p>
+        </div>
+        <form class="hero-search" method="get" action="{% url 'catalog:marketplace' %}">
+            <input type="text" name="q" placeholder="Search by name, expertise, or keyword"
+                aria-label="Search practitioners">
+            <select name="availability" aria-label="Availability filter">
+                <option value="">Availability</option>
+                <option value="today">Today</option>
+                <option value="this-week">This week</option>
+                <option value="weekend">Weekend</option>
+            </select>
+            <select name="location" aria-label="Location filter">
+                <option value="">My location</option>
+                <option value="virtual">Virtual</option>
+                <option value="in-person">In person</option>
+            </select>
+            <button type="submit">Search</button>
+        </form>
+    </section>
+
+    <section class="home-featured">
+        <div class="featured-head">
+            <div>
+                <h2 class="featured-title">Featured practitioners</h2>
+                <p class="featured-subtitle">Meet some of our highly recommended guides.</p>
+            </div>
+            <a class="button featured-link" href="{% url 'catalog:marketplace' %}">See all</a>
+        </div>
+
+        <div class="featured-grid">
+            {% for profile in featured_profiles %}
+            <a class="featured-card" href="{% url 'catalog:professional_detail' profile.pk %}">
+                <div class="featured-text">
+                    <p class="featured-name">{{ profile.display_name }}</p>
+                    <p class="featured-meta">{{ profile.headline|default:'Guided support for your practice' }}</p>
+                </div>
+            </a>
+            {% empty %}
+            <a class="featured-card" href="{% url 'catalog:marketplace' %}">
+                <div class="featured-text">
+                    <p class="featured-name">Explore practitioners</p>
+                    <p class="featured-meta">Browse profiles for coaching, wellness, and spiritual support.</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </section>
 </section>
 {% endblock %}

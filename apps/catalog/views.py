@@ -59,7 +59,18 @@ def marketplace_view(request):
 
 
 def home_view(request):
-	return render(request, 'home.html')
+	featured_profiles = (
+		ProfessionalProfile.objects.filter(
+			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
+			is_visible=True,
+		)
+		.select_related('user')
+		.order_by('user__display_name')[:5]
+	)
+	context = {
+		'featured_profiles': featured_profiles,
+	}
+	return render(request, 'home.html', context)
 
 
 def professional_detail_view(request, pk):
