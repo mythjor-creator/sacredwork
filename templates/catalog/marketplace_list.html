@@ -1,49 +1,241 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    .discover-hero {
+        width: 100%;
+        background: linear-gradient(180deg, #e8e8f1 0%, #f4f1ed 100%);
+        border-bottom: 1px solid #dde1e8;
+        padding: clamp(1.25rem, 3vw, 3rem) 0;
+    }
+
+    .discover-shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .discover-title {
+        margin: 0;
+        font-family: "Instrument Sans", "Inter", sans-serif;
+        font-weight: 500;
+        font-size: clamp(1.8rem, 4vw, 2.6rem);
+        line-height: 1.1;
+        color: #033c44;
+    }
+
+    .discover-subtitle {
+        margin: 0.65rem 0 0;
+        color: #384551;
+        max-width: 700px;
+        line-height: 1.45;
+    }
+
+    .discover-badge {
+        display: inline-block;
+        margin-top: 0.6rem;
+    }
+
+    .discover-search {
+        margin-top: 1rem;
+        display: grid;
+        grid-template-columns: minmax(240px, 1fr) minmax(170px, 0.36fr) auto;
+        gap: 0.7rem;
+        align-items: stretch;
+    }
+
+    .discover-search input,
+    .discover-search select {
+        margin-top: 0;
+        min-height: 54px;
+        padding: 0.78rem 0.92rem;
+        border: 1px solid #d7dde3;
+        border-radius: 8px;
+        background: #fff;
+        font-size: 1rem;
+    }
+
+    .discover-search button {
+        margin-top: 0;
+        min-height: 54px;
+        border-radius: 8px;
+        padding: 0.8rem 1.35rem;
+    }
+
+    .discover-results {
+        width: 100%;
+        background: #fff;
+        padding: clamp(1.1rem, 2.4vw, 2rem) 0 2.6rem;
+    }
+
+    .results-grid {
+        display: grid;
+        gap: 0.78rem;
+    }
+
+    .standard-card {
+        background: #fff;
+        border: 1px solid #d8dee5;
+        border-radius: 8px;
+        padding: 1rem;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.9rem;
+        align-items: center;
+        box-shadow: 0 6px 16px rgba(15, 30, 35, 0.05);
+    }
+
+    .standard-name {
+        margin: 0;
+        color: #1a2933;
+        font-size: 1.12rem;
+        line-height: 1.2;
+        font-weight: 600;
+    }
+
+    .standard-business {
+        margin: 0.14rem 0 0;
+        color: #5f6e7f;
+        font-size: 0.9rem;
+    }
+
+    .standard-headline {
+        margin: 0.4rem 0 0;
+        color: #2b3945;
+        font-size: 0.96rem;
+        line-height: 1.35;
+    }
+
+    .standard-bio {
+        margin: 0.44rem 0 0;
+        color: #48515d;
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+
+    .standard-meta {
+        margin: 0.42rem 0 0;
+        color: #5f6e7f;
+        font-size: 0.84rem;
+    }
+
+    .standard-services {
+        margin: 0.36rem 0 0;
+        color: #2f4554;
+        font-size: 0.84rem;
+    }
+
+    .standard-action {
+        margin-top: 0;
+        border-radius: 8px;
+        padding: 0.56rem 0.92rem;
+        font-size: 0.92rem;
+        white-space: nowrap;
+    }
+
+    .discover-empty {
+        background: #fff;
+        border: 1px solid #d8dee5;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+
+    .discover-empty h2 {
+        margin: 0;
+        color: #1a2933;
+        font-size: 1.18rem;
+    }
+
+    .discover-empty p {
+        margin: 0.45rem 0 0;
+        color: #5f6e7f;
+    }
+
+    @media (max-width: 860px) {
+        .discover-search {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .discover-search button {
+            grid-column: span 2;
+        }
+
+        .standard-card {
+            grid-template-columns: 1fr;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .discover-search {
+            grid-template-columns: 1fr;
+        }
+
+        .discover-search button {
+            grid-column: span 1;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="card">
-    <h1>Discover practitioners</h1>
-    <p class="hint">Browse approved professionals across wellness, spirituality, beauty, and coaching.</p>
-    <p class="hint" style="{{ sample_badge_style }}">{{ sample_badge_text }}</p>
-    <form method="get">
-        <label for="search-query">Search by modality, headline, or service</label>
-        <input id="search-query" type="text" name="q" value="{{ query }}" placeholder="reiki, breathwork, life coach">
-        <label for="category-select">Category</label>
-        <select id="category-select" name="category">
-            <option value="">All categories</option>
-            {% for category_option in categories %}
-            <option value="{{ category_option.category.slug }}" {{ category_option.selected_attr }}>{{
-                category_option.category.name }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Search</button>
-    </form>
+<section class="discover-hero">
+    <div class="discover-shell">
+        <h1 class="discover-title">Discover practitioners</h1>
+        <p class="discover-subtitle">Browse approved professionals across wellness, spirituality, beauty, and coaching.
+        </p>
+        <p class="hint discover-badge" style="{{ sample_badge_style }}">{{ sample_badge_text }}</p>
+        <form class="discover-search" method="get">
+            <input id="search-query" type="text" name="q" value="{{ query }}"
+                placeholder="Search by modality, headline, or service">
+            <select id="category-select" name="category">
+                <option value="">All categories</option>
+                {% for category_option in categories %}
+                <option value="{{ category_option.category.slug }}" {{ category_option.selected_attr }}>{{
+                    category_option.category.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Search</button>
+        </form>
+    </div>
 </section>
 
-<section style="display: grid; gap: 1rem; margin-top: 1rem;">
-    {% for profile in profiles %}
-    <article class="card">
-        <h2 style="margin-top: 0;">{{ profile.display_name }}</h2>
-        <p class="hint">{{ profile.business_name_suffix }}</p>
-        <p><strong>{{ profile.headline }}</strong></p>
-        <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual
-            available{% endif %}</p>
-        <p>{{ profile.bio|truncatewords:28 }}</p>
-        {% if profile.services.all %}
-        <p class="hint">
-            Services:
-            {% for service in profile.services.all %}
-            {{ service.name }}{% if not forloop.last %}, {% endif %}
+<section class="discover-results">
+    <div class="discover-shell">
+        <div class="results-grid">
+            {% for profile in profiles %}
+            <article class="standard-card">
+                <div>
+                    <h2 class="standard-name">{{ profile.display_name }}</h2>
+                    <p class="standard-business">{{ profile.business_name|default:'Independent practice' }}</p>
+                    <p class="standard-headline">{{ profile.headline|default:'Support tailored to your wellness and
+                        personal-growth goals.' }}</p>
+                    <p class="standard-bio">{{ profile.bio|truncatewords:28 }}</p>
+                    <p class="standard-meta">
+                        {{ profile.location|default:'Virtual practice' }}
+                        {% if profile.is_virtual %}
+                        · Virtual available
+                        {% endif %}
+                    </p>
+                    {% if profile.services.all %}
+                    <p class="standard-services">
+                        Services:
+                        {% for service in profile.services.all %}
+                        {{ service.name }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </p>
+                    {% endif %}
+                </div>
+                <a class="button standard-action" href="{% url 'catalog:professional_detail' profile.pk %}">View
+                    profile</a>
+            </article>
+            {% empty %}
+            <section class="discover-empty">
+                <h2>No professionals match this search</h2>
+                <p>Try a broader modality or remove the category filter.</p>
+            </section>
             {% endfor %}
-        </p>
-        {% endif %}
-        <a class="button" href="{% url 'catalog:professional_detail' profile.pk %}">View profile</a>
-    </article>
-    {% empty %}
-    <section class="card">
-        <h2 style="margin-top: 0;">No professionals match this search</h2>
-        <p class="hint">Try a broader modality or remove the category filter.</p>
-    </section>
-    {% endfor %}
+        </div>
+    </div>
 </section>
 {% endblock %}

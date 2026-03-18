@@ -8,16 +8,16 @@
     <style>
         :root {
             color-scheme: light;
-            --bg: #f7f3ea;
-            --surface: #fffdfa;
-            --surface-soft: #f6f8f3;
-            --ink: #1f2937;
-            --brand: #0f766e;
-            --brand-soft: #ccfbf1;
-            --accent: #c26d3a;
-            --border: #d6d3d1;
-            --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-            --radius: 16px;
+            --bg: #ffffff;
+            --surface: #ffffff;
+            --surface-soft: #f4f1ed;
+            --ink: #384551;
+            --brand: #0f434e;
+            --brand-strong: #051e23;
+            --headline: #033c44;
+            --border: #d7dde3;
+            --shadow: 0 14px 36px rgba(15, 30, 35, 0.08);
+            --radius: 8px;
         }
 
         * {
@@ -26,12 +26,9 @@
 
         body {
             margin: 0;
-            font-family: "Nunito Sans", "Avenir Next", "Trebuchet MS", sans-serif;
+            font-family: "Inter", "Avenir Next", "Trebuchet MS", sans-serif;
             color: var(--ink);
-            background:
-                radial-gradient(circle at 12% 16%, #fff2c9 0%, transparent 35%),
-                radial-gradient(circle at 88% 10%, #d9f3ee 0%, transparent 32%),
-                linear-gradient(180deg, #f7f3ea 0%, #eef4f4 100%);
+            background: var(--bg);
             min-height: 100vh;
         }
 
@@ -43,9 +40,31 @@
         }
 
         .wrap {
-            max-width: 980px;
+            width: 100%;
+            padding: 0 0 4rem;
+        }
+
+        .shell {
+            max-width: 1280px;
             margin: 0 auto;
-            padding: 2rem 1rem 4rem;
+            padding: 0 1rem;
+        }
+
+        .site-nav {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            width: 100%;
+            transition: background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+            background: rgba(244, 241, 237, 0.28);
+            border-bottom: 1px solid transparent;
+            backdrop-filter: blur(8px);
+        }
+
+        .site-nav.is-solid {
+            background: rgba(255, 255, 255, 0.94);
+            border-bottom-color: var(--border);
+            box-shadow: 0 6px 18px rgba(15, 30, 35, 0.07);
         }
 
         .nav {
@@ -53,21 +72,16 @@
             gap: 1rem;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            background: rgba(255, 253, 250, 0.78);
-            border: 1px solid rgba(214, 211, 209, 0.7);
-            border-radius: 999px;
-            padding: 0.65rem 0.95rem;
-            backdrop-filter: blur(6px);
+            min-height: 72px;
         }
 
         .brand {
-            font-weight: 800;
-            letter-spacing: 0.04em;
+            font-weight: 600;
+            letter-spacing: 0.01em;
             color: var(--brand);
             text-decoration: none;
-            text-transform: uppercase;
-            font-size: 0.86rem;
+            text-transform: none;
+            font-size: 2rem;
             line-height: 1;
         }
 
@@ -101,22 +115,23 @@
         .button {
             display: inline-block;
             margin-top: 1rem;
-            background: var(--brand);
+            background: var(--brand-strong);
             color: #fff;
             border: 0;
-            border-radius: 999px;
+            border-radius: var(--radius);
             padding: 0.65rem 1rem;
             text-decoration: none;
             cursor: pointer;
             font-weight: 600;
             transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-            box-shadow: 0 8px 20px rgba(15, 118, 110, 0.22);
+            box-shadow: 0 8px 18px rgba(5, 30, 35, 0.2);
         }
 
         button:hover,
         .button:hover {
             transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(15, 118, 110, 0.28);
+            box-shadow: 0 12px 24px rgba(5, 30, 35, 0.24);
+            background: #0b3038;
         }
 
         .hint {
@@ -136,7 +151,7 @@
             color: #334155;
             font-weight: 600;
             border: 1px solid transparent;
-            border-radius: 999px;
+            border-radius: var(--radius);
             padding: 0.35rem 0.7rem;
             transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
         }
@@ -172,17 +187,18 @@
 
         @media (max-width: 700px) {
             .wrap {
-                padding-top: 1rem;
+                padding-top: 0;
             }
 
             .nav {
-                border-radius: 18px;
                 flex-direction: column;
-                align-items: stretch;
+                align-items: flex-start;
+                gap: 0.6rem;
+                padding: 0.8rem 0;
             }
 
             .links {
-                justify-content: center;
+                justify-content: flex-start;
             }
         }
     </style>
@@ -191,29 +207,64 @@
 
 <body>
     <main class="wrap">
-        <div class="nav">
-            <a class="brand" href="{% url 'catalog:home' %}">Sacred Work</a>
-            <div class="links">
-                <a href="{% url 'catalog:marketplace' %}">Discover</a>
-                <a href="{% url 'waitlist:landing' %}">Practitioner Waitlist</a>
-                {% if user.is_authenticated %}
-                <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
-                <a href="{% url 'accounts:logout' %}">Log out</a>
-                {% else %}
-                <a href="{% url 'accounts:login' %}">Log in</a>
-                <a href="{% url 'accounts:signup' %}">Sign up</a>
-                {% endif %}
+        <header class="site-nav" data-site-nav>
+            <div class="shell">
+                <div class="nav">
+                    <a class="brand" href="{% url 'catalog:home' %}">Sacred Work</a>
+                    <div class="links">
+                        <a href="{% url 'catalog:marketplace' %}">Discover</a>
+                        <a href="{% url 'waitlist:landing' %}">Practitioner Waitlist</a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
+                        <a href="{% url 'accounts:logout' %}">Log out</a>
+                        {% else %}
+                        <a href="{% url 'accounts:login' %}">Log in</a>
+                        <a href="{% url 'accounts:signup' %}">Sign up</a>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-        </div>
+        </header>
         {% if messages %}
-        <div class="flash-list">
-            {% for message in messages %}
-            <div class="flash {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
-            {% endfor %}
+        <div class="shell" style="padding-top: 1rem;">
+            <div class="flash-list">
+                {% for message in messages %}
+                <div class="flash {% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+                {% endfor %}
+            </div>
         </div>
         {% endif %}
         {% block content %}{% endblock %}
     </main>
+    <script>
+        (function () {
+            const nav = document.querySelector('[data-site-nav]');
+            if (!nav) {
+                return;
+            }
+
+            const hero = document.querySelector('.home-hero');
+            if (!hero) {
+                nav.classList.add('is-solid');
+                return;
+            }
+
+            const observer = new IntersectionObserver(
+                function (entries) {
+                    const entry = entries[0];
+                    if (!entry) {
+                        return;
+                    }
+                    nav.classList.toggle('is-solid', !entry.isIntersecting);
+                },
+                {
+                    threshold: 0.15,
+                }
+            );
+
+            observer.observe(hero);
+        })();
+    </script>
 </body>
 
 </html>

@@ -59,6 +59,8 @@ def marketplace_view(request):
 
 
 def home_view(request):
+	query = request.GET.get('q', '').strip()
+	category_slug = request.GET.get('category', '').strip()
 	featured_profiles = (
 		ProfessionalProfile.objects.filter(
 			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
@@ -68,6 +70,14 @@ def home_view(request):
 		.order_by('user__display_name')[:5]
 	)
 	context = {
+		'query': query,
+		'categories': [
+			{
+				'category': category,
+				'selected_attr': ' selected' if category.slug == category_slug else '',
+			}
+			for category in Category.objects.order_by('name')
+		],
 		'featured_profiles': featured_profiles,
 	}
 	return render(request, 'home.html', context)
