@@ -12,6 +12,91 @@
 
 {% block extra_head %}
 <style>
+    .profile-page-shell {
+        padding-top: 1rem;
+    }
+
+    .profile-stack {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .profile-hero {
+        display: grid;
+        grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+        gap: 1.4rem;
+        align-items: start;
+        background: linear-gradient(180deg, rgba(228, 221, 212, 0.68) 0%, rgba(255, 255, 255, 0.86) 100%);
+    }
+
+    .profile-portrait {
+        width: 100%;
+        aspect-ratio: 1 / 1.08;
+        border-radius: 14px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 55% 52%, #ff8b19 0%, #ff8b19 17%, rgba(255, 139, 25, 0.58) 28%, rgba(255, 139, 25, 0) 48%),
+            radial-gradient(circle at 76% 48%, rgba(255, 122, 85, 0.62) 0%, rgba(255, 122, 85, 0) 48%),
+            linear-gradient(100deg, #b8d3e5 8%, #cbced6 36%, #ebc7bf 72%, #c7c1bf 100%);
+    }
+
+    .profile-portrait img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .profile-heading-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .profile-heading-row h1 {
+        margin: 0;
+    }
+
+    .profile-verified {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: #e0f2fe;
+        color: #0369a1;
+        border-radius: 999px;
+        padding: 0.2rem 0.7rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .profile-headline {
+        margin: 0.7rem 0 0;
+        font-size: 1.05rem;
+        line-height: 1.5;
+        color: #1f2933;
+    }
+
+    .profile-meta-list {
+        margin: 0.9rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.55rem 1rem;
+    }
+
+    .profile-meta-list li {
+        color: #4a5565;
+        font-size: 0.92rem;
+    }
+
+    .profile-body-copy {
+        margin: 1rem 0 0;
+    }
+
     .section-header {
         display: flex;
         flex-wrap: wrap;
@@ -22,6 +107,14 @@
 
     .section-header h2 {
         margin: 0;
+    }
+
+    .section-header-compact {
+        margin-bottom: 0.7rem;
+    }
+
+    .profile-section {
+        margin-top: 1rem;
     }
 
     .button.button-secondary {
@@ -38,84 +131,245 @@
     .service-card-meta {
         margin: 0.3rem 0 0.6rem;
     }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.7rem;
+    }
+
+    .gallery-figure {
+        margin: 0;
+    }
+
+    .gallery-image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .gallery-caption {
+        margin-top: 0.35rem;
+    }
+
+    .credential-list,
+    .completeness-list,
+    .service-list {
+        margin: 0;
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .credential-list {
+        padding-left: 1.1rem;
+    }
+
+    .completeness-list {
+        padding: 0;
+        list-style: none;
+    }
+
+    .service-list {
+        gap: 0.9rem;
+    }
+
+    .completeness-title {
+        font-size: 1rem;
+    }
+
+    .completeness-bar {
+        background: #e5e7eb;
+        border-radius: 999px;
+        height: 8px;
+        margin-bottom: 0.9rem;
+    }
+
+    .completeness-progress {
+        background: #0369a1;
+        border-radius: 999px;
+        height: 8px;
+    }
+
+    .completeness-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .completeness-done {
+        color: #16a34a;
+    }
+
+    .completeness-pending {
+        color: #9ca3af;
+    }
+
+    .completeness-text-pending {
+        color: #6b7280;
+    }
+
+    .guest-cta-box {
+        margin: 0.7rem 0 1.1rem;
+        padding: 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface-soft);
+    }
+
+    .guest-cta-box .hint {
+        margin: 0;
+    }
+
+    .profile-action-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 0.65rem;
+    }
+
+    .button-inline {
+        margin-top: 0;
+    }
+
+    .service-card {
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+    }
+
+    .service-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.4rem;
+    }
+
+    .service-card-title {
+        margin: 0;
+    }
+
+    .service-description {
+        margin: 0 0 0.7rem;
+    }
+
+    .tier-list {
+        display: grid;
+        gap: 0.45rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .tier-item {
+        padding: 0.6rem;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+    }
+
+    .tier-description {
+        margin-top: 0.25rem;
+    }
+
+    @media (max-width: 760px) {
+        .profile-hero {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-portrait {
+            max-width: 12rem;
+        }
+
+        .profile-meta-list {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 {% if is_own_profile %}
-<div class="shell" style="padding-top: 1rem;">
+<div class="shell profile-page-shell">
     <div id="practitioner-profile-portal" class="portal-shell" data-portal-shell>
         {% include 'professionals/_portal_sidebar.html' with active_portal_nav='profile' %}
-        <div class="portal-main">
+        <div class="portal-main profile-stack">
             {% endif %}
-            <section class="card" data-track-profile-id="{{ profile.pk }}">
-                {% if profile.profile_photo %}
-                <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo"
-                    style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
-                {% elif profile.profile_image_url %}
-                <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile photo"
-                    style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
-                {% endif %}
-                <div
-                    style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem; justify-content: space-between;">
-                    <h1 style="margin: 0;">{{ profile.display_name }}</h1>
-                    {% if is_own_profile %}
-                    <a class="button button-secondary" href="#core-inline-editor">Edit
-                        core details</a>
-                    {% endif %}
-                    {% if profile.is_verified %}
-                    <span
-                        style="display: inline-flex; align-items: center; gap: 0.3rem; background: #e0f2fe; color: #0369a1; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.8rem; font-weight: 600;">
-                        ✓ Verified
-                    </span>
+            <section class="card profile-hero" data-track-profile-id="{{ profile.pk }}">
+                <div class="profile-portrait">
+                    {% if profile.profile_photo %}
+                    <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo">
+                    {% elif profile.profile_image_url %}
+                    <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile photo">
                     {% endif %}
                 </div>
-                <p class="hint">{{ profile.business_name|default:'Independent practice' }}</p>
-                <p><strong>{{ profile.headline }}</strong></p>
-                <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual
-                    sessions available{% endif %}</p>
-                <p>{{ profile.bio }}</p>
-                {% if profile.long_bio %}
-                <p style="white-space: pre-line;">{{ profile.long_bio }}</p>
-                {% endif %}
-                <p class="hint">Modalities: {{ profile.modalities }}</p>
-                <p class="hint">Experience: {{ profile.years_experience }} years</p>
+                <div>
+                    <p class="cb-eyebrow">Practitioner Profile</p>
+                    <div class="profile-heading-row">
+                        <h1>{{ profile.display_name }}</h1>
+                        {% if is_own_profile %}
+                        <a class="button button-secondary" href="#core-inline-editor">Edit
+                            core details</a>
+                        {% endif %}
+                        {% if profile.is_verified %}
+                        <span class="profile-verified">
+                            ✓ Verified
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="hint">{{ profile.business_name|default:'Independent practice' }}</p>
+                    <p class="profile-headline">{{ profile.headline }}</p>
+                    <ul class="profile-meta-list">
+                        <li>{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual
+                            sessions available{% endif %}</li>
+                        <li>Experience: {{ profile.years_experience }} years</li>
+                        <li>Modalities: {{ profile.modalities }}</li>
+                        <li>Status: {{ profile.get_approval_status_display }}</li>
+                    </ul>
+                    <div class="profile-body-copy">
+                        <p>{{ profile.bio }}</p>
+                        {% if profile.long_bio %}
+                        <p style="white-space: pre-line;">{{ profile.long_bio }}</p>
+                        {% endif %}
+                    </div>
 
-                {% if is_own_profile %}
-                <details id="core-inline-editor" style="margin-top: 0.9rem;">
-                    <summary style="cursor: pointer; color: #334155; font-weight: 600;">Edit this section inline
-                    </summary>
-                    <form method="post" enctype="multipart/form-data" style="margin-top: 0.8rem;">
-                        {% csrf_token %}
-                        {{ core_form.as_p }}
-                        <div style="display: flex; gap: 0.55rem; flex-wrap: wrap;">
-                            <button type="submit">Save public profile</button>
-                            <a class="button button-secondary" href="{% url 'professionals:profile_core' %}?edit=1">Open
-                                full core tab</a>
-                        </div>
-                    </form>
-                </details>
-                {% endif %}
+                    {% if is_own_profile %}
+                    <details id="core-inline-editor" style="margin-top: 0.9rem;">
+                        <summary style="cursor: pointer; color: #334155; font-weight: 600;">Edit this section inline
+                        </summary>
+                        <form method="post" enctype="multipart/form-data" style="margin-top: 0.8rem;">
+                            {% csrf_token %}
+                            {{ core_form.as_p }}
+                            <div style="display: flex; gap: 0.55rem; flex-wrap: wrap;">
+                                <button type="submit">Save public profile</button>
+                                <a class="button button-secondary"
+                                    href="{% url 'professionals:profile_core' %}?edit=1">Open
+                                    full core tab</a>
+                            </div>
+                        </form>
+                    </details>
+                    {% endif %}
+                </div>
             </section>
 
             {% with gallery=profile.gallery_images.all %}
             {% if gallery %}
-            <section class="card" style="margin-top: 1rem;">
-                <div class="section-header" style="margin-bottom: 0.7rem;">
+            <section class="card profile-section">
+                <div class="section-header section-header-compact">
                     <h2>Gallery</h2>
                     {% if is_own_profile %}
                     <a class="button button-secondary" href="{% url 'professionals:profile_gallery' %}?edit=1">Edit
                         gallery</a>
                     {% endif %}
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem;">
+                <div class="gallery-grid">
                     {% for image in gallery %}
                     {% if image.is_active %}
-                    <figure style="margin: 0;">
+                    <figure class="gallery-figure">
                         <img src="{{ image.image.url }}" alt="{{ image.caption|default:'Practice space photo' }}"
-                            style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            class="gallery-image">
                         {% if image.caption %}
-                        <figcaption class="hint" style="margin-top: 0.35rem;">{{ image.caption }}</figcaption>
+                        <figcaption class="hint gallery-caption">{{ image.caption }}</figcaption>
                         {% endif %}
                     </figure>
                     {% endif %}
@@ -127,15 +381,15 @@
 
             {% with credentials=profile.credentials.all %}
             {% if credentials %}
-            <section class="card" style="margin-top: 1rem;">
-                <div class="section-header" style="margin-bottom: 0.7rem;">
+            <section class="card profile-section">
+                <div class="section-header section-header-compact">
                     <h2>Credentials</h2>
                     {% if is_own_profile %}
                     <a class="button button-secondary" href="{% url 'professionals:profile_credentials' %}?edit=1">Edit
                         credentials</a>
                     {% endif %}
                 </div>
-                <ul style="margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem;">
+                <ul class="credential-list">
                     {% for credential in credentials %}
                     {% if credential.is_active %}
                     <li>
@@ -160,59 +414,54 @@
             {% endwith %}
 
             {% if is_own_profile %}
-            <section class="card" style="margin-top: 1rem;">
-                <div class="section-header" style="margin-bottom: 0.7rem;">
-                    <h2 style="font-size: 1rem;">Profile completeness — {{ profile.completeness_percent }}%</h2>
+            <section class="card profile-section">
+                <div class="section-header section-header-compact">
+                    <h2 class="completeness-title">Profile completeness — {{ profile.completeness_percent }}%</h2>
                     <a class="button button-secondary" href="{% url 'professionals:profile_core' %}?edit=1">Improve
                         profile</a>
                 </div>
-                <div style="background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 0.9rem;">
-                    <div
-                        style="background: #0369a1; border-radius: 999px; height: 8px; width: {{ profile.completeness_percent }}%;">
+                <div class="completeness-bar">
+                    <div class="completeness-progress" style="width: {{ profile.completeness_percent }}%;">
                     </div>
                 </div>
-                <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem;">
+                <ul class="completeness-list">
                     {% for label, done in profile.completeness_checks %}
-                    <li style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                    <li class="completeness-item">
                         {% if done %}
-                        <span style="color: #16a34a;">✓</span>
+                        <span class="completeness-done">✓</span>
                         {% else %}
-                        <span style="color: #9ca3af;">○</span>
+                        <span class="completeness-pending">○</span>
                         {% endif %}
-                        <span{% if not done %} style="color: #6b7280;" {% endif %}>{{ label }}</span>
+                        <span{% if not done %} class="completeness-text-pending" {% endif %}>{{ label }}</span>
                     </li>
                     {% endfor %}
                 </ul>
             </section>
             {% endif %}
 
-            <section class="card" style="margin-top: 1rem;">
-                <div class="section-header" style="margin-bottom: 0.7rem;">
+            <section class="card profile-section">
+                <div class="section-header section-header-compact">
                     <h2>Services</h2>
                     {% if is_own_profile %}
                     <a class="button button-secondary" href="{% url 'catalog:service_list' %}">Edit services</a>
                     {% endif %}
                 </div>
                 {% if not user.is_authenticated %}
-                <div
-                    style="margin: 0.7rem 0 1.1rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-soft);">
-                    <p class="hint" style="margin: 0;">Want early access to trusted practitioners?</p>
-                    <div class="profile-action-group"
-                        style="display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.65rem;">
-                        <a class="button" style="margin-top: 0;" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
-                        <a class="button" style="margin-top: 0; background: #334155;"
+                <div class="guest-cta-box">
+                    <p class="hint">Want early access to trusted practitioners?</p>
+                    <div class="profile-action-group">
+                        <a class="button button-inline" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
+                        <a class="button button-secondary button-inline"
                             href="{% url 'accounts:login' %}?next={% url 'catalog:professional_detail' profile.pk %}">Log
                             in</a>
                     </div>
                 </div>
                 {% endif %}
-                <div style="display: grid; gap: 0.9rem;">
+                <div class="service-list">
                     {% for service in profile.services.all %}
-                    <article class="service-card"
-                        style="padding: 1rem; border: 1px solid var(--border); border-radius: 14px;">
-                        <div
-                            style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.4rem;">
-                            <h3 style="margin: 0;">{{ service.name }}</h3>
+                    <article class="service-card">
+                        <div class="service-card-header">
+                            <h3 class="service-card-title">{{ service.name }}</h3>
                             <span class="service-card-price">${{ service.price_display }}</span>
                         </div>
                         <p class="hint service-card-meta">
@@ -220,19 +469,19 @@
                             <span> · {{ service.duration_display }}</span>
                             <span> · {{ service.category.name }}</span>
                         </p>
-                        <p style="margin: 0 0 0.7rem;">{{ service.description }}</p>
+                        <p class="service-description">{{ service.description }}</p>
                         {% if service.tiers.all %}
-                        <div style="display: grid; gap: 0.45rem; margin-bottom: 0.8rem;">
+                        <div class="tier-list">
                             {% for tier in service.tiers.all %}
                             {% if tier.is_active %}
-                            <div style="padding: 0.6rem; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                            <div class="tier-item">
                                 <strong>{{ tier.name }}</strong>
                                 <span class="hint"> · ${{ tier.price_display }}</span>
                                 {% if tier.duration_minutes %}
                                 <span class="hint"> · {{ tier.duration_minutes }} min</span>
                                 {% endif %}
                                 {% if tier.description %}
-                                <div class="hint" style="margin-top: 0.25rem;">{{ tier.description }}</div>
+                                <div class="hint tier-description">{{ tier.description }}</div>
                                 {% endif %}
                             </div>
                             {% endif %}

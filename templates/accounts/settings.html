@@ -63,7 +63,8 @@
         {% include 'professionals/_portal_sidebar.html' with active_portal_nav='account' %}
         <div class="portal-main settings-main">
             <section class="card">
-                <h1>Account settings</h1>
+                <p class="cb-eyebrow">Account</p>
+                <h1 class="cb-section-title">Account settings</h1>
                 <p class="hint">Role: {{ request.user.get_role_display }}</p>
                 <p class="hint">Current email: {{ request.user.email }}</p>
                 <p class="hint">Joined: {{ request.user.date_joined|date:'M j, Y' }}</p>
@@ -106,7 +107,8 @@
     {% else %}
     <div class="settings-main">
         <section class="card">
-            <h1>Account settings</h1>
+            <p class="cb-eyebrow">Account</p>
+            <h1 class="cb-section-title">Account settings</h1>
             <p class="hint">Role: {{ request.user.get_role_display }}</p>
             <p class="hint">Current email: {{ request.user.email }}</p>
             <p class="hint">Joined: {{ request.user.date_joined|date:'M j, Y' }}</p>
