@@ -19,3 +19,18 @@ class SignUpForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class AccountSettingsForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('display_name', 'first_name', 'last_name', 'username', 'email')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['display_name'].required = True
+        self.fields['display_name'].help_text = 'Public name shown across your account experience.'
+        self.fields['first_name'].required = False
+        self.fields['last_name'].required = False
+        self.fields['username'].help_text = 'Used for login and account identity.'
+        self.fields['email'].required = True

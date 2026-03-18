@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>clairbook</title>
+    <title>{% block title %}clairbook{% endblock %}</title>
     {% if analytics_ga4_measurement_id %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_ga4_measurement_id }}"></script>
     <script>
@@ -21,6 +21,8 @@
     <script defer data-domain="{{ analytics_plausible_domain }}" src="{{ analytics_plausible_script_url }}"></script>
     {% endif %}
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+
         :root {
             color-scheme: light;
             --bg: #ffffff;
@@ -34,6 +36,14 @@
             --shadow: 0 14px 36px rgba(15, 30, 35, 0.08);
             --radius: 8px;
             --page-gutter: clamp(1.75rem, 5.5vw, 4.5rem);
+            --font-sans: "Instrument Sans", "Inter", "Avenir Next", "Trebuchet MS", sans-serif;
+            --font-serif: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+            --figma-blue: #2f48ae;
+            --figma-aqua: #afebf3;
+            --figma-beige: #e4ddd4;
+            --figma-brown: #994c32;
+            --figma-brown-accent: #a05a43;
+            --figma-copy: #1a1e1f;
         }
 
         * {
@@ -42,7 +52,7 @@
 
         body {
             margin: 0;
-            font-family: "Inter", "Avenir Next", "Trebuchet MS", sans-serif;
+            font-family: var(--font-sans);
             color: var(--ink);
             background: var(--bg);
             min-height: 100vh;
@@ -54,7 +64,7 @@
         h1,
         h2,
         h3 {
-            font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+            font-family: var(--font-serif);
             letter-spacing: 0.01em;
         }
 
@@ -111,10 +121,6 @@
             width: auto;
             height: clamp(2rem, 4.3vw, 2.8rem);
             display: block;
-        }
-
-        .brand-text {
-            display: inline-block;
         }
 
         .card {
@@ -196,6 +202,94 @@
             color: #0f172a;
         }
 
+        .mini-avatar-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            padding: 0;
+        }
+
+        .mini-avatar-link img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .mini-avatar-fallback {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #334155;
+            background: #e2e8f0;
+            text-transform: uppercase;
+        }
+
+        .portal-user-menu {
+            position: relative;
+        }
+
+        .portal-user-menu summary {
+            list-style: none;
+            cursor: pointer;
+        }
+
+        .portal-user-menu summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .portal-user-dropdown {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.45rem);
+            min-width: 210px;
+            display: grid;
+            gap: 0.2rem;
+            padding: 0.45rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: #fff;
+            box-shadow: 0 18px 28px rgba(15, 30, 35, 0.16);
+            z-index: 40;
+        }
+
+        .portal-user-label {
+            display: block;
+            padding: 0.4rem 0.45rem;
+            font-size: 0.83rem;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 0.2rem;
+            font-weight: 600;
+        }
+
+        .portal-user-dropdown a {
+            text-decoration: none;
+            color: #334155;
+            font-weight: 600;
+            font-size: 0.92rem;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 0.4rem 0.45rem;
+            transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+        }
+
+        .portal-user-dropdown a:hover {
+            border-color: var(--border);
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
         ul.errorlist {
             color: #b91c1c;
             margin: 0.35rem 0;
@@ -219,6 +313,102 @@
             color: #991b1b;
         }
 
+        .portal-shell {
+            display: grid;
+            grid-template-columns: 260px minmax(0, 1fr);
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .portal-sidebar {
+            position: sticky;
+            top: 102px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 0.95rem;
+            transition: width 0.22s ease, padding 0.22s ease;
+            width: 260px;
+            overflow: hidden;
+        }
+
+        .portal-shell.is-collapsed {
+            grid-template-columns: 80px minmax(0, 1fr);
+        }
+
+        .portal-shell.is-collapsed .portal-sidebar {
+            width: 80px;
+            padding: 0.8rem 0.45rem;
+        }
+
+        .portal-toggle {
+            display: inline-flex;
+            width: 100%;
+            margin: 0 0 0.7rem;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            padding: 0.45rem 0.55rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .portal-toggle:hover {
+            background: #f1f5f9;
+        }
+
+        .portal-nav {
+            display: grid;
+            gap: 0.4rem;
+        }
+
+        .portal-nav a {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            color: #334155;
+            text-decoration: none;
+            font-weight: 600;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 0.45rem 0.55rem;
+            white-space: nowrap;
+        }
+
+        .portal-nav a:hover {
+            border-color: var(--border);
+            background: #fff;
+            color: #0f172a;
+        }
+
+        .portal-nav a.is-active {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #0f172a;
+        }
+
+        .portal-nav-emoji {
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .portal-shell.is-collapsed .portal-nav-label,
+        .portal-shell.is-collapsed .portal-sidebar-note {
+            display: none;
+        }
+
+        .portal-sidebar-note {
+            margin: 0.7rem 0 0;
+        }
+
+        .portal-main {
+            min-width: 0;
+        }
+
         @media (max-width: 700px) {
             .wrap {
                 padding-top: 0;
@@ -234,6 +424,23 @@
             .links {
                 justify-content: flex-start;
             }
+
+            .portal-shell,
+            .portal-shell.is-collapsed {
+                grid-template-columns: 1fr;
+            }
+
+            .portal-sidebar,
+            .portal-shell.is-collapsed .portal-sidebar {
+                position: static;
+                width: auto;
+                padding: 0.8rem;
+            }
+
+            .portal-shell.is-collapsed .portal-nav-label,
+            .portal-shell.is-collapsed .portal-sidebar-note {
+                display: inline;
+            }
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -246,9 +453,9 @@
                 <div class="nav">
                     <a class="brand" href="{% url 'catalog:home' %}">
                         <img class="brand-logo" src="{% static 'images/clairbooklogo2.png' %}" alt="clairbook logo">
-                        <span class="brand-text">clairbook</span>
                     </a>
                     <div class="links">
+                        {% block top_nav_links %}
                         <a href="{% url 'catalog:marketplace' %}">Discover</a>
                         <a href="{% url 'waitlist:landing' %}">Join Waitlist</a>
                         {% if user.is_authenticated %}
@@ -256,8 +463,10 @@
                         <a href="{% url 'catalog:analytics_kpis' %}">KPIs</a>
                         {% endif %}
                         <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
+                        <a href="{% url 'accounts:settings' %}">Account settings</a>
                         <a href="{% url 'accounts:logout' %}">Log out</a>
                         {% endif %}
+                        {% endblock %}
                     </div>
                 </div>
             </div>
@@ -407,23 +616,51 @@
             const hero = document.querySelector('.home-hero');
             if (!hero) {
                 nav.classList.add('is-solid');
-                return;
+            } else {
+                const observer = new IntersectionObserver(
+                    function (entries) {
+                        const entry = entries[0];
+                        if (!entry) {
+                            return;
+                        }
+                        nav.classList.toggle('is-solid', !entry.isIntersecting);
+                    },
+                    {
+                        threshold: 0.15,
+                    }
+                );
+
+                observer.observe(hero);
             }
 
-            const observer = new IntersectionObserver(
-                function (entries) {
-                    const entry = entries[0];
-                    if (!entry) {
+            document.querySelectorAll('[data-portal-toggle]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    const shell = button.closest('[data-portal-shell]');
+                    if (!shell) {
                         return;
                     }
-                    nav.classList.toggle('is-solid', !entry.isIntersecting);
-                },
-                {
-                    threshold: 0.15,
-                }
-            );
+                    shell.classList.toggle('is-collapsed');
+                    const collapsed = shell.classList.contains('is-collapsed');
+                    button.setAttribute('aria-expanded', String(!collapsed));
+                    if (shell.id) {
+                        window.localStorage.setItem('clairbook_portal_collapsed_' + shell.id, collapsed ? '1' : '0');
+                    }
+                });
+            });
 
-            observer.observe(hero);
+            document.querySelectorAll('[data-portal-shell]').forEach(function (shell) {
+                if (!shell.id) {
+                    return;
+                }
+                const stored = window.localStorage.getItem('clairbook_portal_collapsed_' + shell.id);
+                if (stored === '1') {
+                    shell.classList.add('is-collapsed');
+                    const toggle = shell.querySelector('[data-portal-toggle]');
+                    if (toggle) {
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
         })();
     </script>
 </body>

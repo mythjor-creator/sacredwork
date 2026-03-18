@@ -1,177 +1,257 @@
 {% extends 'base.html' %}
 
+{% block title %}{{ profile.display_name }} · clairbook{% endblock %}
+
+{% block top_nav_links %}
+{% if is_own_profile %}
+{% include 'professionals/_portal_top_nav.html' with profile=profile %}
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
 {% block extra_head %}
 <style>
-    @media (max-width: 520px) {
-        .profile-action-group {
-            flex-direction: column;
-        }
+    .section-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+    }
 
-        .profile-action-group .button,
-        .service-book-button {
-            width: 100%;
-            text-align: center;
-            padding: 0.72rem 0.95rem;
-            font-size: 0.95rem;
-        }
+    .section-header h2 {
+        margin: 0;
+    }
 
-        .service-card {
-            border-radius: 10px;
-        }
+    .button.button-secondary {
+        margin-top: 0;
+        background: #334155;
+    }
+
+    .service-card-price {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #033c44;
+    }
+
+    .service-card-meta {
+        margin: 0.3rem 0 0.6rem;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="card" data-track-profile-id="{{ profile.pk }}">
-    {% if profile.profile_photo %}
-    <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo"
-        style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
-    {% elif profile.profile_image_url %}
-    <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile photo"
-        style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
-    {% endif %}
-    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem;">
-        <h1 style="margin: 0;">{{ profile.display_name }}</h1>
-        {% if profile.is_verified %}
-        <span
-            style="display: inline-flex; align-items: center; gap: 0.3rem; background: #e0f2fe; color: #0369a1; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.8rem; font-weight: 600;">
-            ✓ Verified
-        </span>
-        {% endif %}
-    </div>
-    <p class="hint">{{ profile.business_name|default:'Independent practice' }}</p>
-    <p><strong>{{ profile.headline }}</strong></p>
-    <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual sessions
-        available{% endif %}</p>
-    <p>{{ profile.bio }}</p>
-    {% if profile.long_bio %}
-    <p style="white-space: pre-line;">{{ profile.long_bio }}</p>
-    {% endif %}
-    <p class="hint">Modalities: {{ profile.modalities }}</p>
-    <p class="hint">Experience: {{ profile.years_experience }} years</p>
-</section>
-
-{% with gallery=profile.gallery_images.all %}
-{% if gallery %}
-<section class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0;">In-person gallery</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem;">
-        {% for image in gallery %}
-        {% if image.is_active %}
-        <figure style="margin: 0;">
-            <img src="{{ image.image.url }}" alt="{{ image.caption|default:'Practice space photo' }}"
-                style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0;">
-            {% if image.caption %}
-            <figcaption class="hint" style="margin-top: 0.35rem;">{{ image.caption }}</figcaption>
-            {% endif %}
-        </figure>
-        {% endif %}
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
-{% endwith %}
-
-{% with credentials=profile.credentials.all %}
-{% if credentials %}
-<section class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0;">Credentials</h2>
-    <ul style="margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem;">
-        {% for credential in credentials %}
-        {% if credential.is_active %}
-        <li>
-            <strong>{{ credential.title }}</strong>
-            <span class="hint"> · {{ credential.get_credential_type_display }}</span>
-            {% if credential.organization %}
-            <div class="hint">{{ credential.organization }}</div>
-            {% endif %}
-            {% if credential.license_number %}
-            <div class="hint">License/ID: {{ credential.license_number }}</div>
-            {% endif %}
-            {% if credential.verification_url %}
-            <div><a href="{{ credential.verification_url }}" target="_blank" rel="noopener">Verify credential</a></div>
-            {% endif %}
-        </li>
-        {% endif %}
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
-{% endwith %}
-
 {% if is_own_profile %}
-<section class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0; font-size: 1rem;">Profile completeness — {{ profile.completeness_percent }}%</h2>
-    <div style="background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 0.9rem;">
-        <div
-            style="background: #0369a1; border-radius: 999px; height: 8px; width: {{ profile.completeness_percent }}%;">
-        </div>
-    </div>
-    <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem;">
-        {% for label, done in profile.completeness_checks %}
-        <li style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
-            {% if done %}
-            <span style="color: #16a34a;">✓</span>
-            {% else %}
-            <span style="color: #9ca3af;">○</span>
+<div class="shell" style="padding-top: 1rem;">
+    <div id="practitioner-profile-portal" class="portal-shell" data-portal-shell>
+        {% include 'professionals/_portal_sidebar.html' with active_portal_nav='profile' %}
+        <div class="portal-main">
             {% endif %}
-            <span{% if not done %} style="color: #6b7280;" {% endif %}>{{ label }}</span>
-        </li>
-        {% endfor %}
-    </ul>
-</section>
-{% endif %}
-
-<section class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0;">Services</h2>
-    {% if not user.is_authenticated %}
-    <div
-        style="margin: 0.7rem 0 1.1rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-soft);">
-        <p class="hint" style="margin: 0;">Want early access to trusted practitioners?</p>
-        <div class="profile-action-group" style="display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.65rem;">
-            <a class="button" style="margin-top: 0;" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
-            <a class="button" style="margin-top: 0; background: #334155;"
-                href="{% url 'accounts:login' %}?next={% url 'catalog:professional_detail' profile.pk %}">Log in</a>
-        </div>
-    </div>
-    {% endif %}
-    <div style="display: grid; gap: 0.9rem;">
-        {% for service in profile.services.all %}
-        <article class="service-card" style="padding: 1rem; border: 1px solid var(--border); border-radius: 14px;">
-            <div
-                style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.4rem;">
-                <h3 style="margin: 0;">{{ service.name }}</h3>
-                <span style="font-size: 1.1rem; font-weight: 700; color: #033c44;">${{ service.price_display }}</span>
-            </div>
-            <p class="hint" style="margin: 0.3rem 0 0.6rem;">{{ service.get_delivery_format_display }} · {{
-                service.duration_display }} · {{ service.category.name }}</p>
-            <p style="margin: 0 0 0.7rem;">{{ service.description }}</p>
-            {% if service.tiers.all %}
-            <div style="display: grid; gap: 0.45rem; margin-bottom: 0.8rem;">
-                {% for tier in service.tiers.all %}
-                {% if tier.is_active %}
-                <div style="padding: 0.6rem; border: 1px dashed #cbd5e1; border-radius: 8px;">
-                    <strong>{{ tier.name }}</strong>
-                    <span class="hint"> · ${{ tier.price_display }}</span>
-                    {% if tier.duration_minutes %}
-                    <span class="hint"> · {{ tier.duration_minutes }} min</span>
+            <section class="card" data-track-profile-id="{{ profile.pk }}">
+                {% if profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo"
+                    style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
+                {% elif profile.profile_image_url %}
+                <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile photo"
+                    style="width: 120px; height: 120px; object-fit: cover; border-radius: 999px; border: 2px solid #e2e8f0; margin-bottom: 0.8rem;">
+                {% endif %}
+                <div
+                    style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem; justify-content: space-between;">
+                    <h1 style="margin: 0;">{{ profile.display_name }}</h1>
+                    {% if is_own_profile %}
+                    <a class="button button-secondary" href="#core-inline-editor">Edit
+                        core details</a>
                     {% endif %}
-                    {% if tier.description %}
-                    <div class="hint" style="margin-top: 0.25rem;">{{ tier.description }}</div>
+                    {% if profile.is_verified %}
+                    <span
+                        style="display: inline-flex; align-items: center; gap: 0.3rem; background: #e0f2fe; color: #0369a1; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.8rem; font-weight: 600;">
+                        ✓ Verified
+                    </span>
                     {% endif %}
                 </div>
+                <p class="hint">{{ profile.business_name|default:'Independent practice' }}</p>
+                <p><strong>{{ profile.headline }}</strong></p>
+                <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual
+                    sessions available{% endif %}</p>
+                <p>{{ profile.bio }}</p>
+                {% if profile.long_bio %}
+                <p style="white-space: pre-line;">{{ profile.long_bio }}</p>
                 {% endif %}
-                {% endfor %}
-            </div>
+                <p class="hint">Modalities: {{ profile.modalities }}</p>
+                <p class="hint">Experience: {{ profile.years_experience }} years</p>
+
+                {% if is_own_profile %}
+                <details id="core-inline-editor" style="margin-top: 0.9rem;">
+                    <summary style="cursor: pointer; color: #334155; font-weight: 600;">Edit this section inline
+                    </summary>
+                    <form method="post" enctype="multipart/form-data" style="margin-top: 0.8rem;">
+                        {% csrf_token %}
+                        {{ core_form.as_p }}
+                        <div style="display: flex; gap: 0.55rem; flex-wrap: wrap;">
+                            <button type="submit">Save public profile</button>
+                            <a class="button button-secondary" href="{% url 'professionals:profile_core' %}?edit=1">Open
+                                full core tab</a>
+                        </div>
+                    </form>
+                </details>
+                {% endif %}
+            </section>
+
+            {% with gallery=profile.gallery_images.all %}
+            {% if gallery %}
+            <section class="card" style="margin-top: 1rem;">
+                <div class="section-header" style="margin-bottom: 0.7rem;">
+                    <h2>Gallery</h2>
+                    {% if is_own_profile %}
+                    <a class="button button-secondary" href="{% url 'professionals:profile_gallery' %}?edit=1">Edit
+                        gallery</a>
+                    {% endif %}
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.7rem;">
+                    {% for image in gallery %}
+                    {% if image.is_active %}
+                    <figure style="margin: 0;">
+                        <img src="{{ image.image.url }}" alt="{{ image.caption|default:'Practice space photo' }}"
+                            style="width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0;">
+                        {% if image.caption %}
+                        <figcaption class="hint" style="margin-top: 0.35rem;">{{ image.caption }}</figcaption>
+                        {% endif %}
+                    </figure>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
             {% endif %}
-            {% if user.is_authenticated and user.role == 'client' %}
-            <a class="button service-book-button" href="{% url 'booking:create' service.pk %}">Book this service</a>
+            {% endwith %}
+
+            {% with credentials=profile.credentials.all %}
+            {% if credentials %}
+            <section class="card" style="margin-top: 1rem;">
+                <div class="section-header" style="margin-bottom: 0.7rem;">
+                    <h2>Credentials</h2>
+                    {% if is_own_profile %}
+                    <a class="button button-secondary" href="{% url 'professionals:profile_credentials' %}?edit=1">Edit
+                        credentials</a>
+                    {% endif %}
+                </div>
+                <ul style="margin: 0; padding-left: 1.1rem; display: grid; gap: 0.5rem;">
+                    {% for credential in credentials %}
+                    {% if credential.is_active %}
+                    <li>
+                        <strong>{{ credential.title }}</strong>
+                        <span class="hint"> · {{ credential.get_credential_type_display }}</span>
+                        {% if credential.organization %}
+                        <div class="hint">{{ credential.organization }}</div>
+                        {% endif %}
+                        {% if credential.license_number %}
+                        <div class="hint">License/ID: {{ credential.license_number }}</div>
+                        {% endif %}
+                        {% if credential.verification_url %}
+                        <div><a href="{{ credential.verification_url }}" target="_blank" rel="noopener">Verify
+                                credential</a></div>
+                        {% endif %}
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+                </ul>
+            </section>
             {% endif %}
-        </article>
-        {% empty %}
-        <p class="hint">This professional has not published services yet.</p>
-        {% endfor %}
+            {% endwith %}
+
+            {% if is_own_profile %}
+            <section class="card" style="margin-top: 1rem;">
+                <div class="section-header" style="margin-bottom: 0.7rem;">
+                    <h2 style="font-size: 1rem;">Profile completeness — {{ profile.completeness_percent }}%</h2>
+                    <a class="button button-secondary" href="{% url 'professionals:profile_core' %}?edit=1">Improve
+                        profile</a>
+                </div>
+                <div style="background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 0.9rem;">
+                    <div
+                        style="background: #0369a1; border-radius: 999px; height: 8px; width: {{ profile.completeness_percent }}%;">
+                    </div>
+                </div>
+                <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem;">
+                    {% for label, done in profile.completeness_checks %}
+                    <li style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                        {% if done %}
+                        <span style="color: #16a34a;">✓</span>
+                        {% else %}
+                        <span style="color: #9ca3af;">○</span>
+                        {% endif %}
+                        <span{% if not done %} style="color: #6b7280;" {% endif %}>{{ label }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </section>
+            {% endif %}
+
+            <section class="card" style="margin-top: 1rem;">
+                <div class="section-header" style="margin-bottom: 0.7rem;">
+                    <h2>Services</h2>
+                    {% if is_own_profile %}
+                    <a class="button button-secondary" href="{% url 'catalog:service_list' %}">Edit services</a>
+                    {% endif %}
+                </div>
+                {% if not user.is_authenticated %}
+                <div
+                    style="margin: 0.7rem 0 1.1rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-soft);">
+                    <p class="hint" style="margin: 0;">Want early access to trusted practitioners?</p>
+                    <div class="profile-action-group"
+                        style="display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.65rem;">
+                        <a class="button" style="margin-top: 0;" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
+                        <a class="button" style="margin-top: 0; background: #334155;"
+                            href="{% url 'accounts:login' %}?next={% url 'catalog:professional_detail' profile.pk %}">Log
+                            in</a>
+                    </div>
+                </div>
+                {% endif %}
+                <div style="display: grid; gap: 0.9rem;">
+                    {% for service in profile.services.all %}
+                    <article class="service-card"
+                        style="padding: 1rem; border: 1px solid var(--border); border-radius: 14px;">
+                        <div
+                            style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.4rem;">
+                            <h3 style="margin: 0;">{{ service.name }}</h3>
+                            <span class="service-card-price">${{ service.price_display }}</span>
+                        </div>
+                        <p class="hint service-card-meta">
+                            <span>{{ service.get_delivery_format_display }}</span>
+                            <span> · {{ service.duration_display }}</span>
+                            <span> · {{ service.category.name }}</span>
+                        </p>
+                        <p style="margin: 0 0 0.7rem;">{{ service.description }}</p>
+                        {% if service.tiers.all %}
+                        <div style="display: grid; gap: 0.45rem; margin-bottom: 0.8rem;">
+                            {% for tier in service.tiers.all %}
+                            {% if tier.is_active %}
+                            <div style="padding: 0.6rem; border: 1px dashed #cbd5e1; border-radius: 8px;">
+                                <strong>{{ tier.name }}</strong>
+                                <span class="hint"> · ${{ tier.price_display }}</span>
+                                {% if tier.duration_minutes %}
+                                <span class="hint"> · {{ tier.duration_minutes }} min</span>
+                                {% endif %}
+                                {% if tier.description %}
+                                <div class="hint" style="margin-top: 0.25rem;">{{ tier.description }}</div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% if user.is_authenticated and user.role == 'client' %}
+                        <a class="button service-book-button" href="{% url 'booking:create' service.pk %}">Book this
+                            service</a>
+                        {% endif %}
+                    </article>
+                    {% empty %}
+                    <p class="hint">This professional has not published services yet.</p>
+                    {% endfor %}
+                </div>
+            </section>
+            {% if is_own_profile %}
+        </div>
     </div>
-</section>
+</div>
+{% endif %}
 {% endblock %}

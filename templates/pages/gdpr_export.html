@@ -21,7 +21,7 @@
         <form method="post" style="display: flex; gap: 0.75rem;">
             {% csrf_token %}
             <button type="submit" class="button">Download My Data</button>
-            <a class="button" style="background: #334155;" href="{% url 'accounts:dashboard' %}">Cancel</a>
+            <a class="button" style="background: #334155;" href="{% url 'accounts:settings' %}">Cancel</a>
         </form>
     </section>
 </div>

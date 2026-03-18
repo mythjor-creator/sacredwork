@@ -1,10 +1,13 @@
 from django.contrib.auth import login
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from .forms import SignUpForm
+from .forms import AccountSettingsForm, SignUpForm
 from .models import User
 
 
@@ -37,17 +40,49 @@ def signup_view(request):
 
 @login_required
 def dashboard_view(request):
+	if request.user.role == User.Role.PROFESSIONAL:
+		profile = getattr(request.user, 'professional_profile', None)
+		if profile is None:
+			return redirect('professionals:onboarding')
+		return redirect('professionals:profile_core')
+
+	return redirect('catalog:marketplace')
+
+
+@login_required
+def account_settings_view(request):
 	profile = getattr(request.user, 'professional_profile', None)
-	needs_onboarding = (
-		request.user.role == User.Role.PROFESSIONAL
-		and profile is None
-	)
+
+	if request.method == 'POST':
+		action = request.POST.get('action')
+		if action == 'update_profile':
+			settings_form = AccountSettingsForm(request.POST, instance=request.user)
+			password_form = PasswordChangeForm(request.user)
+			if settings_form.is_valid():
+				settings_form.save()
+				messages.success(request, 'Account details updated.')
+				return redirect('accounts:settings')
+		elif action == 'change_password':
+			settings_form = AccountSettingsForm(instance=request.user)
+			password_form = PasswordChangeForm(request.user, request.POST)
+			if password_form.is_valid():
+				user = password_form.save()
+				update_session_auth_hash(request, user)
+				messages.success(request, 'Password updated successfully.')
+				return redirect('accounts:settings')
+		else:
+			settings_form = AccountSettingsForm(instance=request.user)
+			password_form = PasswordChangeForm(request.user)
+	else:
+		settings_form = AccountSettingsForm(instance=request.user)
+		password_form = PasswordChangeForm(request.user)
+
 	return render(
 		request,
-		'accounts/dashboard.html',
+		'accounts/settings.html',
 		{
-			'needs_onboarding': needs_onboarding,
 			'profile': profile,
-			'service_count': profile.services.count() if profile else 0,
+			'settings_form': settings_form,
+			'password_form': password_form,
 		},
 	)

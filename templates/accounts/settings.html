@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block top_nav_links %}
+{% if profile %}
+{% include 'professionals/_portal_top_nav.html' with profile=profile %}
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .settings-shell {
+        padding-top: 1rem;
+    }
+
+    .settings-main {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .danger-zone {
+        border: 1px solid #fca5a5;
+        background: #fef2f2;
+    }
+
+    .danger-zone h2 {
+        margin-top: 0;
+        color: #991b1b;
+    }
+
+    .danger-zone .hint {
+        color: #7f1d1d;
+    }
+
+    .danger-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .button-muted {
+        margin-top: 0;
+        background: #334155;
+    }
+
+    .button-danger {
+        margin-top: 0;
+        background: #dc2626;
+    }
+
+    .settings-main h1,
+    .settings-main h2 {
+        margin-top: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="shell settings-shell">
+    {% if profile %}
+    <div id="practitioner-account-portal" class="portal-shell" data-portal-shell>
+        {% include 'professionals/_portal_sidebar.html' with active_portal_nav='account' %}
+        <div class="portal-main settings-main">
+            <section class="card">
+                <h1>Account settings</h1>
+                <p class="hint">Role: {{ request.user.get_role_display }}</p>
+                <p class="hint">Current email: {{ request.user.email }}</p>
+                <p class="hint">Joined: {{ request.user.date_joined|date:'M j, Y' }}</p>
+            </section>
+
+            <section class="card">
+                <h2>Login and profile details</h2>
+                <p class="hint">Update your name, username, and email.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    {{ settings_form.as_p }}
+                    <button type="submit">Save account details</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>Change password</h2>
+                <p class="hint">Use a strong password with letters, numbers, and symbols.</p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    {{ password_form.as_p }}
+                    <button type="submit">Update password</button>
+                </form>
+            </section>
+
+            <section class="card danger-zone">
+                <h2>Danger zone</h2>
+                <p class="hint">Export your data or permanently delete your account.</p>
+                <div class="danger-actions">
+                    <a class="button button-muted" href="{% url 'pages:gdpr_export' %}">Export my data</a>
+                    <a class="button button-danger" href="{% url 'pages:gdpr_delete' %}">Delete account</a>
+                </div>
+            </section>
+        </div>
+    </div>
+    {% else %}
+    <div class="settings-main">
+        <section class="card">
+            <h1>Account settings</h1>
+            <p class="hint">Role: {{ request.user.get_role_display }}</p>
+            <p class="hint">Current email: {{ request.user.email }}</p>
+            <p class="hint">Joined: {{ request.user.date_joined|date:'M j, Y' }}</p>
+        </section>
+
+        <section class="card">
+            <h2>Login and profile details</h2>
+            <p class="hint">Update your name, username, and email.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_profile">
+                {{ settings_form.as_p }}
+                <button type="submit">Save account details</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Change password</h2>
+            <p class="hint">Use a strong password with letters, numbers, and symbols.</p>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+                {{ password_form.as_p }}
+                <button type="submit">Update password</button>
+            </form>
+        </section>
+
+        <section class="card danger-zone">
+            <h2>Danger zone</h2>
+            <p class="hint">Export your data or permanently delete your account.</p>
+            <div class="danger-actions">
+                <a class="button button-muted" href="{% url 'pages:gdpr_export' %}">Export my data</a>
+                <a class="button button-danger" href="{% url 'pages:gdpr_delete' %}">Delete account</a>
+            </div>
+        </section>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

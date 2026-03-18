@@ -2,423 +2,707 @@
 
 {% block extra_head %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap');
+    .site-nav {
+        display: none;
+    }
 
-    .home-hero {
-        width: 100%;
-        background: linear-gradient(180deg, #e8e8f1 0%, #f4f1ed 100%);
-        padding: clamp(2rem, 4.2vw, 4.4rem) 0 clamp(2.8rem, 4.8vw, 5.4rem);
-        border-bottom: 1px solid #dde1e8;
+    .wrap {
+        padding: 0;
     }
 
     .home-shell {
-        max-width: 1280px;
+        max-width: 1360px;
         margin: 0 auto;
-        padding: 0 var(--page-gutter);
+        padding: 0 clamp(1.6rem, 5vw, 9.8rem);
     }
 
-    .hero-copy {
+    .home-stage {
+        background: #2f48ae;
+    }
+
+    .home-hero {
+        min-height: 72vh;
         display: flex;
-        flex-direction: column;
-        gap: 1.2rem;
-        max-width: 860px;
+        align-items: center;
+        padding: clamp(1.9rem, 4vw, 4.7rem) 0 clamp(3rem, 7vw, 8rem);
     }
 
-    .home-title {
-        margin: 0;
-        font-family: "Instrument Sans", "Inter", sans-serif;
-        font-size: clamp(2.05rem, 5.2vw, 3.4rem);
-        line-height: 1.12;
-        font-weight: 500;
-        color: #033c44;
-    }
-
-    .home-subtitle {
-        margin: 0;
-        max-width: 640px;
-        color: #384551;
-        font-size: clamp(1.02rem, 2vw, 1.16rem);
-        line-height: 1.62;
-    }
-
-    .home-subtitle-secondary {
-        margin: 0;
-        color: rgba(56, 69, 81, 0.76);
-        font-size: 0.96rem;
-        line-height: 1.58;
-        letter-spacing: 0.005em;
-        max-width: 520px;
-    }
-
-    .hero-search {
-        margin-top: 2.4rem;
+    .hero-header {
         display: grid;
-        grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.42fr) auto;
-        gap: 1rem;
-        align-items: stretch;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: start;
+        gap: 0.8rem;
+        margin-bottom: clamp(3rem, 7vw, 9rem);
     }
 
-    .hero-search input,
-    .hero-search select {
-        margin-top: 0;
-        border: 1px solid #d7dde3;
-        border-radius: 8px;
-        min-height: 58px;
-        font-size: 1.02rem;
-        color: #1f2a37;
-        background: #fff;
-        padding: 0.85rem 1rem;
+    .hero-brand {
+        margin: 0;
+        font-family: "Instrument Sans", sans-serif;
+        font-size: clamp(1.25rem, 2vw, 2rem);
+        line-height: 1;
+        font-weight: 600;
+        color: #afebf3;
     }
 
-    .hero-search input::placeholder {
-        color: rgba(56, 69, 81, 0.7);
+    .hero-tagline {
+        margin: 0;
+        font-family: "Instrument Sans", sans-serif;
+        font-size: 0.7rem;
+        line-height: 1.35;
+        color: #afebf3;
+        text-align: center;
+        opacity: 0.92;
     }
 
-    .hero-search button {
-        margin-top: 0;
-        min-height: 58px;
-        border-radius: 8px;
-        padding: 0.84rem 1.5rem;
-        background: #051e23;
-        box-shadow: none;
-        font-size: 1.01rem;
-    }
-
-    .hero-search button:hover {
-        box-shadow: none;
-        transform: none;
-        background: #08323a;
-    }
-
-    .hero-actions {
-        margin-top: 1.15rem;
+    .hero-links {
         display: flex;
-        flex-wrap: wrap;
-        gap: 0.72rem;
+        justify-content: flex-end;
+        gap: 0.8rem;
     }
 
-    .hero-actions .button {
-        margin-top: 0;
-        border-radius: 8px;
-        padding: 0.58rem 0.94rem;
-        font-size: 0.92rem;
+    .hero-link {
+        color: #afebf3;
+        text-decoration: none;
+        font: 600 0.9rem/1.2 "Instrument Sans", sans-serif;
+        padding: 0.45rem 0.65rem;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        transition: border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .hero-link:hover {
+        border-color: rgba(175, 235, 243, 0.45);
+        background: rgba(175, 235, 243, 0.08);
+    }
+
+    .hero-menu {
+        display: none;
+        border: 0;
+        margin: 0;
+        color: #afebf3;
+        background: transparent;
+        font-size: 1.4rem;
+        padding: 0;
         box-shadow: none;
     }
 
-    .hero-actions .button.secondary {
-        background: #e8e8f1;
-        color: #051e23;
-    }
-
-    .hero-actions .button.secondary:hover {
-        background: #dde0ee;
+    .hero-menu:hover {
         transform: none;
+        background: transparent;
         box-shadow: none;
+    }
+
+    .hero-title {
+        margin: 0;
+        max-width: 12ch;
+        font-family: "Instrument Serif", "Iowan Old Style", serif;
+        color: #afebf3;
+        font-weight: 400;
+        text-align: center;
+        font-size: clamp(3.4rem, 11vw, 12.5rem);
+        line-height: 0.95;
+        margin-inline: auto;
+    }
+
+    .home-search {
+        background: #e4ddd4;
+        padding: clamp(2.8rem, 5vw, 9.5rem) 0;
+    }
+
+    .search-form {
+        max-width: 52rem;
+        border-bottom: 2px solid rgba(31, 32, 34, 0.55);
+        padding: 0.5rem 0;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .search-icon,
+    .search-arrow {
+        color: #1f2022;
+        opacity: 0.75;
+        font-size: clamp(1rem, 1.3vw, 1.2rem);
+    }
+
+    .search-form input {
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: rgba(31, 32, 34, 0.86);
+        font: 400 clamp(1rem, 2vw, 2rem)/1.2 "Instrument Sans", sans-serif;
+        padding: 0;
+    }
+
+    .search-form input::placeholder {
+        color: rgba(31, 32, 34, 0.5);
+    }
+
+    .search-go {
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: #1f2022;
+        padding: 0.2rem;
+        min-width: 2rem;
+        box-shadow: none;
+    }
+
+    .search-go:hover {
+        box-shadow: none;
+        transform: none;
+        background: transparent;
+        opacity: 0.8;
+    }
+
+    .search-suggestions {
+        margin: clamp(2.2rem, 4vw, 5.8rem) 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 1.3rem;
+    }
+
+    .search-suggestions a {
+        color: #1a1e1f;
+        text-decoration: none;
+        font: 400 clamp(0.76rem, 1vw, 1.15rem)/1.32 "Instrument Sans", sans-serif;
+    }
+
+    .search-suggestions a:hover {
+        text-decoration: underline;
     }
 
     .home-featured {
-        width: 100%;
-        background: #fff;
-        padding: clamp(2rem, 3.6vw, 4rem) 0;
-        display: flex;
-        flex-direction: column;
-        gap: 1.6rem;
+        background: #994c32;
+        padding: clamp(2.7rem, 5.2vw, 7.5rem) 0;
+        color: #fff;
     }
 
     .featured-head {
         display: flex;
+        align-items: center;
         justify-content: space-between;
-        align-items: flex-end;
-        gap: 0.8rem;
-    }
-
-    .featured-title {
-        margin: 0;
-        color: #111315;
-        font-size: clamp(1.2rem, 2.4vw, 1.42rem);
-        line-height: 1.3;
-        font-weight: 600;
-    }
-
-    .featured-subtitle {
-        margin: 0.48rem 0 0;
-        color: #48515d;
-        font-size: 0.97rem;
-        line-height: 1.55;
-    }
-
-    .featured-link {
-        margin-top: 0;
-        padding: 0.45rem 0.8rem;
-        border-radius: 8px;
-        background: #e8e8f1;
-        color: #051e23;
-        box-shadow: none;
-        font-size: 0.95rem;
-    }
-
-    .featured-link:hover {
-        transform: none;
-        box-shadow: none;
-        background: #dde0ee;
-    }
-
-    .featured-grid {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(160px, 1fr));
         gap: 1rem;
     }
 
-    .featured-card {
-        border-radius: 10px;
-        overflow: hidden;
-        min-height: 270px;
-        background: linear-gradient(180deg, #d8ddee 0%, #cce9ec 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
+    .featured-head h2 {
+        margin: 0;
+        font: 400 clamp(1.35rem, 2.6vw, 2rem)/1.15 "Instrument Sans", sans-serif;
+        color: #fff;
+    }
+
+    .featured-more {
+        margin: 0;
+        border-radius: 4px;
+        background: #a05a43;
+        color: #fff;
+        text-decoration: none;
+        font: 500 0.95rem/1.2 "Instrument Sans", sans-serif;
+        padding: 0.48rem 0.72rem;
+        box-shadow: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.42rem;
+    }
+
+    .featured-more:hover {
+        transform: none;
+        box-shadow: none;
+        background: #ad674f;
+    }
+
+    .featured-grid {
+        margin-top: clamp(1.6rem, 4vw, 4rem);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: clamp(0.8rem, 1.9vw, 2rem);
+    }
+
+    .featured-item {
         text-decoration: none;
         color: #fff;
-        padding: 0.95rem;
-        position: relative;
+        display: grid;
+        gap: 0.7rem;
     }
 
-    .featured-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(9, 24, 29, 0) 44%, rgba(9, 24, 29, 0.78) 100%);
-        pointer-events: none;
-    }
-
-    .featured-text {
-        position: relative;
-        z-index: 1;
+    .placeholder-image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border-radius: 4px;
+        background:
+            radial-gradient(circle at 55% 52%, #ff8b19 0%, #ff8b19 17%, rgba(255, 139, 25, 0.58) 28%, rgba(255, 139, 25, 0) 48%),
+            radial-gradient(circle at 76% 48%, rgba(255, 122, 85, 0.62) 0%, rgba(255, 122, 85, 0) 48%),
+            linear-gradient(100deg, #b8d3e5 8%, #cbced6 36%, #ebc7bf 72%, #c7c1bf 100%);
     }
 
     .featured-name {
         margin: 0;
-        font-family: "Instrument Sans", "Inter", sans-serif;
-        font-size: 1.12rem;
-        font-weight: 600;
-        line-height: 1.3;
+        font: 400 clamp(0.9rem, 1.35vw, 1.12rem)/1.32 "Instrument Sans", sans-serif;
     }
 
-    .featured-meta {
-        margin: 0.42rem 0 0;
-        color: rgba(255, 255, 255, 0.88);
-        font-size: 0.88rem;
-        line-height: 1.5;
+    .featured-cta {
+        display: inline-block;
+        padding-bottom: 0.15rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+        font: 600 0.82rem/1.2 "Instrument Sans", sans-serif;
     }
 
-    .standard-grid {
-        display: grid;
-        gap: 1.1rem;
-        margin-top: 1.05rem;
+    .home-services {
+        background: #e4ddd4;
+        color: #1a1e1f;
+        padding: clamp(2.9rem, 5.6vw, 9rem) 0;
     }
 
-    .standard-card {
-        background: #fff;
-        border: 1px solid #d8dee5;
-        border-radius: 8px;
-        padding: 1.3rem;
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 1.2rem;
-        align-items: center;
-        box-shadow: 0 6px 16px rgba(15, 30, 35, 0.05);
-    }
-
-    .standard-name {
+    .services-title {
         margin: 0;
-        font-family: "Instrument Sans", "Inter", sans-serif;
-        color: #1a2933;
-        font-size: 1.08rem;
-        line-height: 1.34;
-        font-weight: 600;
+        color: #2f48ae;
+        font-family: "Instrument Serif", serif;
+        font-size: clamp(2.5rem, 5.8vw, 5.1rem);
+        line-height: 0.95;
+        font-weight: 400;
     }
 
-    .standard-business {
-        margin: 0.18rem 0 0;
-        color: #5f6e7f;
-        font-size: 0.9rem;
+    .services-hero {
+        margin-top: clamp(2.1rem, 5vw, 6.4rem);
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(220px, 0.8fr);
+        gap: clamp(1.3rem, 4vw, 7rem);
+        align-items: start;
     }
 
-    .standard-headline {
-        margin: 0.48rem 0 0;
-        color: #2b3945;
-        font-size: 0.94rem;
-        line-height: 1.56;
+    .services-panel h3,
+    .services-list h3 {
+        margin: 0;
+        color: #1a1e1f;
+        font: 400 clamp(1.05rem, 2.3vw, 1.55rem)/1.2 "Instrument Sans", sans-serif;
     }
 
-    .standard-meta {
-        margin: 0.62rem 0 0;
-        color: #5f6e7f;
-        font-size: 0.86rem;
+    .services-panel p,
+    .services-list p {
+        margin: 0.75rem 0 0;
+        color: #1a1e1f;
+        font: 400 clamp(0.86rem, 1.4vw, 1rem)/1.45 "Instrument Sans", sans-serif;
+        max-width: 44ch;
     }
 
-    .standard-action {
-        margin-top: 0;
-        border-radius: 8px;
-        padding: 0.55rem 0.9rem;
-        font-size: 0.92rem;
-        white-space: nowrap;
+    .services-button {
+        display: inline-flex;
+        margin-top: 1rem;
+        text-decoration: none;
+        color: #1a1e1f;
+        background: rgba(255, 255, 255, 0.52);
+        border: 1px solid rgba(26, 30, 31, 0.24);
+        border-radius: 4px;
+        padding: 0.45rem 0.72rem;
+        font: 500 0.9rem/1.2 "Instrument Sans", sans-serif;
     }
 
-    @media (max-width: 1080px) {
-        .featured-grid {
-            grid-template-columns: repeat(3, minmax(160px, 1fr));
+    .services-grid {
+        margin-top: clamp(2rem, 4vw, 4.4rem);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: clamp(1rem, 2.2vw, 2.8rem);
+    }
+
+    .services-list a {
+        display: inline-flex;
+        margin-top: 0.82rem;
+        color: #484c5b;
+        text-decoration: none;
+        border-bottom: 1px solid #484c5b;
+        font: 500 0.86rem/1.3 "Instrument Sans", sans-serif;
+        padding-bottom: 0.22rem;
+    }
+
+    .services-band {
+        margin-top: clamp(2rem, 5vw, 6.2rem);
+        width: 100%;
+        border-radius: 4px;
+        height: clamp(8rem, 25vw, 23.8rem);
+        background:
+            radial-gradient(circle at 58% 52%, #ff8b19 0%, #ff8b19 16%, rgba(255, 139, 25, 0.72) 34%, rgba(255, 139, 25, 0) 64%),
+            radial-gradient(circle at 72% 50%, rgba(255, 122, 85, 0.78) 0%, rgba(255, 122, 85, 0) 58%),
+            linear-gradient(96deg, #b8d3e5 5%, #cca95f 22%, #ffb733 47%, #ff8b45 71%, #d8cecc 100%);
+    }
+
+    .home-foot {
+        margin-top: clamp(2.2rem, 5vw, 5.6rem);
+        padding-bottom: 0.25rem;
+    }
+
+    .foot-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.25fr) repeat(4, minmax(0, 1fr));
+        gap: 1.4rem;
+        align-items: start;
+    }
+
+    .foot-brand {
+        margin: 0;
+        color: #2f48ae;
+        font: 600 clamp(1.2rem, 2.3vw, 2rem)/1 "Instrument Sans", sans-serif;
+    }
+
+    .foot-link,
+    .foot-copy {
+        margin: 0;
+        color: #1a1e1f;
+        text-decoration: none;
+        font: 400 clamp(0.8rem, 1.15vw, 1.1rem)/1.3 "Instrument Sans", sans-serif;
+    }
+
+    .foot-news {
+        margin-top: 1.1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(26, 30, 31, 0.28);
+        display: grid;
+        grid-template-columns: minmax(170px, 0.35fr) minmax(230px, 0.65fr);
+        gap: 0.9rem;
+        align-items: center;
+    }
+
+    .foot-news p {
+        margin: 0;
+        color: #1a1e1f;
+        font: 400 clamp(0.8rem, 1vw, 0.92rem)/1.3 "Instrument Sans", sans-serif;
+    }
+
+    .foot-news form {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 0.62rem;
+        align-items: center;
+        border: 1px solid rgba(26, 30, 31, 0.24);
+        border-radius: 4px;
+        padding: 0.4rem 0.7rem;
+        background: rgba(255, 255, 255, 0.34);
+    }
+
+    .foot-news input {
+        border: 0;
+        background: transparent;
+        margin: 0;
+        padding: 0;
+        color: rgba(26, 30, 31, 0.76);
+        font: 400 0.82rem/1.2 "Instrument Sans", sans-serif;
+    }
+
+    .foot-news button {
+        margin: 0;
+        background: transparent;
+        border: 0;
+        color: #2f48ae;
+        box-shadow: none;
+        padding: 0;
+        font-size: 1rem;
+    }
+
+    .foot-news button:hover {
+        margin: 0;
+        background: transparent;
+        box-shadow: none;
+        transform: none;
+        opacity: 0.82;
+    }
+
+    [data-reveal] {
+        opacity: 0;
+        transform: translateY(18px);
+        animation: homeReveal 0.72s ease forwards;
+    }
+
+    [data-reveal="2"] {
+        animation-delay: 0.1s;
+    }
+
+    [data-reveal="3"] {
+        animation-delay: 0.2s;
+    }
+
+    [data-reveal="4"] {
+        animation-delay: 0.28s;
+    }
+
+    @keyframes homeReveal {
+        to {
+            opacity: 1;
+            transform: translateY(0);
         }
     }
 
-    @media (max-width: 880px) {
-        .hero-search {
+    @media (max-width: 1090px) {
+        .home-shell {
+            padding: 0 clamp(2rem, 6vw, 4.6rem);
+        }
+
+        .hero-header {
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "brand links"
+                "tagline tagline";
+            margin-bottom: clamp(2.4rem, 5vw, 4.6rem);
+        }
+
+        .hero-brand {
+            grid-area: brand;
+        }
+
+        .hero-tagline {
+            grid-area: tagline;
+            text-align: left;
+        }
+
+        .hero-links {
+            grid-area: links;
+        }
+
+        .search-suggestions {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.2rem 1.8rem;
+        }
+
+        .services-hero {
             grid-template-columns: 1fr 1fr;
         }
 
-        .hero-search select,
-        .hero-search button {
-            grid-column: span 2;
+        .foot-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            row-gap: 1rem;
         }
 
-        .standard-card {
-            grid-template-columns: 1fr;
-            align-items: flex-start;
-        }
-    }
-
-    @media (max-width: 660px) {
-        .featured-head {
-            align-items: flex-start;
-            flex-direction: column;
-        }
-
-        .featured-grid {
-            grid-template-columns: repeat(2, minmax(130px, 1fr));
+        .foot-brand {
+            grid-column: 1 / -1;
         }
     }
 
-    @media (max-width: 520px) {
-        .hero-search {
-            grid-template-columns: 1fr;
+    @media (max-width: 760px) {
+        .home-shell {
+            padding: 0 2rem;
         }
 
-        .hero-search select,
-        .hero-search button {
-            grid-column: span 1;
+        .hero-header {
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "brand menu"
+                "tagline tagline";
+        }
+
+        .hero-links {
+            display: none;
+        }
+
+        .hero-menu {
+            display: inline-block;
+            grid-area: menu;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 15vw, 6rem);
+            max-width: 9ch;
+        }
+
+        .search-suggestions {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .featured-grid {
             grid-template-columns: 1fr;
+            gap: 1.2rem;
         }
 
-        .hero-actions {
-            flex-direction: column;
+        .featured-item {
+            grid-template-columns: 88px minmax(0, 1fr);
+            align-items: start;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.28);
         }
 
-        .hero-actions .button {
-            width: 100%;
-            text-align: center;
-            padding: 0.72rem 0.95rem;
-            font-size: 0.95rem;
+        .featured-item:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
         }
 
-        .standard-action {
-            width: 100%;
-            text-align: center;
-            padding: 0.72rem 0.95rem;
-            font-size: 0.95rem;
+        .placeholder-image {
+            width: 88px;
+            height: 88px;
+        }
+
+        .services-hero,
+        .services-grid,
+        .foot-news {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 460px) {
+        .home-shell {
+            padding: 0 1.15rem;
+        }
+
+        .hero-title {
+            font-size: clamp(2.4rem, 13vw, 3.6rem);
+            line-height: 1.05;
+        }
+
+        .search-form input {
+            font-size: 0.92rem;
+        }
+
+        .search-suggestions {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.1rem 0.8rem;
+        }
+
+        .search-suggestions a {
+            font-size: 0.58rem;
+        }
+
+        .featured-head h2 {
+            font-size: 1.1rem;
+        }
+
+        .featured-more {
+            font-size: 0.76rem;
+            padding: 0.34rem 0.5rem;
+        }
+
+        .services-title {
+            font-size: 2.8rem;
         }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="home-hero">
-    <div class="home-shell">
-        <div class="hero-copy">
-            <h1 class="home-title">Find your inner compass</h1>
-            <p class="home-subtitle">Connect with experienced spiritual coaches, healers, and wellness practitioners to
-                guide you on your journey.</p>
-            <p class="home-subtitle-secondary">Search by modality, focus, or service type, then explore detailed
-                profiles.</p>
-        </div>
-        <form class="hero-search" method="get" action="{% url 'catalog:marketplace' %}"
-            data-track-event="search_submitted" data-track-source="home">
-            <input type="text" name="q" value="{{ query }}" placeholder="Search by name, expertise, or keyword"
-                aria-label="Search practitioners">
-            <select id="home-category-select" name="category" aria-label="Category filter">
-                <option value="">All categories</option>
-                {% for category_option in categories %}
-                <option value="{{ category_option.category.slug }}" {{ category_option.selected_attr }}>{{
-                    category_option.category.name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Search</button>
-        </form>
-        <div class="hero-actions">
-            <a class="button secondary" href="{% url 'catalog:marketplace' %}">Browse all practitioners</a>
-            <a class="button" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
+<section class="home-stage">
+    <div class="home-hero">
+        <div class="home-shell" data-reveal="1">
+            <header class="hero-header">
+                <p class="hero-brand">Clairbook</p>
+                <p class="hero-tagline">Sacred services<br>by intentional practitioners.</p>
+                <nav class="hero-links" aria-label="Home hero navigation">
+                    <a class="hero-link" href="{% url 'waitlist:landing' %}">Join the Waitlist</a>
+                    <a class="hero-link" href="#what-we-do">Learn more</a>
+                </nav>
+                <button class="hero-menu" type="button" aria-label="Open menu">&#8801;</button>
+            </header>
+            <h1 class="hero-title">This was meant to find you.</h1>
         </div>
     </div>
 </section>
 
-<section class="home-featured">
+<section class="home-search" data-reveal="2">
+    <div class="home-shell">
+        <form class="search-form" method="get" action="{% url 'catalog:marketplace' %}"
+            data-track-event="search_submitted" data-track-source="home">
+            <span class="search-icon" aria-hidden="true">&#9711;</span>
+            <input type="text" name="q" value="{{ query }}" placeholder="Psychic medium in Sedona, AZ"
+                aria-label="Search practitioners">
+            <button class="search-go" type="submit" aria-label="Search"><span class="search-arrow"
+                    aria-hidden="true">&#8594;</span></button>
+        </form>
+
+        <ul class="search-suggestions" aria-label="Suggested searches">
+            <li><a href="{% url 'catalog:marketplace' %}?q=organic+facial+near+me">organic facial<br>near me</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=sound+bath+yoga+retreat">sound bath yoga<br>retreat</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=reiki+healer+near+me">reiki healer near<br>me</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=best+palm+reader+in+NYC">best palm reader<br>in NYC</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=astrology+reading+online">astrology<br>reading online</a>
+            </li>
+        </ul>
+    </div>
+</section>
+
+<section class="home-featured" data-reveal="3">
     <div class="home-shell">
         <div class="featured-head">
-            <div>
-                <h2 class="featured-title">Featured practitioners</h2>
-                <p class="featured-subtitle">Stylized highlights for discovery and inspiration.</p>
-            </div>
-            <a class="button featured-link" href="{% url 'catalog:marketplace' %}">See all</a>
+            <h2>Featured practitioners</h2>
+            <a class="featured-more" href="{% url 'catalog:marketplace' %}">More <span
+                    aria-hidden="true">&#8594;</span></a>
         </div>
 
         <div class="featured-grid">
-            {% for profile in featured_profiles %}
-            <a class="featured-card" href="{% url 'catalog:professional_detail' profile.pk %}">
-                <div class="featured-text">
-                    <p class="featured-name">{{ profile.display_name }}</p>
-                    <p class="featured-meta">{{ profile.headline|default:'Guided support for your practice' }}</p>
+            {% for profile in featured_profiles|slice:':3' %}
+            <a class="featured-item" href="{% url 'catalog:professional_detail' profile.pk %}">
+                <div class="placeholder-image" aria-hidden="true"></div>
+                <div>
+                    <p class="featured-name">{{ profile.display_name|default:'Firstname Lastname' }}<br>{{
+                        profile.headline|default:'Headline' }}</p>
+                    <span class="featured-cta">Button</span>
                 </div>
             </a>
             {% empty %}
-            <a class="featured-card" href="{% url 'catalog:marketplace' %}">
-                <div class="featured-text">
-                    <p class="featured-name">Explore practitioners</p>
-                    <p class="featured-meta">Browse profiles for coaching, wellness, and spiritual support.</p>
+            <a class="featured-item" href="{% url 'catalog:marketplace' %}">
+                <div class="placeholder-image" aria-hidden="true"></div>
+                <div>
+                    <p class="featured-name">Explore practitioners<br>Personalized guidance</p>
+                    <span class="featured-cta">Button</span>
                 </div>
             </a>
             {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section id="what-we-do" class="home-services" data-reveal="4">
+    <div class="home-shell">
+        <h2 class="services-title">What we do</h2>
+
+        <div class="services-hero">
+            <div class="placeholder-image" style="aspect-ratio: 1.53 / 1;"></div>
+            <div class="services-panel">
+                <h3>Lorem ipsum</h3>
+                <p>Lorem ipsum dolor sit amet consectetur. Sit rhoncus quis ut condimentum ut nec ac mauris. Faucibus
+                    lacus ullamcorper urna diam dolor vitae arcu. Adipiscing et lectus cursus vitae orci lacus.
+                    Elementum enim tortor sed mollis.</p>
+                <a class="services-button" href="{% url 'catalog:marketplace' %}">Button</a>
+            </div>
         </div>
 
-        <div class="standard-grid">
-            {% for profile in featured_profiles %}
-            <article class="standard-card">
-                <div>
-                    <p class="standard-name">{{ profile.display_name }}</p>
-                    <p class="standard-business">{{ profile.business_name|default:'Independent practice' }}</p>
-                    <p class="standard-headline">{{ profile.headline|default:'Personalized support for your spiritual
-                        and wellness practice.' }}</p>
-                    <p class="standard-meta">
-                        {{ profile.location|default:'Virtual practice' }}
-                        {% if profile.is_virtual %}
-                        · Virtual available
-                        {% endif %}
-                    </p>
-                </div>
-                <a class="button standard-action" href="{% url 'catalog:professional_detail' profile.pk %}">View
-                    profile</a>
+        <div class="services-grid">
+            <article class="services-list">
+                <h3>Lorem ipsum</h3>
+                <p>Lorem ipsum dolor sit amet consectetur. Sit rhoncus quis ut condimentum ut nec ac mauris.</p>
+                <a href="{% url 'catalog:marketplace' %}">Button</a>
             </article>
-            {% empty %}
-            <article class="standard-card">
-                <div>
-                    <p class="standard-name">No profiles yet</p>
-                    <p class="standard-headline">As practitioners are approved, you will see detailed cards here.</p>
-                </div>
-                <a class="button standard-action" href="{% url 'waitlist:landing' %}">Join waitlist</a>
+            <article class="services-list">
+                <h3>Lorem ipsum</h3>
+                <p>Lorem ipsum dolor sit amet consectetur. Sit rhoncus quis ut condimentum ut nec ac mauris.</p>
+                <a href="{% url 'catalog:marketplace' %}">Button</a>
             </article>
-            {% endfor %}
+            <article class="services-list">
+                <h3>Lorem ipsum</h3>
+                <p>Lorem ipsum dolor sit amet consectetur. Sit rhoncus quis ut condimentum ut nec ac mauris.</p>
+                <a href="{% url 'catalog:marketplace' %}">Button</a>
+            </article>
         </div>
+
+        <div class="services-band" aria-hidden="true"></div>
+
+        <footer class="home-foot">
+            <div class="foot-grid">
+                <p class="foot-brand">Clairbook</p>
+                <a class="foot-link" href="{% url 'pages:terms' %}">Terms of Service</a>
+                <a class="foot-link" href="{% url 'waitlist:landing' %}">Sign up for the waitlist</a>
+                <p class="foot-link">Contact<br>hello@clairbook.com</p>
+                <p class="foot-copy">@ Clairbook,<br>2026</p>
+            </div>
+
+            <div class="foot-news">
+                <p>Sign up for our newsletter</p>
+                <form method="get" action="{% url 'waitlist:landing' %}">
+                    <span aria-hidden="true">&#9993;</span>
+                    <input name="email" type="email" placeholder="yourname@email.com" aria-label="Email address">
+                    <button type="submit" aria-label="Submit newsletter email">&#8594;</button>
+                </form>
+            </div>
+        </footer>
     </div>
 </section>
 {% endblock %}

@@ -17,7 +17,7 @@ class ProfessionalOnboardingTests(TestCase):
 		self.client.force_login(client_user)
 
 		response = self.client.get(reverse('professionals:onboarding'))
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('accounts:dashboard'), fetch_redirect_response=False)
 
 	def test_professional_can_submit_onboarding(self):
 		professional_user = User.objects.create_user(
@@ -41,7 +41,7 @@ class ProfessionalOnboardingTests(TestCase):
 			},
 		)
 
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('professionals:profile_core'))
 		profile = ProfessionalProfile.objects.get(user=professional_user)
 		self.assertEqual(
 			profile.approval_status,
@@ -71,10 +71,22 @@ class ProfessionalOnboardingTests(TestCase):
 			},
 		)
 
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('professionals:profile_core'))
 		profile = ProfessionalProfile.objects.get(user=professional_user)
 		self.assertEqual(profile.business_name, '')
 		self.assertEqual(profile.display_name, professional_user.username)
+
+	def test_onboarding_page_shows_continue_setup_cta(self):
+		professional_user = User.objects.create_user(
+			username='cta_pro_user',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		self.client.force_login(professional_user)
+
+		response = self.client.get(reverse('professionals:onboarding'))
+		self.assertContains(response, 'Continue setup')
+		self.assertContains(response, 'Core profile')
 
 
 class ProfileEditTests(TestCase):
@@ -129,7 +141,7 @@ class ProfileEditTests(TestCase):
 				'credentials-0-is_active': 'on',
 			},
 		)
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('accounts:dashboard'), fetch_redirect_response=False)
 		self.profile.refresh_from_db()
 		self.assertEqual(self.profile.business_name, 'Updated Name')
 		self.assertEqual(self.profile.long_bio, 'Long form story for deeper context.')
@@ -181,7 +193,7 @@ class ProfileEditTests(TestCase):
 		)
 		self.client.force_login(client_user)
 		response = self.client.get(reverse('professionals:profile_edit'))
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('accounts:dashboard'), fetch_redirect_response=False)
 
 
 

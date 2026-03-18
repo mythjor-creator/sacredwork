@@ -10,6 +10,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
 from apps.accounts.models import User
+from .forms import ReportProblemForm
 from .models import EmailVerificationToken, GDPRDataExportLog, GDPRAccountDeletionLog
 
 
@@ -19,8 +20,27 @@ def privacy_view(request):
 
 
 def terms_view(request):
-    """Render terms of service page."""
-    return render(request, 'pages/terms.html')
+    """Render Help page with terms accordion and issue reporting form."""
+    profile = getattr(request.user, 'professional_profile', None) if request.user.is_authenticated else None
+
+    if request.method == 'POST':
+        report_form = ReportProblemForm(request.POST)
+        if report_form.is_valid():
+            messages.success(request, 'Thanks for reporting this. We will review it shortly.')
+            return redirect('pages:terms')
+    else:
+        report_form = ReportProblemForm(
+            initial={'email': request.user.email if request.user.is_authenticated else ''}
+        )
+
+    return render(
+        request,
+        'pages/terms.html',
+        {
+            'profile': profile,
+            'report_form': report_form,
+        },
+    )
 
 
 def verify_email_view(request, token):

@@ -154,7 +154,43 @@ class ServiceManagementTests(TestCase):
 		self.client.force_login(client_user)
 
 		response = self.client.get(reverse('catalog:service_list'))
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('accounts:dashboard'), fetch_redirect_response=False)
+
+	def test_service_create_blocks_duplicate_tier_names(self):
+		self.client.force_login(self.professional_user)
+
+		response = self.client.post(
+			reverse('catalog:service_create'),
+			{
+				'category': self.category.pk,
+				'name': 'Tiered Session',
+				'description': 'A service with duplicate tiers.',
+				'duration_minutes': 60,
+				'price_cents': 10000,
+				'delivery_format': Service.DeliveryFormat.VIRTUAL,
+				'is_active': True,
+				'tiers-TOTAL_FORMS': '2',
+				'tiers-INITIAL_FORMS': '0',
+				'tiers-MIN_NUM_FORMS': '0',
+				'tiers-MAX_NUM_FORMS': '1000',
+				'tiers-0-name': 'Standard',
+				'tiers-0-description': 'Core tier',
+				'tiers-0-duration_minutes': '60',
+				'tiers-0-price_cents': '10000',
+				'tiers-0-sort_order': '0',
+				'tiers-0-is_active': 'on',
+				'tiers-1-name': 'standard',
+				'tiers-1-description': 'Duplicate label',
+				'tiers-1-duration_minutes': '90',
+				'tiers-1-price_cents': '15000',
+				'tiers-1-sort_order': '1',
+				'tiers-1-is_active': 'on',
+			},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Tier names must be unique within a service.')
+		self.assertFalse(self.profile.services.filter(name='Tiered Session').exists())
 
 
 class ServiceEditTests(TestCase):
@@ -246,7 +282,44 @@ class ServiceEditTests(TestCase):
 		)
 		self.client.force_login(client_user)
 		response = self.client.get(reverse('catalog:service_edit', args=[self.service.pk]))
-		self.assertRedirects(response, reverse('accounts:dashboard'))
+		self.assertRedirects(response, reverse('accounts:dashboard'), fetch_redirect_response=False)
+
+	def test_professional_can_delete_existing_tier_on_edit(self):
+		tier = ServiceTier.objects.create(
+			service=self.service,
+			name='Standard',
+			description='Default tier',
+			price_cents=10000,
+			duration_minutes=60,
+		)
+		self.client.force_login(self.professional_user)
+		response = self.client.post(
+			reverse('catalog:service_edit', args=[self.service.pk]),
+			{
+				'category': self.category.pk,
+				'name': 'Original Service',
+				'description': 'Original description.',
+				'duration_minutes': 60,
+				'price_cents': 10000,
+				'delivery_format': Service.DeliveryFormat.VIRTUAL,
+				'is_active': True,
+				'tiers-TOTAL_FORMS': '1',
+				'tiers-INITIAL_FORMS': '1',
+				'tiers-MIN_NUM_FORMS': '0',
+				'tiers-MAX_NUM_FORMS': '1000',
+				'tiers-0-id': str(tier.pk),
+				'tiers-0-name': 'Standard',
+				'tiers-0-description': 'Default tier',
+				'tiers-0-duration_minutes': '60',
+				'tiers-0-price_cents': '10000',
+				'tiers-0-sort_order': '0',
+				'tiers-0-is_active': 'on',
+				'tiers-0-DELETE': 'on',
+			},
+		)
+
+		self.assertRedirects(response, reverse('catalog:service_list'))
+		self.assertFalse(ServiceTier.objects.filter(pk=tier.pk).exists())
 
 
 class PreviewSeedCommandTests(TestCase):

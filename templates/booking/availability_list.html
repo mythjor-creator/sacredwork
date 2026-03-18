@@ -1,28 +1,40 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<section class="card">
-    <h1>Availability for {{ profile.display_name }}</h1>
-    <p class="hint">{{ profile.business_name_suffix }}</p>
-    <p class="hint">Set the recurring windows clients can book from.</p>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add availability window</button>
-    </form>
-</section>
+{% block top_nav_links %}
+{% include 'professionals/_portal_top_nav.html' with profile=profile %}
+{% endblock %}
 
-<section style="display: grid; gap: 1rem; margin-top: 1rem;">
-    {% for window in availability_windows %}
-    <article class="card">
-        <h2 style="margin-top: 0;">{{ window.get_weekday_display }}</h2>
-        <p class="hint">{{ window.start_time }} to {{ window.end_time }}{{ window.status_suffix }}</p>
-    </article>
-    {% empty %}
-    <section class="card">
-        <h2 style="margin-top: 0;">No availability yet</h2>
-        <p class="hint">Add at least one weekly window so clients can book you.</p>
-    </section>
-    {% endfor %}
-</section>
+{% block content %}
+<div class="shell" style="padding-top: 1rem;">
+    <div id="practitioner-hours-portal" class="portal-shell" data-portal-shell>
+        {% include 'professionals/_portal_sidebar.html' with active_portal_nav='hours' %}
+        <div class="portal-main">
+            <section class="card">
+                <h1>Availability for {{ profile.display_name }}</h1>
+                <p class="hint">Step 4: set recurring availability windows clients can choose from.</p>
+                <p class="hint">{{ profile.business_name_suffix }}</p>
+                <p class="hint">Set the recurring windows clients can book from.</p>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit">Add availability window</button>
+                </form>
+            </section>
+
+            <section style="display: grid; gap: 1rem; margin-top: 1rem;">
+                {% for window in availability_windows %}
+                <article class="card">
+                    <h2 style="margin-top: 0;">{{ window.get_weekday_display }}</h2>
+                    <p class="hint">{{ window.start_time }} to {{ window.end_time }}{{ window.status_suffix }}</p>
+                </article>
+                {% empty %}
+                <section class="card">
+                    <h2 style="margin-top: 0;">No availability yet</h2>
+                    <p class="hint">Add at least one weekly window so clients can book you.</p>
+                </section>
+                {% endfor %}
+            </section>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
@@ -15,6 +16,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.professionals.forms import ProfessionalOnboardingForm
 from apps.professionals.models import ProfessionalProfile
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
 
@@ -96,29 +98,46 @@ def home_view(request):
 
 
 def professional_detail_view(request, pk):
-	profile = get_object_or_404(
-		ProfessionalProfile.objects.select_related('user').prefetch_related(
-			Prefetch(
-				'services',
-				queryset=Service.objects.filter(is_active=True)
-				.select_related('category')
-				.prefetch_related('tiers'),
-			),
-			'gallery_images',
-			'credentials',
+	profile_queryset = ProfessionalProfile.objects.select_related('user').prefetch_related(
+		Prefetch(
+			'services',
+			queryset=Service.objects.filter(is_active=True)
+			.select_related('category')
+			.prefetch_related('tiers'),
 		),
-		pk=pk,
-		approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
-		is_visible=True,
+		'gallery_images',
+		'credentials',
 	)
+
 	is_own_profile = (
 		request.user.is_authenticated
 		and hasattr(request.user, 'professional_profile')
-		and request.user.professional_profile.pk == profile.pk
+		and request.user.professional_profile.pk == pk
 	)
+
+	if is_own_profile:
+		profile = get_object_or_404(profile_queryset, pk=pk)
+	else:
+		profile = get_object_or_404(
+			profile_queryset,
+			pk=pk,
+			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
+			is_visible=True,
+		)
+
+	if is_own_profile and request.method == 'POST':
+		core_form = ProfessionalOnboardingForm(request.POST, request.FILES, instance=profile)
+		if core_form.is_valid():
+			core_form.save()
+			messages.success(request, 'Public profile updated.')
+			return redirect('catalog:professional_detail', pk=profile.pk)
+	else:
+		core_form = ProfessionalOnboardingForm(instance=profile) if is_own_profile else None
+
 	context = {
 		'profile': profile,
 		'is_own_profile': is_own_profile,
+		'core_form': core_form,
 	}
 	return render(request, 'catalog/professional_detail.html', context)
 
@@ -158,6 +177,7 @@ def service_create_view(request):
 			service.save()
 			tier_formset.instance = service
 			tier_formset.save()
+			messages.success(request, 'Service created successfully.')
 			return redirect('catalog:service_list')
 	else:
 		form = ServiceForm()
@@ -187,6 +207,7 @@ def service_edit_view(request, pk):
 		if form.is_valid() and tier_formset.is_valid():
 			form.save()
 			tier_formset.save()
+			messages.success(request, 'Service updated successfully.')
 			return redirect('catalog:service_list')
 	else:
 		form = ServiceForm(instance=service)

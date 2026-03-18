@@ -51,6 +51,7 @@ class ProfileGalleryImageForm(forms.ModelForm):
         # Make image optional to allow empty gallery entries
         self.fields['image'].required = False
         self.fields['caption'].required = False
+        self.fields['caption'].help_text = 'Optional caption shown under the image.'
 
 
 class BaseCredentialInlineFormSet(BaseInlineFormSet):
@@ -95,4 +96,9 @@ CredentialFormSet = inlineformset_factory(
     extra=1,
     can_delete=True,
     formset=BaseCredentialInlineFormSet,
+    widgets={
+        'issued_on': forms.DateInput(attrs={'type': 'date'}),
+        'expires_on': forms.DateInput(attrs={'type': 'date'}),
+        'notes': forms.TextInput(attrs={'placeholder': 'Optional notes for clients'}),
+    },
 )

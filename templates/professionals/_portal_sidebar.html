@@ -1,0 +1,42 @@
+<aside class="portal-sidebar">
+    <nav class="portal-nav" aria-label="Practitioner portal navigation">
+        <a href="{% url 'catalog:professional_detail' profile.pk %}"
+            class="{% if active_portal_nav == 'profile' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">PR</span>
+            <span class="portal-nav-label">Profile view</span>
+        </a>
+        <a href="{% url 'professionals:profile_core' %}"
+            class="{% if active_portal_nav == 'core' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">CR</span>
+            <span class="portal-nav-label">Core</span>
+        </a>
+        <a href="{% url 'professionals:profile_gallery' %}"
+            class="{% if active_portal_nav == 'gallery' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">GL</span>
+            <span class="portal-nav-label">Gallery</span>
+        </a>
+        <a href="{% url 'professionals:profile_credentials' %}"
+            class="{% if active_portal_nav == 'credentials' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">CD</span>
+            <span class="portal-nav-label">Credentials</span>
+        </a>
+        <a href="{% url 'catalog:service_list' %}" class="{% if active_portal_nav == 'services' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">SV</span>
+            <span class="portal-nav-label">Services</span>
+        </a>
+        <a href="{% url 'booking:availability' %}" class="{% if active_portal_nav == 'hours' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">HR</span>
+            <span class="portal-nav-label">Hours</span>
+        </a>
+        <a href="{% url 'accounts:settings' %}" class="{% if active_portal_nav == 'account' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">AC</span>
+            <span class="portal-nav-label">Account settings</span>
+        </a>
+        <a href="{% url 'pages:terms' %}" class="{% if active_portal_nav == 'help' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">HP</span>
+            <span class="portal-nav-label">Help</span>
+        </a>
+    </nav>
+    <p class="hint portal-sidebar-note">Portal nav is built for future sections like
+        scheduling, messaging, clients, and payments.</p>
+</aside>

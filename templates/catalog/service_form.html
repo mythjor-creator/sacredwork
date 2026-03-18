@@ -1,25 +1,48 @@
 {% extends 'base.html' %}
 
+{% block top_nav_links %}
+{% include 'professionals/_portal_top_nav.html' with profile=profile %}
+{% endblock %}
+
 {% block content %}
-<section class="card">
-    <h1>{{ form_title }}</h1>
-    <p class="hint">This service will appear on {{ profile.display_name }}{{ profile.business_name_suffix }} once your
-        profile is visible.</p>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
+<div class="shell" style="padding-top: 1rem;">
+    <div id="practitioner-service-form-portal" class="portal-shell" data-portal-shell>
+        {% include 'professionals/_portal_sidebar.html' with active_portal_nav='services' %}
+        <div class="portal-main">
+            <section class="card">
+                <h1>{{ form_title }}</h1>
+                <p class="hint">Step 3: define service details and optional tiers clients can choose from.</p>
+                <p class="hint">This service appears on {{ profile.display_name }}{{ profile.business_name_suffix }}
+                    once your profile is visible.</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.6rem 0 0.8rem;">
+                    <a class="button" style="margin-top: 0; background: #334155;"
+                        href="{% url 'catalog:service_list' %}">Back to services</a>
+                    <a class="button" style="margin-top: 0; background: #475569;"
+                        href="{% url 'booking:availability' %}">Set hours</a>
+                </div>
 
-        <h2 style="margin: 1.1rem 0 0.5rem;">Service tiers</h2>
-        <p class="hint" style="margin-top: 0;">Optional: add tiered options (for example Intro, Standard, Deep Dive).
-        </p>
-        {{ tier_formset.management_form }}
-        {% for tier_form in tier_formset %}
-        <section style="border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; margin-bottom: 0.7rem;">
-            {{ tier_form.as_p }}
-        </section>
-        {% endfor %}
+                <form method="post">
+                    {% csrf_token %}
 
-        <button type="submit">Save service</button>
-    </form>
-</section>
+                    <h2 style="margin: 0.9rem 0 0.5rem;">Core service</h2>
+                    {{ form.as_p }}
+
+                    <h2 style="margin: 1.1rem 0 0.5rem;">Service tiers</h2>
+                    <p class="hint" style="margin-top: 0;">Optional: add tiered options such as Intro, Standard, or Deep
+                        Dive.</p>
+                    {{ tier_formset.management_form }}
+                    {% for tier_form in tier_formset %}
+                    <section
+                        style="border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; margin-bottom: 0.7rem;">
+                        <h3 style="margin: 0 0 0.45rem; font-size: 1rem;">Tier {{ forloop.counter }}</h3>
+                        {{ tier_form.as_p }}
+                    </section>
+                    {% endfor %}
+
+                    <button type="submit">Save service</button>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
 {% endblock %}

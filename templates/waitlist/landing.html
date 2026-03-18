@@ -1,239 +1,349 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    .waitlist-page {
+        display: grid;
+        gap: 1rem;
+        padding-top: 1rem;
+    }
+
+    .waitlist-hero {
+        background: linear-gradient(160deg, rgba(228, 221, 212, 0.42) 0%, rgba(175, 235, 243, 0.25) 100%);
+    }
+
+    .waitlist-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .waitlist-track-list,
+    .waitlist-benefits {
+        display: grid;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+
+    .waitlist-track,
+    .waitlist-benefit {
+        padding: 0.8rem;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+    }
+
+    .waitlist-track {
+        background: #fffbeb;
+    }
+
+    .waitlist-benefit {
+        background: #f8fafc;
+    }
+
+    .waitlist-columns {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .waitlist-flow {
+        margin: 0.65rem 0 0;
+        padding-left: 1.1rem;
+        display: grid;
+        gap: 0.65rem;
+    }
+
+    .waitlist-required {
+        color: #7f1d1d;
+        font-weight: 600;
+    }
+
+    .waitlist-errors {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        border-radius: 12px;
+        padding: 0.8rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .waitlist-step-style .errorlist {
+        margin: 0.35rem 0;
+        color: #991b1b;
+    }
+
+    .waitlist-step-style .stepper {
+        display: grid;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .waitlist-step-style .step-indicator {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .waitlist-step-style .step-pill {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.45rem 0.7rem;
+        text-align: center;
+        font-size: 0.85rem;
+        background: #fff;
+    }
+
+    .waitlist-step-style .step-pill.active {
+        background: rgba(175, 235, 243, 0.44);
+        border-color: var(--figma-blue);
+        color: #1e3a8a;
+        font-weight: 600;
+    }
+
+    .waitlist-step-style .step-panel {
+        display: none;
+    }
+
+    .waitlist-step-style .step-panel.active {
+        display: block;
+    }
+
+    .waitlist-step-style .field-block {
+        margin-bottom: 0.85rem;
+    }
+
+    .waitlist-step-style .field-block label {
+        margin-top: 0;
+        font-weight: 600;
+    }
+
+    .waitlist-step-style .field-required {
+        color: #b91c1c;
+    }
+
+    .waitlist-step-style .step-actions {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.6rem;
+        margin-top: 1rem;
+    }
+
+    .waitlist-step-style .step-actions .button-secondary {
+        background: #334155;
+    }
+
+    .waitlist-step-style .checkbox-field {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .waitlist-step-style .checkbox-field input {
+        width: auto;
+        margin-top: 0;
+    }
+
+    .waitlist-step-style .checkbox-field label {
+        margin-top: 0;
+        font-weight: 500;
+    }
+
+    .waitlist-step-style .hint-inline {
+        margin: 0.3rem 0 0;
+    }
+
+    .waitlist-delivery-note {
+        margin: 0.45rem 0 0;
+    }
+
+    @media (max-width: 760px) {
+        .waitlist-step-style .step-indicator {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="card" style="padding: 1.6rem;">
-    <h1 style="margin-top: 0;">Build your early presence on clairbook</h1>
-    <p class="hint">Join the waitlist and get priority onboarding before public launch.</p>
-    <p>We are building a focused marketplace for trusted wellness, spiritual, beauty, and coaching professionals.
-        Early practitioners will shape category design, discovery filters, and booking workflows.</p>
-</section>
+<div class="shell waitlist-page">
+    <section class="card waitlist-hero" style="padding: 1.6rem;">
+        <h1 style="margin-top: 0;">Build your early presence on clairbook</h1>
+        <p class="hint">Join the waitlist and get priority onboarding before public launch.</p>
+        <p>We are building a focused marketplace for trusted wellness, spiritual, beauty, and coaching professionals.
+            Early practitioners will shape category design, discovery filters, and booking workflows.</p>
+    </section>
 
-<section style="display: grid; gap: 1rem; margin-top: 1rem;">
-    <div class="card">
-        <h2 style="margin-top: 0;">Service tracks we are launching first</h2>
-        <div style="display: grid; gap: 0.75rem; margin-top: 0.75rem;">
-            {% for track in service_tracks %}
-            <article
-                style="padding: 0.8rem; border: 1px solid var(--border); border-radius: 12px; background: #fffbeb;">
-                <h3 style="margin: 0 0 0.35rem;">{{ track.title }}</h3>
-                <p style="margin: 0;" class="hint">{{ track.description }}</p>
-            </article>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<section class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0;">Waitlist profile</h2>
-    <p class="hint">This is not client-facing yet. It helps us prioritize onboarding and category rollout.</p>
-    <p class="hint"><strong>* Required fields</strong></p>
-    <form method="post" data-waitlist-form data-track-event="waitlist_submitted" data-track-source="waitlist">
-        {% csrf_token %}
-        <div data-non-field-errors
-            style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 12px; padding: 0.8rem; margin-bottom: 0.9rem;">
-            {{ form.non_field_errors }}
+    <section class="waitlist-grid">
+        <div class="card">
+            <h2 style="margin-top: 0;">Service tracks we are launching first</h2>
+            <div class="waitlist-track-list">
+                {% for track in service_tracks %}
+                <article class="waitlist-track">
+                    <h3 style="margin: 0 0 0.35rem;">{{ track.title }}</h3>
+                    <p style="margin: 0;" class="hint">{{ track.description }}</p>
+                </article>
+                {% endfor %}
+            </div>
         </div>
 
-        <style>
-            .errorlist {
-                margin: 0.35rem 0;
-                color: #991b1b;
-            }
-
-            .stepper {
-                display: grid;
-                gap: 0.75rem;
-                margin-bottom: 1rem;
-            }
-
-            .step-indicator {
-                display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 0.5rem;
-            }
-
-            .step-pill {
-                border: 1px solid var(--border);
-                border-radius: 999px;
-                padding: 0.45rem 0.7rem;
-                text-align: center;
-                font-size: 0.85rem;
-                background: #fff;
-            }
-
-            .step-pill.active {
-                background: var(--brand-soft);
-                border-color: var(--brand);
-                color: #134e4a;
-                font-weight: 600;
-            }
-
-            .step-panel {
-                display: none;
-            }
-
-            .step-panel.active {
-                display: block;
-            }
-
-            .field-block {
-                margin-bottom: 0.85rem;
-            }
-
-            .field-block label {
-                margin-top: 0;
-                font-weight: 600;
-            }
-
-            .field-required {
-                color: #b91c1c;
-            }
-
-            .step-actions {
-                display: flex;
-                justify-content: space-between;
-                gap: 0.6rem;
-                margin-top: 1rem;
-            }
-
-            .step-actions .button-secondary {
-                background: #334155;
-            }
-
-            .checkbox-field {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                margin-top: 0.5rem;
-            }
-
-            .checkbox-field input {
-                width: auto;
-                margin-top: 0;
-            }
-
-            .checkbox-field label {
-                margin-top: 0;
-                font-weight: 500;
-            }
-
-            .hint-inline {
-                margin: 0.3rem 0 0;
-            }
-        </style>
-
-        <div class="stepper" data-stepper>
-            <div class="step-indicator">
-                <div class="step-pill active" data-step-pill="1">1. Identity</div>
-                <div class="step-pill" data-step-pill="2">2. Practice</div>
-                <div class="step-pill" data-step-pill="3">3. Delivery</div>
-            </div>
-
-            <div class="step-panel active" data-step-panel="1">
-                <div class="field-block">
-                    <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}
-                        <span class="field-required">*</span></label>
-                    {{ form.full_name }}
-                    <p class="hint hint-inline">{{ form.full_name.help_text }}</p>
-                    {{ form.full_name.errors }}
-                </div>
-
-                <div class="field-block">
-                    <label for="{{ form.email.id_for_label }}">{{ form.email.label }}
-                        <span class="field-required">*</span></label>
-                    {{ form.email }}
-                    <p class="hint hint-inline">{{ form.email.help_text }}</p>
-                    {{ form.email.errors }}
-                </div>
-
-                <div class="field-block">
-                    <label for="{{ form.business_name.id_for_label }}">{{ form.business_name.label }}</label>
-                    {{ form.business_name }}
-                    <p class="hint hint-inline">{{ form.business_name.help_text }}</p>
-                    {{ form.business_name.errors }}
-                </div>
-
-                <div class="field-block">
-                    <label for="{{ form.headline.id_for_label }}">{{ form.headline.label }}
-                        <span class="field-required">*</span></label>
-                    {{ form.headline }}
-                    <p class="hint hint-inline">{{ form.headline.help_text }}</p>
-                    {{ form.headline.errors }}
+        <div class="waitlist-columns">
+            <div class="card">
+                <h2 style="margin-top: 0;">Why practitioners are joining now</h2>
+                <div class="waitlist-benefits">
+                    {% for benefit in practitioner_benefits %}
+                    <article class="waitlist-benefit">
+                        <h3 style="margin: 0 0 0.3rem; font-size: 1rem;">{{ benefit.title }}</h3>
+                        <p class="hint" style="margin: 0;">{{ benefit.description }}</p>
+                    </article>
+                    {% endfor %}
                 </div>
             </div>
 
-            <div class="step-panel" data-step-panel="2">
-                <div class="field-block">
-                    <label for="{{ form.practice_type.id_for_label }}">{{ form.practice_type.label }}
-                        <span class="field-required">*</span></label>
-                    {{ form.practice_type }}
-                    <p class="hint hint-inline">{{ form.practice_type.help_text }}</p>
-                    {{ form.practice_type.errors }}
-                </div>
+            <div class="card">
+                <h2 style="margin-top: 0;">How approvals work</h2>
+                <p class="hint">Clear sequence: apply now, we review fit, invited practitioners get guided onboarding.
+                </p>
+                <ol class="waitlist-flow">
+                    {% for stage in approval_flow %}
+                    <li>
+                        <strong>{{ stage.title }}</strong>
+                        <p class="hint" style="margin: 0.2rem 0 0;">{{ stage.description }}</p>
+                    </li>
+                    {% endfor %}
+                </ol>
+                <p class="hint" style="margin-top: 0.85rem;">CTA flow: submit your waitlist profile today and we will
+                    email
+                    updates as your status advances.</p>
+            </div>
+        </div>
+    </section>
 
-                <div class="field-block">
-                    <label for="{{ form.modalities.id_for_label }}">{{ form.modalities.label }}
-                        <span class="field-required">*</span></label>
-                    {{ form.modalities }}
-                    <p class="hint hint-inline">{{ form.modalities.help_text }}</p>
-                    {{ form.modalities.errors }}
-                </div>
-
-                <div class="field-block">
-                    <label for="{{ form.years_experience.id_for_label }}">{{ form.years_experience.label }}
-                        <span class="field-required">*</span></label>
-                    {{ form.years_experience }}
-                    <p class="hint hint-inline">{{ form.years_experience.help_text }}</p>
-                    {{ form.years_experience.errors }}
-                </div>
+    <section class="card">
+        <h2 style="margin-top: 0;">Waitlist profile</h2>
+        <p class="hint">This is not client-facing yet. It helps us prioritize onboarding and category rollout.</p>
+        <p class="hint waitlist-required">* Required fields</p>
+        <form class="waitlist-step-style" method="post" data-waitlist-form data-track-event="waitlist_submitted"
+            data-track-source="waitlist">
+            {% csrf_token %}
+            <div data-non-field-errors class="waitlist-errors">
+                {{ form.non_field_errors }}
             </div>
 
-            <div class="step-panel" data-step-panel="3">
-                <div class="field-block">
-                    <label for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
-                    {{ form.location }}
-                    <p class="hint hint-inline">{{ form.location.help_text }}</p>
-                    {{ form.location.errors }}
+            <div class="stepper" data-stepper>
+                <div class="step-indicator">
+                    <div class="step-pill active" data-step-pill="1">1. Identity</div>
+                    <div class="step-pill" data-step-pill="2">2. Practice</div>
+                    <div class="step-pill" data-step-pill="3">3. Delivery</div>
                 </div>
 
-                <div class="field-block">
-                    <label for="{{ form.website_url.id_for_label }}">{{ form.website_url.label }}</label>
-                    {{ form.website_url }}
-                    <p class="hint hint-inline">{{ form.website_url.help_text }}</p>
-                    {{ form.website_url.errors }}
-                </div>
-
-                <div class="field-block">
-                    <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
-                    {{ form.notes }}
-                    <p class="hint hint-inline">{{ form.notes.help_text }}</p>
-                    {{ form.notes.errors }}
-                </div>
-
-                <div class="field-block">
-                    <div class="checkbox-field">
-                        {{ form.is_virtual }}
-                        <label for="{{ form.is_virtual.id_for_label }}">{{ form.is_virtual.label }}</label>
+                <div class="step-panel active" data-step-panel="1">
+                    <div class="field-block">
+                        <label for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}
+                            <span class="field-required">*</span></label>
+                        {{ form.full_name }}
+                        <p class="hint hint-inline">{{ form.full_name.help_text }}</p>
+                        {{ form.full_name.errors }}
                     </div>
-                    {{ form.is_virtual.errors }}
 
-                    <div class="checkbox-field">
-                        {{ form.offers_in_person }}
-                        <label for="{{ form.offers_in_person.id_for_label }}">{{ form.offers_in_person.label }}</label>
+                    <div class="field-block">
+                        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}
+                            <span class="field-required">*</span></label>
+                        {{ form.email }}
+                        <p class="hint hint-inline">{{ form.email.help_text }}</p>
+                        {{ form.email.errors }}
                     </div>
-                    {{ form.offers_in_person.errors }}
-                    <p class="hint" style="margin: 0.45rem 0 0;">Choose one or both formats for booking.</p>
+
+                    <div class="field-block">
+                        <label for="{{ form.business_name.id_for_label }}">{{ form.business_name.label }}</label>
+                        {{ form.business_name }}
+                        <p class="hint hint-inline">{{ form.business_name.help_text }}</p>
+                        {{ form.business_name.errors }}
+                    </div>
+
+                    <div class="field-block">
+                        <label for="{{ form.headline.id_for_label }}">{{ form.headline.label }}
+                            <span class="field-required">*</span></label>
+                        {{ form.headline }}
+                        <p class="hint hint-inline">{{ form.headline.help_text }}</p>
+                        {{ form.headline.errors }}
+                    </div>
+                </div>
+
+                <div class="step-panel" data-step-panel="2">
+                    <div class="field-block">
+                        <label for="{{ form.practice_type.id_for_label }}">{{ form.practice_type.label }}
+                            <span class="field-required">*</span></label>
+                        {{ form.practice_type }}
+                        <p class="hint hint-inline">{{ form.practice_type.help_text }}</p>
+                        {{ form.practice_type.errors }}
+                    </div>
+
+                    <div class="field-block">
+                        <label for="{{ form.modalities.id_for_label }}">{{ form.modalities.label }}
+                            <span class="field-required">*</span></label>
+                        {{ form.modalities }}
+                        <p class="hint hint-inline">{{ form.modalities.help_text }}</p>
+                        {{ form.modalities.errors }}
+                    </div>
+
+                    <div class="field-block">
+                        <label for="{{ form.years_experience.id_for_label }}">{{ form.years_experience.label }}
+                            <span class="field-required">*</span></label>
+                        {{ form.years_experience }}
+                        <p class="hint hint-inline">{{ form.years_experience.help_text }}</p>
+                        {{ form.years_experience.errors }}
+                    </div>
+                </div>
+
+                <div class="step-panel" data-step-panel="3">
+                    <div class="field-block">
+                        <label for="{{ form.location.id_for_label }}">{{ form.location.label }}</label>
+                        {{ form.location }}
+                        <p class="hint hint-inline">{{ form.location.help_text }}</p>
+                        {{ form.location.errors }}
+                    </div>
+
+                    <div class="field-block">
+                        <label for="{{ form.website_url.id_for_label }}">{{ form.website_url.label }}</label>
+                        {{ form.website_url }}
+                        <p class="hint hint-inline">{{ form.website_url.help_text }}</p>
+                        {{ form.website_url.errors }}
+                    </div>
+
+                    <div class="field-block">
+                        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+                        {{ form.notes }}
+                        <p class="hint hint-inline">{{ form.notes.help_text }}</p>
+                        {{ form.notes.errors }}
+                    </div>
+
+                    <div class="field-block">
+                        <div class="checkbox-field">
+                            {{ form.is_virtual }}
+                            <label for="{{ form.is_virtual.id_for_label }}">{{ form.is_virtual.label }}</label>
+                        </div>
+                        {{ form.is_virtual.errors }}
+
+                        <div class="checkbox-field">
+                            {{ form.offers_in_person }}
+                            <label for="{{ form.offers_in_person.id_for_label }}">{{ form.offers_in_person.label
+                                }}</label>
+                        </div>
+                        {{ form.offers_in_person.errors }}
+                        <p class="hint waitlist-delivery-note">Choose one or both formats for booking.</p>
+                    </div>
+                </div>
+
+                <div class="step-actions">
+                    <button type="button" class="button-secondary" data-step-prev
+                        style="visibility: hidden;">Back</button>
+                    <button type="button" data-step-next>Next</button>
+                    <button type="submit" data-step-submit style="display: none;">Join Waitlist</button>
                 </div>
             </div>
-
-            <div class="step-actions">
-                <button type="button" class="button-secondary" data-step-prev style="visibility: hidden;">Back</button>
-                <button type="button" data-step-next>Next</button>
-                <button type="submit" data-step-submit style="display: none;">Join Waitlist</button>
-            </div>
-        </div>
-    </form>
-</section>
+        </form>
+    </section>
+</div>
 
 <script>
     (function () {

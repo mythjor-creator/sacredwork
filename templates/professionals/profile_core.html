@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block top_nav_links %}
+{% include 'professionals/_portal_top_nav.html' with profile=profile %}
+{% endblock %}
+
+{% block content %}
+<div class="shell" style="padding-top: 1rem;">
+    <div id="practitioner-core-portal" class="portal-shell" data-portal-shell>
+        {% include 'professionals/_portal_sidebar.html' with active_portal_nav='core' %}
+        <div class="portal-main" style="display: grid; gap: 1rem;">
+            <section class="card">
+                <div
+                    style="display: flex; justify-content: space-between; gap: 0.7rem; align-items: center; flex-wrap: wrap;">
+                    <h1 style="margin: 0;">Core profile</h1>
+                    {% if edit_mode %}
+                    <a class="button" style="margin-top: 0; background: #334155;"
+                        href="{% url 'professionals:profile_core' %}">Cancel</a>
+                    {% else %}
+                    <a class="button" style="margin-top: 0;"
+                        href="{% url 'professionals:profile_core' %}?edit=1">Edit</a>
+                    {% endif %}
+                </div>
+                <p class="hint" style="margin-top: 0.45rem;">Default view is read-only. Use Edit to update.</p>
+            </section>
+
+            {% if edit_mode %}
+            <section class="card">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit">Save core details</button>
+                </form>
+            </section>
+            {% else %}
+            <section class="card">
+                <h2 style="margin-top: 0;">Public details</h2>
+                <p><strong>Display name:</strong> {{ profile.display_name|default:'—' }}</p>
+                <p><strong>Business:</strong> {{ profile.business_name|default:'Not provided yet' }}</p>
+                <p><strong>Headline:</strong> {{ profile.headline|default:'Add a clear headline' }}</p>
+                <p><strong>Bio:</strong> {{ profile.bio|default:'Add a short bio so clients can understand your work.'
+                    }}</p>
+                <p><strong>Long bio:</strong> {{ profile.long_bio|default:'Optional extended story not added yet.' }}
+                </p>
+                <p><strong>Modalities:</strong> {{ profile.modalities|default:'Add modalities to improve
+                    discoverability.' }}</p>
+                <p><strong>Location:</strong> {{ profile.location|default:'Location not set' }}</p>
+                <p><strong>Virtual sessions:</strong> {% if profile.is_virtual %}Yes{% else %}No{% endif %}</p>
+                <p><strong>Years of experience:</strong> {{ profile.years_experience }}</p>
+                <p><strong>Profile image URL:</strong> {{ profile.profile_image_url|default:'Not set' }}</p>
+            </section>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
