@@ -1,12 +1,16 @@
+from datetime import timedelta
+
 from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
 from django.core.management import call_command
+from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
+from apps.waitlist.models import PractitionerWaitlistProfile
 
-from .models import Category, Service
+from .models import AnalyticsEvent, Category, Service
 
 
 class MarketplaceDiscoveryTests(TestCase):
@@ -273,3 +277,323 @@ class PreviewSeedCommandTests(TestCase):
 		).count()
 
 		self.assertEqual(first_marketing_service_count, second_marketing_service_count)
+
+
+class AnalyticsEventTests(TestCase):
+	def test_track_endpoint_persists_supported_event(self):
+		response = self.client.post(
+			reverse('catalog:analytics_track'),
+			data='{"event":"search_submitted","payload":{"source":"home","has_query":true,"has_category":false},"path":"/"}',
+			content_type='application/json',
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertTrue(
+			AnalyticsEvent.objects.filter(name='search_submitted', source='home', path='/').exists()
+		)
+
+	def test_track_endpoint_rejects_unknown_event(self):
+		response = self.client.post(
+			reverse('catalog:analytics_track'),
+			data='{"event":"unexpected_event","payload":{},"path":"/"}',
+			content_type='application/json',
+		)
+
+		self.assertEqual(response.status_code, 400)
+		self.assertEqual(AnalyticsEvent.objects.count(), 0)
+
+	def test_staff_can_view_kpi_dashboard(self):
+		staff_user = User.objects.create_user(
+			username='kpi-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/')
+		AnalyticsEvent.objects.create(name='profile_viewed', source='professional_detail', path='/professionals/1/')
+
+		response = self.client.get(reverse('catalog:analytics_kpis'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Analytics KPI Snapshot')
+		self.assertContains(response, 'Search submits')
+
+	def test_non_staff_cannot_view_kpi_dashboard(self):
+		normal_user = User.objects.create_user(
+			username='kpi-user',
+			password='StrongPass123!!',
+			role=User.Role.CLIENT,
+		)
+		self.client.force_login(normal_user)
+
+		response = self.client.get(reverse('catalog:analytics_kpis'))
+		self.assertEqual(response.status_code, 302)
+
+	def test_kpi_dashboard_respects_days_filter(self):
+		staff_user = User.objects.create_user(
+			username='kpi-filter-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		recent_event = AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/')
+		old_event = AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/old')
+		old_event.created_at = timezone.now() - timedelta(days=20)
+		old_event.save(update_fields=['created_at'])
+
+		response = self.client.get(reverse('catalog:analytics_kpis'), {'days': '14'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Last 14 days')
+		self.assertContains(response, recent_event.path)
+		self.assertNotContains(response, old_event.path)
+
+	def test_kpi_dashboard_csv_export(self):
+		staff_user = User.objects.create_user(
+			username='kpi-csv-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+		AnalyticsEvent.objects.create(name='profile_viewed', source='professional_detail', path='/professionals/12/')
+
+		response = self.client.get(reverse('catalog:analytics_kpis'), {'days': '7', 'format': 'csv'})
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(response['Content-Type'], 'text/csv')
+		self.assertIn('clairbook-analytics-7d.csv', response['Content-Disposition'])
+
+	def test_kpi_dashboard_supports_this_week_preset(self):
+		staff_user = User.objects.create_user(
+			username='kpi-this-week-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		recent = AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/')
+		old = AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/last-week')
+		old.created_at = timezone.now() - timedelta(days=10)
+		old.save(update_fields=['created_at'])
+
+		response = self.client.get(reverse('catalog:analytics_kpis'), {'preset': 'this_week'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'This week from')
+		self.assertContains(response, recent.path)
+		self.assertNotContains(response, old.path)
+
+	def test_kpi_dashboard_shows_source_breakdown(self):
+		staff_user = User.objects.create_user(
+			username='kpi-breakdown-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/')
+		AnalyticsEvent.objects.create(name='search_submitted', source='discover', path='/browse/')
+		AnalyticsEvent.objects.create(name='search_submitted', source='home', path='/')
+
+		response = self.client.get(reverse('catalog:analytics_kpis'), {'days': '7'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Source breakdown')
+		self.assertContains(response, '<strong>home</strong>: 2', html=True)
+		self.assertContains(response, '<strong>discover</strong>: 1', html=True)
+
+	def test_kpi_dashboard_shows_operational_shortcuts(self):
+		staff_user = User.objects.create_user(
+			username='kpi-ops-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		response = self.client.get(reverse('catalog:analytics_kpis'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Operational shortcuts')
+
+		new_waitlist_link = (
+			reverse('admin:waitlist_practitionerwaitlistprofile_changelist') + '?status__exact=new'
+		)
+		unverified_link = (
+			reverse('admin:professionals_professionalprofile_changelist')
+			+ '?approval_status__exact=approved&is_verified__exact=0'
+		)
+		self.assertContains(response, new_waitlist_link)
+		self.assertContains(response, unverified_link.replace('&', '&amp;'))
+
+	def test_kpi_dashboard_shows_waitlist_status_aging(self):
+		staff_user = User.objects.create_user(
+			username='kpi-aging-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		new_profile = PractitionerWaitlistProfile.objects.create(
+			full_name='Ari New',
+			email='ari-new@example.com',
+			headline='Practitioner',
+			modalities='reiki',
+			practice_type=PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
+			status=PractitionerWaitlistProfile.Status.NEW,
+		)
+		reviewing_profile = PractitionerWaitlistProfile.objects.create(
+			full_name='Ari Reviewing',
+			email='ari-reviewing@example.com',
+			headline='Practitioner',
+			modalities='coaching',
+			practice_type=PractitionerWaitlistProfile.PracticeType.COACHING,
+			status=PractitionerWaitlistProfile.Status.REVIEWING,
+		)
+		new_profile.created_at = timezone.now() - timedelta(days=4)
+		reviewing_profile.created_at = timezone.now() - timedelta(days=9)
+		new_profile.save(update_fields=['created_at'])
+		reviewing_profile.save(update_fields=['created_at'])
+
+		response = self.client.get(reverse('catalog:analytics_kpis'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Waitlist status aging')
+		self.assertContains(response, 'New')
+		self.assertContains(response, 'Reviewing')
+		self.assertContains(response, 'Avg age:')
+
+	def test_kpi_dashboard_csv_includes_status_aging_rows(self):
+		staff_user = User.objects.create_user(
+			username='kpi-aging-csv-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		PractitionerWaitlistProfile.objects.create(
+			full_name='Ari Invited',
+			email='ari-invited@example.com',
+			headline='Practitioner',
+			modalities='breathwork',
+			practice_type=PractitionerWaitlistProfile.PracticeType.WELLNESS,
+			status=PractitionerWaitlistProfile.Status.INVITED,
+		)
+
+		response = self.client.get(reverse('catalog:analytics_kpis'), {'days': '7', 'format': 'csv'})
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'waitlist_status,count,avg_age_days_since_status_change,oldest_age_days_since_status_change')
+		self.assertContains(response, 'invited,1')
+
+	def test_kpi_dashboard_status_aging_uses_status_changed_at(self):
+		staff_user = User.objects.create_user(
+			username='kpi-aging-source-staff',
+			password='StrongPass123!!',
+			role=User.Role.ADMIN,
+			is_staff=True,
+		)
+		self.client.force_login(staff_user)
+
+		profile = PractitionerWaitlistProfile.objects.create(
+			full_name='Ari Shifted',
+			email='ari-shifted@example.com',
+			headline='Practitioner',
+			modalities='reiki',
+			practice_type=PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
+			status=PractitionerWaitlistProfile.Status.REVIEWING,
+		)
+		profile.created_at = timezone.now() - timedelta(days=120)
+		profile.status_changed_at = timezone.now() - timedelta(days=2)
+		profile.save(update_fields=['created_at', 'status_changed_at'])
+
+		response = self.client.get(reverse('catalog:analytics_kpis'))
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Reviewing')
+		# If based on created_at this would show ~120 days; this asserts status_changed_at is used.
+		self.assertContains(response, 'Avg age: 2.0 days')
+
+
+class ProfileCredibilityTests(TestCase):
+	def setUp(self):
+		self.category = Category.objects.create(name='Coaching', slug='coaching')
+		self.pro_user = User.objects.create_user(
+			username='credibility-pro',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		self.profile = ProfessionalProfile.objects.create(
+			user=self.pro_user,
+			business_name='Clarity Practice',
+			headline='Certified life coach',
+			bio='I help people find clarity and direction in their lives through structured coaching.',
+			modalities='coaching, NLP',
+			location='New York',
+			is_virtual=True,
+			years_experience=5,
+			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
+			is_visible=True,
+		)
+		self.service = Service.objects.create(
+			professional=self.profile,
+			category=self.category,
+			name='Clarity Session',
+			description='A focused 1:1 coaching session.',
+			duration_minutes=60,
+			price_cents=15000,
+			delivery_format=Service.DeliveryFormat.VIRTUAL,
+		)
+
+	def test_verified_badge_shown_when_is_verified_true(self):
+		self.profile.is_verified = True
+		self.profile.save()
+		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
+		self.assertContains(response, 'Verified')
+
+	def test_verified_badge_not_shown_when_is_verified_false(self):
+		self.profile.is_verified = False
+		self.profile.save()
+		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
+		self.assertNotContains(response, '✓ Verified')
+
+	def test_completeness_percent_full_profile(self):
+		self.profile.profile_image_url = 'https://example.com/photo.jpg'
+		self.profile.save()
+		self.assertEqual(self.profile.completeness_percent, 100)
+
+	def test_completeness_percent_missing_photo(self):
+		# profile_image_url is blank by default in setUp
+		# bio, location, modalities, service all present → 4/5 = 80%
+		self.assertEqual(self.profile.completeness_percent, 80)
+
+	def test_completeness_panel_shown_to_profile_owner(self):
+		self.client.force_login(self.pro_user)
+		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
+		self.assertContains(response, 'Profile completeness')
+
+	def test_completeness_panel_hidden_from_other_users(self):
+		other = User.objects.create_user(username='anon2', password='StrongPass123!!', role=User.Role.CLIENT)
+		self.client.force_login(other)
+		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
+		self.assertNotContains(response, 'Profile completeness')
+
+	def test_duration_display_under_60_minutes(self):
+		self.service.duration_minutes = 45
+		self.assertEqual(self.service.duration_display, '45 min')
+
+	def test_duration_display_exact_hour(self):
+		self.service.duration_minutes = 60
+		self.assertEqual(self.service.duration_display, '1 hr')
+
+	def test_duration_display_multiple_hours(self):
+		self.service.duration_minutes = 120
+		self.assertEqual(self.service.duration_display, '2 hrs')
+
+	def test_duration_display_hours_and_minutes(self):
+		self.service.duration_minutes = 90
+		self.assertEqual(self.service.duration_display, '1 hr 30 min')
+
+	def test_service_price_shown_on_profile_page(self):
+		response = self.client.get(reverse('catalog:professional_detail', args=[self.profile.pk]))
+		self.assertContains(response, '$150.00')

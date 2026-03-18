@@ -5,9 +5,9 @@ from .models import User
 
 
 @admin.register(User)
-class SacredWorkUserAdmin(UserAdmin):
+class ClairbookUserAdmin(UserAdmin):
 	list_display = ('username', 'email', 'role', 'is_staff', 'is_active')
 	list_filter = ('role', 'is_staff', 'is_active')
 	fieldsets = UserAdmin.fieldsets + (
-		('Sacred Work', {'fields': ('role', 'display_name')}),
+		('clairbook', {'fields': ('role', 'display_name')}),
 	)

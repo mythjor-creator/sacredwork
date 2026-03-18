@@ -3,7 +3,7 @@ from django.core.mail import send_mail
 from django.utils import timezone
 
 
-SITE_NAME = 'Sacred Work'
+SITE_NAME = 'clairbook'
 FROM_EMAIL = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@sacredwork.app')
 
 

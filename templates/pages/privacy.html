@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="shell" style="max-width: 800px; padding: 2rem 1rem;">
+    <h1>Privacy Policy</h1>
+    <p class="hint" style="margin-bottom: 2rem;">Last updated: March 17, 2026</p>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>1. Introduction</h2>
+        <p>SacredWork ("we," "us," or "our") operates the clairbook platform. This Privacy Policy explains how we
+            collect, use, disclose, and safeguard your information when you use our website and services.</p>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>2. Information We Collect</h2>
+        <p>We collect information you provide directly:</p>
+        <ul>
+            <li><strong>Account Information:</strong> Name, email, phone, business name, practice type, modalities,
+                location</li>
+            <li><strong>Profile Information:</strong> Bio, services offered, pricing, availability, credentials</li>
+            <li><strong>Communications:</strong> Your messages to us, support requests, feedback</li>
+            <li><strong>Usage Data:</strong> Pages visited, searches performed, events tracked (anonymously for
+                analytics)</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>3. How We Use Your Information</h2>
+        <ul>
+            <li>To operate and improve the platform</li>
+            <li>To send you service updates, waitlist status changes, and notifications (only as you've requested)</li>
+            <li>To provide customer support</li>
+            <li>To comply with legal obligations</li>
+            <li>To prevent fraud and abuse</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>4. Data Sharing</h2>
+        <p>We do not sell your personal data. We may share information:</p>
+        <ul>
+            <li>With service providers who assist our operations (hosting, email delivery)</li>
+            <li>When required by law or legal process</li>
+            <li>To protect our rights, privacy, safety, or property</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>5. Data Retention</h2>
+        <p>We retain your data as long as your account is active. If you delete your account, we delete all personal
+            data within 30 days, except where retention is required by law.</p>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>6. Your Rights (GDPR & CCPA)</h2>
+        <ul>
+            <li><strong>Access:</strong> Request a copy of your data at <a
+                    href="{% url 'pages:gdpr_export' %}">/account/export-data/</a></li>
+            <li><strong>Delete:</strong> Request account deletion at <a
+                    href="{% url 'pages:gdpr_delete' %}">/account/delete/</a></li>
+            <li><strong>Correct:</strong> Update your profile information anytime through your account</li>
+            <li><strong>Opt-out:</strong> Email us at privacy@clairbook.app to disable notifications</li>
+        </ul>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>7. Security</h2>
+        <p>We use industry-standard encryption (HTTPS, secure cookies) to protect your data. However, no method of
+            transmission over the internet is 100% secure.</p>
+    </section>
+
+    <section style="margin-bottom: 2rem;">
+        <h2>8. Contact Us</h2>
+        <p>For privacy questions or data requests, email: <strong>privacy@clairbook.app</strong></p>
+    </section>
+</div>
+{% endblock %}

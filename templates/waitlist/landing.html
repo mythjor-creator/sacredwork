@@ -2,8 +2,8 @@
 
 {% block content %}
 <section class="card" style="padding: 1.6rem;">
-    <h1 style="margin-top: 0;">Build your early presence on Sacred Work</h1>
-    <p class="hint">Join the practitioner waitlist and get priority onboarding before public launch.</p>
+    <h1 style="margin-top: 0;">Build your early presence on clairbook</h1>
+    <p class="hint">Join the waitlist and get priority onboarding before public launch.</p>
     <p>We are building a focused marketplace for trusted wellness, spiritual, beauty, and coaching professionals.
         Early practitioners will shape category design, discovery filters, and booking workflows.</p>
 </section>
@@ -24,10 +24,10 @@
 </section>
 
 <section class="card" style="margin-top: 1rem;">
-    <h2 style="margin-top: 0;">Practitioner waitlist profile</h2>
+    <h2 style="margin-top: 0;">Waitlist profile</h2>
     <p class="hint">This is not client-facing yet. It helps us prioritize onboarding and category rollout.</p>
     <p class="hint"><strong>* Required fields</strong></p>
-    <form method="post" data-waitlist-form>
+    <form method="post" data-waitlist-form data-track-event="waitlist_submitted" data-track-source="waitlist">
         {% csrf_token %}
         <div data-non-field-errors
             style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; border-radius: 12px; padding: 0.8rem; margin-bottom: 0.9rem;">
@@ -229,7 +229,7 @@
             <div class="step-actions">
                 <button type="button" class="button-secondary" data-step-prev style="visibility: hidden;">Back</button>
                 <button type="button" data-step-next>Next</button>
-                <button type="submit" data-step-submit style="display: none;">Join practitioner waitlist</button>
+                <button type="submit" data-step-submit style="display: none;">Join Waitlist</button>
             </div>
         </div>
     </form>

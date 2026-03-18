@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="shell" style="max-width: 600px; padding: 2rem 1rem;">
+    <h1 style="color: #dc2626;">Delete Your Account</h1>
+    <p class="hint">This action cannot be undone. All your data will be permanently deleted within 30 days.</p>
+
+    <section class="card" style="margin-top: 1.5rem; border: 1px solid #fca5a5; background: #fef2f2;">
+        <h2 style="color: #991b1b;">What Gets Deleted</h2>
+        <ul>
+            <li>Your user account</li>
+            <li>Profile information (bio, services, credentials)</li>
+            <li>Waitlist status and history</li>
+            <li>All personal data</li>
+        </ul>
+        <p style="margin-top: 1rem; color: #7f1d1d;"><strong>Note:</strong> Depending on platform policies, some data
+            may be retained for legal/compliance reasons.</p>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <h3>Are you sure?</h3>
+        <p class="hint">Once deleted, your account cannot be recovered. Please confirm below.</p>
+
+        <form method="post" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem;">
+            {% csrf_token %}
+            <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; margin: 0;">
+                <input type="checkbox" name="confirm_delete" required style="width: 18px; height: 18px;">
+                Yes, permanently delete my account and all data
+            </label>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                <button type="submit" class="button" style="background: #dc2626;">Delete Account</button>
+                <a class="button" style="background: #334155;" href="{% url 'accounts:dashboard' %}">Cancel</a>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

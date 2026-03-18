@@ -49,10 +49,12 @@ INSTALLED_APPS = [
     'apps.booking',
     'apps.moderation',
     'apps.waitlist',
+    'apps.pages',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Serve static files in production
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -73,6 +75,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'config.context_processors.analytics',
             ],
         },
     },
@@ -83,13 +86,20 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+# Supports DATABASE_URL env var for PostgreSQL in production (via dj-database-url).
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+import dj_database_url
+
+_database_url = os.environ.get('DATABASE_URL', '')
+if _database_url:
+    DATABASES = {'default': dj_database_url.config(default=_database_url, conn_max_age=600)}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 
 # Password validation
@@ -127,6 +137,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+# collectstatic writes here in production (not committed to git)
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+# WhiteNoise: Compresses and caches static files for production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'accounts.User'
@@ -134,6 +148,38 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:dashboard'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
-# Email — outputs to console in development; swap for SMTP in production
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'Sacred Work <noreply@sacredwork.app>'
+# Email — uses SMTP when EMAIL_HOST is set, falls back to console in development
+_email_host = os.environ.get('EMAIL_HOST', '').strip()
+if _email_host:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = _email_host
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'clairbook <noreply@sacredwork.app>')
+
+# ── Production security ──────────────────────────────────────────────────────
+# These are enforced only when DEBUG=False (i.e. in production).
+# They require HTTPS to be configured on your server/proxy first.
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000          # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+# Analytics (optional): set one or both values in environment to enable scripts.
+ANALYTICS_GA4_MEASUREMENT_ID = os.environ.get('ANALYTICS_GA4_MEASUREMENT_ID', '').strip()
+ANALYTICS_PLAUSIBLE_DOMAIN = os.environ.get('ANALYTICS_PLAUSIBLE_DOMAIN', '').strip()
+ANALYTICS_PLAUSIBLE_SCRIPT_URL = os.environ.get(
+    'ANALYTICS_PLAUSIBLE_SCRIPT_URL',
+    'https://plausible.io/js/script.js',
+).strip()
+
+# Site URL for email links and GDPR exports
+SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')

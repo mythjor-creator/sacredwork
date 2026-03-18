@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="shell" style="padding-top: 1.25rem;">
+    <section class="card">
+        <h1 style="margin-top: 0;">Analytics KPI Snapshot</h1>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.55rem; margin-top: 0.35rem;">
+            {% for preset_option in preset_options_tagged %}
+            <a class="button"
+                style="margin-top: 0; {% if not preset_option.is_selected %}background: #334155;{% endif %}"
+                href="?preset={{ preset_option.value }}">{{ preset_option.label }}</a>
+            {% endfor %}
+        </div>
+        <form method="get" style="display: flex; flex-wrap: wrap; align-items: end; gap: 0.7rem; margin-top: 0.75rem;">
+            <label for="days" style="margin-top: 0;">
+                Date range
+                <select id="days" name="days" style="min-width: 130px;">
+                    {% for option, is_selected in window_options_tagged %}
+                    <option value="{{ option }}" {% if is_selected %} selected{% endif %}>Last {{ option }} days
+                    </option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button type="submit" style="margin-top: 0;">Apply</button>
+            <a class="button" style="margin-top: 0;" href="?{{ export_query_string }}">Export CSV</a>
+        </form>
+        <p class="hint" style="margin-top: 0.55rem;">{{ window_label }} from {{ window_start|date:"M j, Y, g:i a" }}
+            to {{ window_end|date:"M j, Y, g:i a" }}.</p>
+
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; margin-top: 1rem;">
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background: #fff;">
+                <p class="hint" style="margin: 0;">Search submits</p>
+                <p style="margin: 0.3rem 0 0; font-size: 1.5rem; font-weight: 700; color: #033c44;">{{ search_count }}
+                </p>
+                <p class="hint" style="margin: 0.2rem 0 0;">{{ search_delta|floatformat:"0" }} vs previous window</p>
+            </article>
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background: #fff;">
+                <p class="hint" style="margin: 0;">Profile views</p>
+                <p style="margin: 0.3rem 0 0; font-size: 1.5rem; font-weight: 700; color: #033c44;">{{ profile_count }}
+                </p>
+                <p class="hint" style="margin: 0.2rem 0 0;">{{ profile_delta|floatformat:"0" }} vs previous window</p>
+            </article>
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background: #fff;">
+                <p class="hint" style="margin: 0;">Waitlist submits (events)</p>
+                <p style="margin: 0.3rem 0 0; font-size: 1.5rem; font-weight: 700; color: #033c44;">{{ waitlist_count }}
+                </p>
+                <p class="hint" style="margin: 0.2rem 0 0;">{{ waitlist_delta|floatformat:"0" }} vs previous window</p>
+            </article>
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background: #fff;">
+                <p class="hint" style="margin: 0;">Waitlist records (DB)</p>
+                <p style="margin: 0.3rem 0 0; font-size: 1.5rem; font-weight: 700; color: #033c44;">{{
+                    recent_waitlist_records }}</p>
+                <p class="hint" style="margin: 0.2rem 0 0;">{{ waitlist_records_delta|floatformat:"0" }} vs previous
+                    window</p>
+            </article>
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem; background: #fff;">
+                <p class="hint" style="margin: 0;">Search → waitlist conversion</p>
+                <p style="margin: 0.3rem 0 0; font-size: 1.5rem; font-weight: 700; color: #033c44;">{{ conversion_rate
+                    }}%</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <h2 style="margin-top: 0;">Waitlist status aging</h2>
+        <p class="hint" style="margin-top: 0;">Ages are measured from the most recent status change for profiles
+            currently in each status.
+        </p>
+        <div style="display: grid; gap: 0.6rem;">
+            {% for row in status_aging_rows %}
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; background: #fff;">
+                <p style="margin: 0; font-weight: 600; color: #1f2937;">{{ row.label }} <span class="hint">({{ row.count
+                        }})</span></p>
+                <p class="hint" style="margin: 0.3rem 0 0;">Avg age: {{ row.avg_age_days|floatformat:1 }} days · Oldest:
+                    {{ row.oldest_age_days|floatformat:1 }} days</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <h2 style="margin-top: 0;">Source breakdown</h2>
+        <div style="display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; background: #fff;">
+                <h3 style="margin: 0 0 0.4rem;">Search submits</h3>
+                <div style="display: grid; gap: 0.3rem;">
+                    {% for row in breakdown_search %}
+                    <p class="hint" style="margin: 0;"><strong>{{ row.source }}</strong>: {{ row.count }}</p>
+                    {% empty %}
+                    <p class="hint" style="margin: 0;">No events in this window.</p>
+                    {% endfor %}
+                </div>
+            </article>
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; background: #fff;">
+                <h3 style="margin: 0 0 0.4rem;">Profile views</h3>
+                <div style="display: grid; gap: 0.3rem;">
+                    {% for row in breakdown_profile %}
+                    <p class="hint" style="margin: 0;"><strong>{{ row.source }}</strong>: {{ row.count }}</p>
+                    {% empty %}
+                    <p class="hint" style="margin: 0;">No events in this window.</p>
+                    {% endfor %}
+                </div>
+            </article>
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; background: #fff;">
+                <h3 style="margin: 0 0 0.4rem;">Waitlist submits</h3>
+                <div style="display: grid; gap: 0.3rem;">
+                    {% for row in breakdown_waitlist %}
+                    <p class="hint" style="margin: 0;"><strong>{{ row.source }}</strong>: {{ row.count }}</p>
+                    {% empty %}
+                    <p class="hint" style="margin: 0;">No events in this window.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <h2 style="margin-top: 0;">Status transitions this window</h2>
+        <p class="hint" style="margin-top: 0;">Number of profiles transitioned into each status during the selected
+            window.</p>
+        <div style="display: grid; gap: 0.6rem;">
+            {% for row in transition_rows %}
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; background: #fff;">
+                <p style="margin: 0; font-weight: 600; color: #1f2937;">{{ row.label }}</p>
+                <p style="margin: 0.3rem 0 0; font-size: 1.2rem; color: #0f766e;">{{ row.count }} transitioned</p>
+            </article>
+            {% empty %}
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; background: #fff;">
+                <p class="hint" style="margin: 0;">No status transitions in this window.</p>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <h2 style="margin-top: 0;">Operational shortcuts</h2>
+        <p class="hint" style="margin-top: 0;">Jump directly into admin queues that need action.</p>
+        <div style="display: grid; gap: 0.7rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            {% for item in ops_shortcuts %}
+            <article style="border: 1px solid var(--border); border-radius: 8px; padding: 0.8rem; background: #fff;">
+                <p style="margin: 0; font-weight: 600; color: #1f2937;">{{ item.label }}</p>
+                <p class="hint" style="margin: 0.3rem 0 0.5rem;">{{ item.count }} current</p>
+                <a class="button" style="margin-top: 0; background: #334155;" href="{{ item.href }}">Open in Admin</a>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <h2 style="margin-top: 0;">Latest events</h2>
+        <div style="display: grid; gap: 0.55rem;">
+            {% for item in latest_events %}
+            <article
+                style="border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 0.8rem; background: #fff;">
+                <p style="margin: 0; font-weight: 600; color: #1f2937;">{{ item.name }} <span class="hint">({{
+                        item.source|default:"unknown" }})</span></p>
+                <p class="hint" style="margin: 0.25rem 0 0;">{{ item.created_at|date:"M j, Y, g:i a" }} · path: {{
+                    item.path|default:"-" }} · profile: {{ item.profile_id|default:"-" }}</p>
+            </article>
+            {% empty %}
+            <p class="hint" style="margin: 0;">No analytics events captured yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

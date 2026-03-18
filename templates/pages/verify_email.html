@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="shell" style="max-width: 600px; padding: 2rem 1rem; text-align: center;">
+    {% if success %}
+    <h1 style="color: #059669; margin-top: 0;">Email Verified!</h1>
+    <p style="font-size: 1.1rem;">Thank you for verifying your email, {{ profile.full_name }}.</p>
+    <p class="hint">You're on the clairbook practitioner waitlist. We'll review your application and reach out soon with
+        next steps.</p>
+    <a class="button" href="/" style="margin-top: 1rem;">Return Home</a>
+
+    {% elif error %}
+    <h1 style="color: #dc2626; margin-top: 0;">Verification Failed</h1>
+    <p style="font-size: 1.1rem;">{{ error }}</p>
+    <p class="hint">If you'd like to join the waitlist, please <a href="{% url 'waitlist:landing' %}">sign up again</a>.
+    </p>
+    <a class="button" style="background: #334155;" href="{% url 'waitlist:landing' %}">Sign Up</a>
+
+    {% endif %}
+</div>
+{% endblock %}

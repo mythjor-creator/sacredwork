@@ -8,7 +8,7 @@ from .forms import SignUpForm
 from .models import User
 
 
-class SacredWorkLoginView(LoginView):
+class ClairbookLoginView(LoginView):
 	template_name = 'accounts/login.html'
 
 	def get_success_url(self):

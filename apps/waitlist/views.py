@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.shortcuts import redirect, render
 
+from .emails import send_waitlist_confirmation
 from .forms import PractitionerWaitlistForm
 
 
@@ -9,8 +10,9 @@ def waitlist_landing_view(request):
     if request.method == 'POST':
         form = PractitionerWaitlistForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'You are on the practitioner waitlist. We will reach out soon.')
+            profile = form.save()
+            send_waitlist_confirmation(profile)
+            messages.success(request, 'You are on the waitlist. We will reach out soon.')
             return redirect(f"{reverse('waitlist:landing')}?submitted=1")
     else:
         form = PractitionerWaitlistForm()

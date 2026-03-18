@@ -6,42 +6,42 @@
         width: 100%;
         background: linear-gradient(180deg, #e8e8f1 0%, #f4f1ed 100%);
         border-bottom: 1px solid #dde1e8;
-        padding: clamp(1.6rem, 3.2vw, 3.3rem) 0;
+        padding: clamp(2rem, 3.6vw, 3.8rem) 0;
     }
 
     .discover-shell {
         max-width: 1280px;
         margin: 0 auto;
-        padding: 0 1rem;
+        padding: 0 var(--page-gutter);
     }
 
     .discover-title {
         margin: 0;
         font-family: "Instrument Sans", "Inter", sans-serif;
         font-weight: 500;
-        font-size: clamp(1.95rem, 4.2vw, 2.78rem);
-        line-height: 1.12;
+        font-size: clamp(1.8rem, 3.6vw, 2.32rem);
+        line-height: 1.2;
         color: #033c44;
     }
 
     .discover-subtitle {
-        margin: 0.8rem 0 0;
+        margin: 0.95rem 0 0;
         color: #384551;
         max-width: 700px;
-        line-height: 1.5;
-        font-size: 1.02rem;
+        line-height: 1.6;
+        font-size: 0.98rem;
     }
 
     .discover-badge {
         display: inline-block;
-        margin-top: 0.6rem;
+        margin-top: 0.9rem;
     }
 
     .discover-search {
-        margin-top: 1.3rem;
+        margin-top: 1.7rem;
         display: grid;
         grid-template-columns: minmax(240px, 1fr) minmax(170px, 0.36fr) auto;
-        gap: 0.85rem;
+        gap: 1rem;
         align-items: stretch;
     }
 
@@ -67,22 +67,22 @@
     .discover-results {
         width: 100%;
         background: #fff;
-        padding: clamp(1.35rem, 2.5vw, 2.25rem) 0 2.85rem;
+        padding: clamp(1.8rem, 2.9vw, 2.9rem) 0 3.3rem;
     }
 
     .results-grid {
         display: grid;
-        gap: 0.95rem;
+        gap: 1.1rem;
     }
 
     .standard-card {
         background: #fff;
         border: 1px solid #d8dee5;
         border-radius: 8px;
-        padding: 1.15rem;
+        padding: 1.3rem;
         display: grid;
         grid-template-columns: 1fr auto;
-        gap: 1.08rem;
+        gap: 1.2rem;
         align-items: center;
         box-shadow: 0 6px 16px rgba(15, 30, 35, 0.05);
     }
@@ -90,8 +90,8 @@
     .standard-name {
         margin: 0;
         color: #1a2933;
-        font-size: 1.15rem;
-        line-height: 1.25;
+        font-size: 1.08rem;
+        line-height: 1.34;
         font-weight: 600;
     }
 
@@ -104,25 +104,25 @@
     .standard-headline {
         margin: 0.5rem 0 0;
         color: #2b3945;
-        font-size: 0.98rem;
-        line-height: 1.45;
+        font-size: 0.94rem;
+        line-height: 1.56;
     }
 
     .standard-bio {
-        margin: 0.52rem 0 0;
+        margin: 0.62rem 0 0;
         color: #48515d;
-        font-size: 0.92rem;
-        line-height: 1.52;
+        font-size: 0.9rem;
+        line-height: 1.62;
     }
 
     .standard-meta {
-        margin: 0.56rem 0 0;
+        margin: 0.7rem 0 0;
         color: #5f6e7f;
         font-size: 0.86rem;
     }
 
     .standard-services {
-        margin: 0.46rem 0 0;
+        margin: 0.58rem 0 0;
         color: #2f4554;
         font-size: 0.86rem;
     }
@@ -139,7 +139,7 @@
         background: #fff;
         border: 1px solid #d8dee5;
         border-radius: 8px;
-        padding: 1rem;
+        padding: 1.3rem;
     }
 
     .discover-empty h2 {
@@ -149,8 +149,14 @@
     }
 
     .discover-empty p {
-        margin: 0.45rem 0 0;
+        margin: 0.58rem 0 0;
         color: #5f6e7f;
+    }
+
+    .discover-empty .button {
+        margin-top: 0.9rem;
+        border-radius: 8px;
+        box-shadow: none;
     }
 
     @media (max-width: 860px) {
@@ -176,6 +182,14 @@
         .discover-search button {
             grid-column: span 1;
         }
+
+        .standard-action,
+        .discover-empty .button {
+            width: 100%;
+            text-align: center;
+            padding: 0.72rem 0.95rem;
+            font-size: 0.95rem;
+        }
     }
 </style>
 {% endblock %}
@@ -187,7 +201,7 @@
         <p class="discover-subtitle">Browse approved professionals across wellness, spirituality, beauty, and coaching.
         </p>
         <p class="hint discover-badge" style="{{ sample_badge_style }}">{{ sample_badge_text }}</p>
-        <form class="discover-search" method="get">
+        <form class="discover-search" method="get" data-track-event="search_submitted" data-track-source="discover">
             <input id="search-query" type="text" name="q" value="{{ query }}"
                 placeholder="Search by modality, headline, or service">
             <select id="category-select" name="category">
@@ -235,6 +249,7 @@
             <section class="discover-empty">
                 <h2>No professionals match this search</h2>
                 <p>Try a broader modality or remove the category filter.</p>
+                <a class="button" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
             </section>
             {% endfor %}
         </div>

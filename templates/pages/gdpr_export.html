@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="shell" style="max-width: 600px; padding: 2rem 1rem;">
+    <h1>Download Your Data</h1>
+    <p class="hint">In accordance with GDPR and CCPA, you can download a copy of all your data stored on clairbook as a
+        JSON file.</p>
+
+    <section class="card" style="margin-top: 1.5rem;">
+        <h2>What's Included</h2>
+        <ul>
+            <li>Account information (username, email, display name)</li>
+            <li>Profile data (bio, credentials, services)</li>
+            <li>Waitlist status and history</li>
+            <li>All personal information we have on file</li>
+        </ul>
+        <p style="margin-top: 1rem;">No sensitive authentication details (passwords, tokens) are included.</p>
+    </section>
+
+    <section class="card" style="margin-top: 1rem;">
+        <form method="post" style="display: flex; gap: 0.75rem;">
+            {% csrf_token %}
+            <button type="submit" class="button">Download My Data</button>
+            <a class="button" style="background: #334155;" href="{% url 'accounts:dashboard' %}">Cancel</a>
+        </form>
+    </section>
+</div>
+{% endblock %}

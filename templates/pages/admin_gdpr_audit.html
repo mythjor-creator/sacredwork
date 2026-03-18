@@ -1,0 +1,66 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+<h1>GDPR Audit Logs</h1>
+
+<section style="margin-bottom: 2rem;">
+    <h2>Data Export Requests</h2>
+    <p>User requests to download their personal data (GDPR Article 15)</p>
+
+    {% if exports %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ccc;">
+                <th style="padding: 0.5rem; text-align: left;">User</th>
+                <th style="padding: 0.5rem; text-align: left;">Requested</th>
+                <th style="padding: 0.5rem; text-align: left;">Exported</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for export in exports %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 0.5rem;">{{ export.user.username }} ({{ export.user.email }})</td>
+                <td style="padding: 0.5rem;">{{ export.requested_at|date:"Y-m-d H:i" }}</td>
+                <td style="padding: 0.5rem;">{{ export.exported_at|date:"Y-m-d H:i" }}{% if not export.exported_at
+                    %}<em>—</em>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666;">No export requests yet.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Account Deletion Requests</h2>
+    <p>User requests to delete their account (GDPR Article 17 – Right to be Forgotten)</p>
+
+    {% if deletions %}
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 2px solid #ccc;">
+                <th style="padding: 0.5rem; text-align: left;">User</th>
+                <th style="padding: 0.5rem; text-align: left;">Requested</th>
+                <th style="padding: 0.5rem; text-align: left;">Deleted</th>
+                <th style="padding: 0.5rem; text-align: left;">Confirmed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for deletion in deletions %}
+            <tr style="border-bottom: 1px solid #eee;">
+                <td style="padding: 0.5rem;">{{ deletion.user_identifier }}</td>
+                <td style="padding: 0.5rem;">{{ deletion.requested_at|date:"Y-m-d H:i" }}</td>
+                <td style="padding: 0.5rem;">{{ deletion.deleted_at|date:"Y-m-d H:i" }}{% if not deletion.deleted_at
+                    %}<em>—</em>{% endif %}</td>
+                <td style="padding: 0.5rem;">{% if deletion.deletion_confirmed %}<span style="color: #059669;">✓
+                        Yes</span>{% else %}<span style="color: #dc2626;">✗ No</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666;">No deletion requests yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

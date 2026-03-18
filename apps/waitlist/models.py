@@ -1,4 +1,8 @@
 from django.db import models
+from django.utils import timezone
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class PractitionerWaitlistProfile(models.Model):
@@ -8,6 +12,12 @@ class PractitionerWaitlistProfile(models.Model):
         BEAUTY = 'beauty', 'Beauty'
         COACHING = 'coaching', 'Coaching'
         OTHER = 'other', 'Other'
+
+    class Status(models.TextChoices):
+        NEW = 'new', 'New'
+        REVIEWING = 'reviewing', 'Reviewing'
+        INVITED = 'invited', 'Invited'
+        ONBOARDED = 'onboarded', 'Onboarded'
 
     full_name = models.CharField(max_length=120)
     email = models.EmailField(unique=True)
@@ -21,10 +31,77 @@ class PractitionerWaitlistProfile(models.Model):
     years_experience = models.PositiveSmallIntegerField(default=0)
     website_url = models.URLField(blank=True)
     notes = models.TextField(blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.NEW,
+        db_index=True,
+    )
+    status_changed_at = models.DateTimeField(default=timezone.now, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
 
+    def save(self, *args, **kwargs):
+        previous_status = None
+        if self.pk:
+            previous_status = type(self).objects.filter(pk=self.pk).values_list('status', flat=True).first()
+
+        if previous_status is not None and previous_status != self.status:
+            self.status_changed_at = timezone.now()
+            update_fields = kwargs.get('update_fields')
+            if update_fields is not None:
+                merged_fields = set(update_fields)
+                merged_fields.add('status_changed_at')
+                kwargs['update_fields'] = list(merged_fields)
+            
+            # Create transition record (will be assigned current user by admin action if needed)
+            StatusTransition.objects.create(
+                profile=self,
+                from_status=previous_status,
+                to_status=self.status,
+                changed_at=self.status_changed_at,
+            )
+
+        super().save(*args, **kwargs)
+
     def __str__(self) -> str:
         return f'{self.full_name} ({self.email})'
+
+
+class StatusTransition(models.Model):
+    """Track all status changes for a practitioner waitlist profile."""
+    
+    profile = models.ForeignKey(
+        PractitionerWaitlistProfile,
+        on_delete=models.CASCADE,
+        related_name='status_transitions'
+    )
+    from_status = models.CharField(
+        max_length=20,
+        choices=PractitionerWaitlistProfile.Status.choices,
+    )
+    to_status = models.CharField(
+        max_length=20,
+        choices=PractitionerWaitlistProfile.Status.choices,
+    )
+    changed_at = models.DateTimeField(default=timezone.now, db_index=True)
+    changed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='status_transitions_changed'
+    )
+    reason = models.TextField(blank=True, help_text='Optional reason for status change')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-changed_at']
+        indexes = [
+            models.Index(fields=['profile', '-changed_at']),
+        ]
+
+    def __str__(self) -> str:
+        return f'{self.profile.full_name}: {self.from_status} → {self.to_status} at {self.changed_at.strftime("%Y-%m-%d %H:%M")}'

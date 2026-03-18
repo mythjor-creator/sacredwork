@@ -27,6 +27,11 @@ class ProfessionalProfile(models.Model):
 		default=ApprovalStatus.DRAFT,
 	)
 	is_visible = models.BooleanField(default=False)
+	is_verified = models.BooleanField(
+		default=False,
+		db_index=True,
+		help_text='Staff-verified badge shown publicly on the profile page.',
+	)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
@@ -50,5 +55,24 @@ class ProfessionalProfile(models.Model):
 		if self.business_name and self.business_name != self.display_name:
 			return f' · {self.business_name}'
 		return ''
+
+	@property
+	def completeness_checks(self) -> list:
+		"""Return a list of (label, is_complete) tuples for profile completeness UI."""
+		has_service = self.services.filter(is_active=True).exists()
+		return [
+			('Profile photo', bool(self.profile_image_url)),
+			('Bio (50+ characters)', len(self.bio.strip()) >= 50),
+			('Location', bool(self.location.strip())),
+			('Modalities', bool(self.modalities.strip())),
+			('At least one active service', has_service),
+		]
+
+	@property
+	def completeness_percent(self) -> int:
+		checks = self.completeness_checks
+		done = sum(1 for _, ok in checks if ok)
+		return round(done / len(checks) * 100)
+
 	def __str__(self) -> str:
 		return self.display_name

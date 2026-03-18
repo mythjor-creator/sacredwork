@@ -1,9 +1,39 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    @media (max-width: 520px) {
+        .profile-action-group {
+            flex-direction: column;
+        }
+
+        .profile-action-group .button,
+        .service-book-button {
+            width: 100%;
+            text-align: center;
+            padding: 0.72rem 0.95rem;
+            font-size: 0.95rem;
+        }
+
+        .service-card {
+            border-radius: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="card">
-    <h1>{{ profile.display_name }}</h1>
-    <p class="hint">{{ profile.business_name_suffix }}</p>
+<section class="card" data-track-profile-id="{{ profile.pk }}">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; margin-bottom: 0.25rem;">
+        <h1 style="margin: 0;">{{ profile.display_name }}</h1>
+        {% if profile.is_verified %}
+        <span
+            style="display: inline-flex; align-items: center; gap: 0.3rem; background: #e0f2fe; color: #0369a1; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.8rem; font-weight: 600;">
+            ✓ Verified
+        </span>
+        {% endif %}
+    </div>
+    <p class="hint">{{ profile.business_name|default:'Independent practice' }}</p>
     <p><strong>{{ profile.headline }}</strong></p>
     <p class="hint">{{ profile.location|default:'Virtual practice' }}{% if profile.is_virtual %} · Virtual sessions
         available{% endif %}</p>
@@ -12,21 +42,55 @@
     <p class="hint">Experience: {{ profile.years_experience }} years</p>
 </section>
 
+{% if is_own_profile %}
+<section class="card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0; font-size: 1rem;">Profile completeness — {{ profile.completeness_percent }}%</h2>
+    <div style="background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 0.9rem;">
+        <div
+            style="background: #0369a1; border-radius: 999px; height: 8px; width: {{ profile.completeness_percent }}%;">
+        </div>
+    </div>
+    <ul style="margin: 0; padding: 0; list-style: none; display: grid; gap: 0.4rem;">
+        {% for label, done in profile.completeness_checks %}
+        <li style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+            {% if done %}
+            <span style="color: #16a34a;">✓</span>
+            {% else %}
+            <span style="color: #9ca3af;">○</span>
+            {% endif %}
+            <span{% if not done %} style="color: #6b7280;" {% endif %}>{{ label }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
+
 <section class="card" style="margin-top: 1rem;">
     <h2 style="margin-top: 0;">Services</h2>
+    {% if not user.is_authenticated %}
+    <div
+        style="margin: 0.7rem 0 1.1rem; padding: 0.85rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-soft);">
+        <p class="hint" style="margin: 0;">Want early access to trusted practitioners?</p>
+        <div class="profile-action-group" style="display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 0.65rem;">
+            <a class="button" style="margin-top: 0;" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
+            <a class="button" style="margin-top: 0; background: #334155;"
+                href="{% url 'accounts:login' %}?next={% url 'catalog:professional_detail' profile.pk %}">Log in</a>
+        </div>
+    </div>
+    {% endif %}
     <div style="display: grid; gap: 0.9rem;">
         {% for service in profile.services.all %}
-        <article style="padding: 1rem; border: 1px solid var(--border); border-radius: 14px;">
-            <h3 style="margin-top: 0;">{{ service.name }}</h3>
-            <p>{{ service.description }}</p>
-            <p class="hint">{{ service.get_delivery_format_display }} · {{ service.duration_minutes }} min · ${{
-                service.price_display }}</p>
-            <p class="hint">Category: {{ service.category.name }}</p>
+        <article class="service-card" style="padding: 1rem; border: 1px solid var(--border); border-radius: 14px;">
+            <div
+                style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.4rem;">
+                <h3 style="margin: 0;">{{ service.name }}</h3>
+                <span style="font-size: 1.1rem; font-weight: 700; color: #033c44;">${{ service.price_display }}</span>
+            </div>
+            <p class="hint" style="margin: 0.3rem 0 0.6rem;">{{ service.get_delivery_format_display }} · {{
+                service.duration_display }} · {{ service.category.name }}</p>
+            <p style="margin: 0 0 0.7rem;">{{ service.description }}</p>
             {% if user.is_authenticated and user.role == 'client' %}
-            <a class="button" href="{% url 'booking:create' service.pk %}">Book this service</a>
-            {% elif not user.is_authenticated %}
-            <a class="button" href="{% url 'accounts:login' %}?next={% url 'booking:create' service.pk %}">Log in to
-                book</a>
+            <a class="button service-book-button" href="{% url 'booking:create' service.pk %}">Book this service</a>
             {% endif %}
         </article>
         {% empty %}
