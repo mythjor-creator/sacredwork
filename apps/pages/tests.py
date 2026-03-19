@@ -1,4 +1,4 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.auth import get_user_model
@@ -12,6 +12,12 @@ User = get_user_model()
 
 class PrivacyTermsPages(TestCase):
     def test_healthcheck_renders(self):
+        response = self.client.get(reverse('pages:healthcheck'))
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'ok'})
+
+    @override_settings(DEBUG=False, SECURE_SSL_REDIRECT=True, SECURE_REDIRECT_EXEMPT=[r'^health/$'])
+    def test_healthcheck_bypasses_ssl_redirect_in_production(self):
         response = self.client.get(reverse('pages:healthcheck'))
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {'status': 'ok'})

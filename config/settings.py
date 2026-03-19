@@ -181,9 +181,12 @@ DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'clairbook <noreply@sa
 
 # ── Production security ──────────────────────────────────────────────────────
 # These are enforced only when DEBUG=False (i.e. in production).
-# They require HTTPS to be configured on your server/proxy first.
+# Railway terminates TLS at the proxy layer, so Django must trust forwarded
+# protocol headers and avoid redirecting the healthcheck endpoint.
 if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
+    SECURE_REDIRECT_EXEMPT = [r'^health/$']
     SECURE_HSTS_SECONDS = 31536000          # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
