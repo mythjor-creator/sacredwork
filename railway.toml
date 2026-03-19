@@ -1,0 +1,11 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+# Runs before the new deployment goes live — migrations + static files
+releaseCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput"
+startCommand = "gunicorn config.wsgi --workers 2 --timeout 120 --bind 0.0.0.0:$PORT"
+healthcheckPath = "/"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10

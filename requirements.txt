@@ -5,9 +5,8 @@ python-dotenv==1.2.2
 gunicorn==23.0.0
 
 # Production database (PostgreSQL)
-# Note: psycopg2-binary may need a newer release for Python 3.14+.
-# Alternative: install psycopg[binary] >= 3.0 once wheels are available.
-# psycopg2-binary==2.9.10
+# psycopg (v3) — supports Python 3.12+ and works with Railway's managed Postgres
+psycopg[binary]==3.2.6
 dj-database-url==2.3.0
 
 # Production static file serving (eliminates need for separate nginx for static)
