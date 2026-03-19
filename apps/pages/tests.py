@@ -11,6 +11,11 @@ User = get_user_model()
 
 
 class PrivacyTermsPages(TestCase):
+    def test_healthcheck_renders(self):
+        response = self.client.get(reverse('pages:healthcheck'))
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {'status': 'ok'})
+
     def test_style_sheet_renders(self):
         response = self.client.get(reverse('pages:style_sheet'))
         self.assertEqual(response.status_code, 200)

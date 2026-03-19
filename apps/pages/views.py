@@ -28,6 +28,11 @@ def privacy_view(request):
     )
 
 
+def healthcheck_view(request):
+    """Lightweight uptime endpoint for load balancers and hosting healthchecks."""
+    return JsonResponse({'status': 'ok'})
+
+
 def style_sheet_view(request):
     """Render visual style sheet preview page."""
     profile = getattr(request.user, 'professional_profile', None) if request.user.is_authenticated else None

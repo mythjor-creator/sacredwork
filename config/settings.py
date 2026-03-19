@@ -18,6 +18,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def _csv_env(name, default=''):
+    raw_value = os.environ.get(name, default)
+    return [item.strip() for item in raw_value.split(',') if item.strip()]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,7 +36,16 @@ SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = _csv_env('ALLOWED_HOSTS', '127.0.0.1,localhost')
+
+for railway_host in (
+    os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip(),
+    os.environ.get('RAILWAY_PRIVATE_DOMAIN', '').strip(),
+    '.railway.app',
+    '.up.railway.app',
+):
+    if railway_host and railway_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(railway_host)
 
 
 # Application definition
@@ -187,3 +201,8 @@ ANALYTICS_PLAUSIBLE_SCRIPT_URL = os.environ.get(
 
 # Site URL for email links and GDPR exports
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+
+CSRF_TRUSTED_ORIGINS = [SITE_URL]
+railway_public_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
+if railway_public_domain:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{railway_public_domain}')

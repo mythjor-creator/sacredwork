@@ -4,6 +4,7 @@ from . import views
 app_name = 'pages'
 
 urlpatterns = [
+    path('health/', views.healthcheck_view, name='healthcheck'),
     path('style-sheet/', views.style_sheet_view, name='style_sheet'),
     path('privacy/', views.privacy_view, name='privacy'),
     path('terms/', views.terms_view, name='terms'),
