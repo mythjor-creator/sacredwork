@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Style Sheet · clairbook{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'pages/style_sheet.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="style-sheet-shell">
+    <section class="style-sheet-hero">
+        <p class="cb-eyebrow" style="color: rgba(175, 235, 243, 0.88);">Design System Snapshot</p>
+        <h1>Clairbook Style Sheet</h1>
+        <p>This page previews the current shared button styles, key colors, chips, and nav pattern in one place.</p>
+    </section>
+
+    <div class="style-sheet-grid">
+        <section class="style-sheet-card">
+            <h2>Buttons</h2>
+            <p>Shared global variants used across pages.</p>
+            <div class="style-sheet-row">
+                <button type="button">Primary button</button>
+                <button type="button" class="button-secondary">Secondary button</button>
+                <button type="button" class="button-danger">Danger button</button>
+                <a href="#" class="cb-chip-button">Chip button</a>
+            </div>
+        </section>
+
+        <section class="style-sheet-card">
+            <h2>Core Colors</h2>
+            <p>Main accents currently in play.</p>
+            <div class="style-sheet-row">
+                <span class="style-sheet-token"><span class="style-sheet-swatch is-cyan"></span>#AFEBF3</span>
+                <span class="style-sheet-token"><span class="style-sheet-swatch is-terracotta"></span>#994C32</span>
+                <span class="style-sheet-token"><span class="style-sheet-swatch is-olive"></span>#474C16</span>
+                <span class="style-sheet-token"><span class="style-sheet-swatch is-beige"></span>#E4DDD4</span>
+                <span class="style-sheet-token"><span class="style-sheet-swatch is-ink"></span>#1F2022</span>
+            </div>
+        </section>
+
+        <section class="style-sheet-card">
+            <h2>Top Nav Pattern</h2>
+            <p>Logged-in header target: logo, discover, join waitlist, avatar.</p>
+            <div class="style-sheet-nav-demo">
+                <div class="style-sheet-nav-links">
+                    <span class="style-sheet-nav-brand">clairbook</span>
+                    <div class="style-sheet-nav-right">
+                        <a class="style-sheet-link-chip" href="#">Discover</a>
+                        <a class="style-sheet-link-chip" href="#">Join Waitlist</a>
+                        <span class="style-sheet-avatar">MJ</span>
+                    </div>
+                </div>
+            </div>
+            <p class="style-sheet-note">Dropdown order: Name, Public Profile, Dashboard, Account Settings, Help, Log
+                Out.</p>
+        </section>
+
+        <section class="style-sheet-card">
+            <h2>Typography + Utility</h2>
+            <p class="cb-section-intro">This section demonstrates headline serif, supporting sans text, and utility link
+                treatment.</p>
+            <h3 class="cb-section-title">Intentional, warm, and clear.</h3>
+            <p><a href="#" class="cb-inline-link">Inline link treatment</a> uses a subtle underline and stronger hover
+                state.</p>
+        </section>
+
+        <section class="style-sheet-card">
+            <h2>Typography Classes</h2>
+            <p>Use these classes for consistent type hierarchy across marketing and utility surfaces.</p>
+
+            <div class="style-sheet-type-list">
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-display</span>
+                        <span class="style-sheet-code">serif / hero</span>
+                    </div>
+                    <p class="type-display">This was meant to find you.</p>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-h1</span>
+                        <span class="style-sheet-code">serif / page title</span>
+                    </div>
+                    <h1 class="type-h1">Discover practitioners</h1>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-h2</span>
+                        <span class="style-sheet-code">serif / section title</span>
+                    </div>
+                    <h2 class="type-h2">Founding practitioner rate</h2>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-h3</span>
+                        <span class="style-sheet-code">sans / card title</span>
+                    </div>
+                    <h3 class="type-h3">Account settings</h3>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-body-lg</span>
+                        <span class="style-sheet-code">lead paragraph</span>
+                    </div>
+                    <p class="type-body-lg">Clairbook is a focused marketplace for wellness, spiritual, beauty, and
+                        coaching practitioners.</p>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-body</span>
+                        <span class="style-sheet-code">default paragraph</span>
+                    </div>
+                    <p class="type-body">Browse approved professionals across modalities, compare offers, and book what
+                        aligns with your goals.</p>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-body-sm</span>
+                        <span class="style-sheet-code">support copy</span>
+                    </div>
+                    <p class="type-body-sm">No charge until launch. Cancel anytime before then for a full refund.</p>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-eyebrow</span>
+                        <span class="style-sheet-code">label</span>
+                    </div>
+                    <p class="type-eyebrow">Founding practitioner rate</p>
+                </div>
+
+                <div class="style-sheet-type-item">
+                    <div class="style-sheet-type-meta">
+                        <span class="style-sheet-code">.type-caption</span>
+                        <span class="style-sheet-code">metadata</span>
+                    </div>
+                    <p class="type-caption">Last updated March 18, 2026</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

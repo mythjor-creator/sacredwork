@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
@@ -27,6 +28,17 @@ from .models import AnalyticsEvent, Category, Service
 def marketplace_view(request):
 	query = request.GET.get('q', '').strip()
 	category_slug = request.GET.get('category', '').strip()
+	only_virtual = request.GET.get('virtual') == '1'
+	sort_key = request.GET.get('sort', 'name_asc').strip()
+	categories = list(Category.objects.order_by('name'))
+	selected_category = next((item for item in categories if item.slug == category_slug), None)
+	sort_options = [
+		{'value': 'name_asc', 'label': 'Name (A-Z)'},
+		{'value': 'name_desc', 'label': 'Name (Z-A)'},
+	]
+	valid_sort_values = {option['value'] for option in sort_options}
+	if sort_key not in valid_sort_values:
+		sort_key = 'name_asc'
 
 	active_services = Service.objects.filter(is_active=True).select_related('category')
 	profiles = (
@@ -51,17 +63,100 @@ def marketplace_view(request):
 	if category_slug:
 		profiles = profiles.filter(services__category__slug=category_slug)
 
+	if only_virtual:
+		profiles = profiles.filter(is_virtual=True)
+
+	if sort_key == 'name_desc':
+		ordered_profiles = profiles.distinct().order_by('-user__display_name')
+	else:
+		ordered_profiles = profiles.distinct().order_by('user__display_name')
+
+	paginator = Paginator(ordered_profiles, 8)
+	page_obj = paginator.get_page(request.GET.get('page'))
+	active_params = {}
+	if query:
+		active_params['q'] = query
+	if category_slug:
+		active_params['category'] = category_slug
+	if only_virtual:
+		active_params['virtual'] = '1'
+	if sort_key != 'name_asc':
+		active_params['sort'] = sort_key
+	if settings.DEBUG and request.GET.get('sample') == '1':
+		active_params['sample'] = '1'
+	pagination_querystring = urlencode(active_params)
+	sort_label = next((item['label'] for item in sort_options if item['value'] == sort_key), 'Name (A-Z)')
+	site_base_url = request.build_absolute_uri('/').rstrip('/')
+	current_absolute_url = request.build_absolute_uri()
+	breadcrumb_schema_json = json.dumps(
+		{
+			'@context': 'https://schema.org',
+			'@type': 'BreadcrumbList',
+			'itemListElement': [
+				{
+					'@type': 'ListItem',
+					'position': 1,
+					'name': 'Home',
+					'item': f'{site_base_url}/',
+				},
+				{
+					'@type': 'ListItem',
+					'position': 2,
+					'name': 'Discover',
+					'item': current_absolute_url,
+				},
+			],
+		}
+	)
+	item_list_schema_json = json.dumps(
+		{
+			'@context': 'https://schema.org',
+			'@type': 'ItemList',
+			'name': 'Clairbook practitioner results',
+			'numberOfItems': len(page_obj.object_list),
+			'itemListElement': [
+				{
+					'@type': 'ListItem',
+					'position': index,
+					'url': f'{site_base_url}{reverse("catalog:professional_detail", args=[profile.pk])}',
+					'name': profile.display_name,
+				}
+				for index, profile in enumerate(page_obj.object_list, start=1)
+			],
+		}
+	)
+
 	context = {
-		'profiles': profiles.distinct(),
+		'profiles': page_obj.object_list,
+		'page_obj': page_obj,
+		'result_count': paginator.count,
+		'has_filters': bool(query or category_slug or only_virtual or sort_key != 'name_asc'),
+		'selected_category_name': selected_category.name if selected_category else '',
+		'only_virtual': only_virtual,
+		'sort': sort_key,
+		'sort_label': sort_label,
+		'sort_options': [
+			{
+				'value': option['value'],
+				'label': option['label'],
+				'selected_attr': ' selected' if option['value'] == sort_key else '',
+			}
+			for option in sort_options
+		],
+		'pagination_querystring': f'&{pagination_querystring}' if pagination_querystring else '',
 		'categories': [
 			{
 				'category': category,
 				'selected_attr': ' selected' if category.slug == category_slug else '',
 			}
-			for category in Category.objects.order_by('name')
+			for category in categories
 		],
 		'active_category': category_slug,
 		'query': query,
+		'site_base_url': site_base_url,
+		'current_absolute_url': current_absolute_url,
+		'breadcrumb_schema_json': breadcrumb_schema_json,
+		'item_list_schema_json': item_list_schema_json,
 		'sample_badge_text': 'Preview mode: sample data'
 		if settings.DEBUG and request.GET.get('sample') == '1'
 		else '',
@@ -75,14 +170,38 @@ def marketplace_view(request):
 def home_view(request):
 	query = request.GET.get('q', '').strip()
 	category_slug = request.GET.get('category', '').strip()
-	featured_profiles = (
+	featured_profiles = list(
 		ProfessionalProfile.objects.filter(
 			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
 			is_visible=True,
 		)
 		.select_related('user')
+		.prefetch_related(
+			Prefetch(
+				'services',
+				queryset=Service.objects.filter(is_active=True).select_related('category'),
+			)
+		)
 		.order_by('user__display_name')[:5]
 	)
+
+	featured_service_snippets = []
+	for profile in featured_profiles:
+		service = next(iter(profile.services.all()), None)
+		if service is None:
+			continue
+		featured_service_snippets.append(
+			{
+				'title': service.name,
+				'description': service.description,
+				'cta_label': f"Explore {service.category.name}",
+				'cta_url': f"{reverse('catalog:marketplace')}?{urlencode({'category': service.category.slug})}",
+			}
+		)
+		if len(featured_service_snippets) >= 3:
+			break
+
+	site_base_url = request.build_absolute_uri('/').rstrip('/')
 	context = {
 		'query': query,
 		'categories': [
@@ -93,6 +212,8 @@ def home_view(request):
 			for category in Category.objects.order_by('name')
 		],
 		'featured_profiles': featured_profiles,
+		'featured_service_snippets': featured_service_snippets,
+		'site_base_url': site_base_url,
 	}
 	return render(request, 'home.html', context)
 
@@ -134,10 +255,88 @@ def professional_detail_view(request, pk):
 	else:
 		core_form = ProfessionalOnboardingForm(instance=profile) if is_own_profile else None
 
+	site_base_url = request.build_absolute_uri('/').rstrip('/')
+	current_absolute_url = request.build_absolute_uri()
+	breadcrumb_schema_json = ''
+	profile_schema_json = ''
+	profile_image_absolute_url = ''
+
+	if not is_own_profile:
+		modalities = [item.strip() for item in profile.modalities.split(',') if item.strip()]
+		profile_image = ''
+		if profile.profile_photo:
+			profile_image = request.build_absolute_uri(profile.profile_photo.url)
+		elif profile.profile_image_url:
+			profile_image = profile.profile_image_url
+		profile_image_absolute_url = profile_image
+
+		breadcrumb_schema_json = json.dumps(
+			{
+				'@context': 'https://schema.org',
+				'@type': 'BreadcrumbList',
+				'itemListElement': [
+					{
+						'@type': 'ListItem',
+						'position': 1,
+						'name': 'Home',
+						'item': f'{site_base_url}/',
+					},
+					{
+						'@type': 'ListItem',
+						'position': 2,
+						'name': 'Discover',
+						'item': f'{site_base_url}{reverse("catalog:marketplace")}',
+					},
+					{
+						'@type': 'ListItem',
+						'position': 3,
+						'name': profile.display_name,
+						'item': current_absolute_url,
+					},
+				],
+			}
+		)
+
+		profile_schema_json = json.dumps(
+			{
+				'@context': 'https://schema.org',
+				'@type': 'Person',
+				'name': profile.display_name,
+				'description': profile.bio or profile.headline,
+				'url': current_absolute_url,
+				'image': profile_image,
+				'jobTitle': profile.headline,
+				'knowsAbout': modalities,
+				'address': {
+					'@type': 'PostalAddress',
+					'addressLocality': profile.location,
+				},
+				'makesOffer': [
+					{
+						'@type': 'Offer',
+						'priceCurrency': 'USD',
+						'price': f'{service.price_cents / 100:.2f}',
+						'itemOffered': {
+							'@type': 'Service',
+							'name': service.name,
+							'description': service.description,
+							'category': service.category.name,
+						},
+					}
+					for service in profile.services.all()
+				],
+			}
+		)
+
 	context = {
 		'profile': profile,
 		'is_own_profile': is_own_profile,
 		'core_form': core_form,
+		'site_base_url': site_base_url,
+		'current_absolute_url': current_absolute_url,
+		'breadcrumb_schema_json': breadcrumb_schema_json,
+		'profile_schema_json': profile_schema_json,
+		'profile_image_absolute_url': profile_image_absolute_url,
 	}
 	return render(request, 'catalog/professional_detail.html', context)
 

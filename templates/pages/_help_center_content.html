@@ -2,6 +2,8 @@
     <h1 class="help-title">Help</h1>
     <p class="hint">Need a hand? We are here for you.</p>
     <p class="help-contact">For now, the support contact is <strong>support@clairbook.app (tbd)</strong>.</p>
+    <p class="help-contact">Want to review the visual system? <a class="cb-inline-link"
+            href="{% url 'pages:style_sheet' %}">Open style sheet preview</a>.</p>
     <p class="hint help-note">Thanks for helping us improve the early launch experience. We read
         every message.</p>
 </section>
@@ -14,6 +16,34 @@
         {{ report_form.as_p }}
         <button type="submit">Send report</button>
     </form>
+</section>
+
+<section class="card">
+    <h2 class="help-title">Quick answers</h2>
+    <div class="help-terms-body">
+        <section class="help-terms-section">
+            <h3>How do I contact Clairbook support?</h3>
+            <p>Email <strong>support@clairbook.app (tbd)</strong> and we will review your message as the platform
+                evolves.</p>
+        </section>
+
+        <section class="help-terms-section">
+            <h3>How do I report a problem?</h3>
+            <p>Use the form above to tell us what happened, what you expected, and any details that would help us
+                reproduce the issue.</p>
+        </section>
+
+        <section class="help-terms-section">
+            <h3>Where can I review the visual system?</h3>
+            <p>You can <a class="cb-inline-link" href="{% url 'pages:style_sheet' %}">open the style sheet preview</a>
+                to review buttons, colors, typography, and nav patterns.</p>
+        </section>
+
+        <section class="help-terms-section help-terms-final">
+            <h3>Where can I review the terms of service?</h3>
+            <p>The current Terms of Service are included below in the expandable section on this page.</p>
+        </section>
+    </div>
 </section>
 
 <section class="card">

@@ -1,5 +1,28 @@
 {% extends 'base.html' %}
 
+{% block title %}Privacy Policy | clairbook{% endblock %}
+
+{% block extra_head %}
+<meta name="description"
+    content="Read the Clairbook privacy policy to understand what information we collect, how we use it, and how we protect your data.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ current_absolute_url }}">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Privacy Policy",
+    "url": "{{ current_absolute_url }}",
+    "description": "Read the Clairbook privacy policy to understand how user information is collected, used, and protected.",
+    "isPartOf": {
+        "@type": "WebSite",
+        "name": "Clairbook",
+        "url": "{{ site_base_url }}/"
+    }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="shell" style="max-width: 800px; padding: 2rem 1rem;">
     <h1>Privacy Policy</h1>

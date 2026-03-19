@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block body_class %}{% if not is_own_profile %}page-nav-overlay{% endif %}{% endblock %}
+
 {% block title %}{{ profile.display_name }} · clairbook{% endblock %}
 
 {% block top_nav_links %}
@@ -11,33 +13,38 @@
 {% endblock %}
 
 {% block extra_head %}
+{% if not is_own_profile %}
+<meta name="description" content="{{ profile.headline|default:profile.bio|truncatewords:24 }}">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ current_absolute_url }}">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="{{ profile.display_name }} · clairbook">
+<meta property="og:description" content="{{ profile.headline|default:profile.bio|truncatewords:24 }}">
+<meta property="og:url" content="{{ current_absolute_url }}">
+{% if profile_image_absolute_url %}
+<meta property="og:image" content="{{ profile_image_absolute_url }}">
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ profile.display_name }} · clairbook">
+<meta name="twitter:description" content="{{ profile.headline|default:profile.bio|truncatewords:24 }}">
+<script type="application/ld+json">{{ breadcrumb_schema_json|safe }}</script>
+<script type="application/ld+json">{{ profile_schema_json|safe }}</script>
+{% endif %}
 <style>
-    .profile-page-shell {
-        padding-top: 1rem;
+    body {
+        background: var(--figma-beige);
     }
 
-    .profile-stack {
-        display: grid;
-        gap: 1rem;
-    }
-
-    .profile-hero {
-        display: grid;
-        grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
-        gap: 1.4rem;
-        align-items: start;
-        background: linear-gradient(180deg, rgba(228, 221, 212, 0.68) 0%, rgba(255, 255, 255, 0.86) 100%);
-    }
-
+    /* ── portrait placeholder ── */
     .profile-portrait {
         width: 100%;
         aspect-ratio: 1 / 1.08;
         border-radius: 14px;
         overflow: hidden;
         background:
-            radial-gradient(circle at 55% 52%, #ff8b19 0%, #ff8b19 17%, rgba(255, 139, 25, 0.58) 28%, rgba(255, 139, 25, 0) 48%),
-            radial-gradient(circle at 76% 48%, rgba(255, 122, 85, 0.62) 0%, rgba(255, 122, 85, 0) 48%),
-            linear-gradient(100deg, #b8d3e5 8%, #cbced6 36%, #ebc7bf 72%, #c7c1bf 100%);
+            radial-gradient(circle at 60% 45%, rgba(175, 235, 243, 0.55) 0%, rgba(175, 235, 243, 0) 55%),
+            radial-gradient(circle at 30% 70%, rgba(47, 72, 174, 0.22) 0%, rgba(47, 72, 174, 0) 52%),
+            linear-gradient(135deg, var(--figma-beige) 0%, #d6e4ed 50%, rgba(175, 235, 243, 0.42) 100%);
     }
 
     .profile-portrait img {
@@ -47,6 +54,61 @@
         display: block;
     }
 
+    /* ── public view: full-bleed white hero band ── */
+    .profile-hero-band {
+        background: #ffffff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(2rem, 4vw, 3.5rem);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .profile-hero-band::before {
+        content: "";
+        position: absolute;
+        inset: auto auto -3rem -6rem;
+        width: 18rem;
+        height: 18rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(175, 235, 243, 0.42) 0%, rgba(175, 235, 243, 0) 70%);
+        pointer-events: none;
+    }
+
+    .profile-hero-band::after {
+        content: "";
+        position: absolute;
+        inset: 1.5rem -4rem auto auto;
+        width: 14rem;
+        height: 14rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(47, 72, 174, 0.1) 0%, rgba(47, 72, 174, 0) 72%);
+        pointer-events: none;
+    }
+
+    .profile-hero-band .shell {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── hero layout: public view ── */
+    .profile-hero-pub {
+        display: grid;
+        grid-template-columns: minmax(160px, 0.28fr) minmax(0, 1fr);
+        gap: 2.2rem;
+        align-items: start;
+    }
+
+    /* ── hero layout: portal (own profile) ── */
+    .profile-hero-portal {
+        display: grid;
+        grid-template-columns: minmax(110px, 0.2fr) minmax(0, 1fr);
+        gap: 1.6rem;
+        align-items: start;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* ── shared heading pieces ── */
     .profile-heading-row {
         display: flex;
         flex-wrap: wrap;
@@ -60,12 +122,40 @@
         margin: 0;
     }
 
+    .profile-public-crumb {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.38rem;
+        margin-bottom: 1.2rem;
+        color: #314560;
+        font-size: 0.88rem;
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(49, 69, 96, 0.26);
+        padding-bottom: 0.06rem;
+    }
+
+    .profile-public-crumb:hover {
+        border-bottom-color: rgba(49, 69, 96, 0.55);
+    }
+
+    .profile-public-copy {
+        max-width: 48rem;
+    }
+
+    .profile-public-copy h1 {
+        font: 400 clamp(2.5rem, 5.8vw, 4.8rem)/0.95 var(--font-serif);
+        color: var(--headline);
+        letter-spacing: 0.01em;
+    }
+
     .profile-verified {
         display: inline-flex;
         align-items: center;
         gap: 0.3rem;
-        background: #e0f2fe;
-        color: #0369a1;
+        background: rgba(175, 235, 243, 0.38);
+        color: var(--figma-blue);
+        border: 1px solid rgba(175, 235, 243, 0.7);
         border-radius: 999px;
         padding: 0.2rem 0.7rem;
         font-size: 0.8rem;
@@ -74,9 +164,10 @@
 
     .profile-headline {
         margin: 0.7rem 0 0;
-        font-size: 1.05rem;
-        line-height: 1.5;
-        color: #1f2933;
+        font-size: 1.12rem;
+        line-height: 1.6;
+        color: var(--ink);
+        max-width: 42rem;
     }
 
     .profile-meta-list {
@@ -89,49 +180,129 @@
     }
 
     .profile-meta-list li {
-        color: #4a5565;
+        color: var(--ink);
         font-size: 0.92rem;
+    }
+
+    .profile-public-meta {
+        grid-template-columns: repeat(3, minmax(0, max-content));
+        gap: 0.65rem;
+        align-items: start;
+    }
+
+    .profile-public-meta li {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.42rem 0.78rem;
+        border-radius: 999px;
+        background: rgba(228, 221, 212, 0.56);
+        border: 1px solid rgba(47, 72, 174, 0.12);
+        color: #30414d;
+        font-size: 0.86rem;
+        line-height: 1.35;
+    }
+
+    .profile-quick-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+        margin-top: 1rem;
+    }
+
+    .profile-quick-links a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        text-decoration: none;
+        color: #284369;
+        font-size: 0.84rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 0.38rem 0.74rem;
+        border: 1px solid rgba(47, 72, 174, 0.14);
+        border-radius: 999px;
+        background: rgba(228, 221, 212, 0.38);
+    }
+
+    .profile-quick-links a:hover {
+        background: rgba(175, 235, 243, 0.34);
+        border-color: rgba(47, 72, 174, 0.24);
     }
 
     .profile-body-copy {
         margin: 1rem 0 0;
     }
 
+    .profile-public-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+        margin-top: 1.2rem;
+    }
+
+    .profile-public-actions .button,
+    .profile-public-actions .cb-chip-button {
+        margin-top: 0;
+    }
+
+    /* ── open content sections ── */
+    .profile-sections {
+        padding: 3rem 0 5rem;
+    }
+
+    .profile-sections-inner {
+        max-width: 58rem;
+    }
+
+    .profile-section {
+        padding: 2.35rem 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        scroll-margin-top: 6.5rem;
+    }
+
+    .profile-section:first-child {
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    /* ── section header row ── */
     .section-header {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
         gap: 0.6rem;
+        margin-bottom: 1rem;
     }
 
     .section-header h2 {
         margin: 0;
+        font: 400 clamp(1.55rem, 2vw, 2rem)/1.05 var(--font-serif);
+        color: var(--headline);
     }
 
-    .section-header-compact {
-        margin-bottom: 0.7rem;
-    }
-
-    .profile-section {
-        margin-top: 1rem;
-    }
-
-    .button.button-secondary {
-        margin-top: 0;
-        background: #334155;
-    }
-
-    .service-card-price {
-        font-size: 1.1rem;
+    .profile-section-label {
+        margin: 0 0 0.3rem;
+        color: #2f48ae;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.74rem;
         font-weight: 700;
-        color: #033c44;
     }
 
-    .service-card-meta {
-        margin: 0.3rem 0 0.6rem;
+    .profile-section-intro {
+        margin: 0;
+        max-width: 46rem;
+        color: #53606c;
+        font-size: 0.95rem;
     }
 
+    .profile-section-heading-block {
+        display: grid;
+        gap: 0.35rem;
+    }
+
+    /* ── gallery ── */
     .gallery-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -140,56 +311,72 @@
 
     .gallery-figure {
         margin: 0;
+        transition: transform 0.18s ease;
+    }
+
+    .gallery-figure:hover {
+        transform: translateY(-2px);
     }
 
     .gallery-image {
         width: 100%;
         aspect-ratio: 1 / 1;
         object-fit: cover;
-        border-radius: 10px;
-        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        box-shadow: 0 16px 30px rgba(27, 32, 40, 0.08);
     }
 
     .gallery-caption {
         margin-top: 0.35rem;
     }
 
-    .credential-list,
-    .completeness-list,
-    .service-list {
+    /* ── credentials ── */
+    .credential-list {
         margin: 0;
+        padding-left: 1.1rem;
         display: grid;
         gap: 0.75rem;
     }
 
-    .credential-list {
-        padding-left: 1.1rem;
+    .credential-list li {
+        padding-left: 0.15rem;
     }
 
+    .credential-list a {
+        color: var(--brand);
+        text-decoration: none;
+        border-bottom: 1px solid rgba(15, 67, 78, 0.3);
+    }
+
+    .credential-list a:hover {
+        border-bottom-color: rgba(15, 67, 78, 0.62);
+    }
+
+    /* ── completeness ── */
     .completeness-list {
+        margin: 0;
         padding: 0;
         list-style: none;
-    }
-
-    .service-list {
-        gap: 0.9rem;
+        display: grid;
+        gap: 0.65rem;
     }
 
     .completeness-title {
         font-size: 1rem;
+        margin: 0;
     }
 
     .completeness-bar {
-        background: #e5e7eb;
+        background: rgba(0, 0, 0, 0.1);
         border-radius: 999px;
-        height: 8px;
-        margin-bottom: 0.9rem;
+        height: 6px;
+        margin-bottom: 1rem;
     }
 
     .completeness-progress {
-        background: #0369a1;
+        background: var(--figma-blue);
         border-radius: 999px;
-        height: 8px;
+        height: 6px;
     }
 
     .completeness-item {
@@ -200,23 +387,238 @@
     }
 
     .completeness-done {
-        color: #16a34a;
+        color: #2d8a4e;
     }
 
     .completeness-pending {
-        color: #9ca3af;
+        color: rgba(0, 0, 0, 0.28);
     }
 
     .completeness-text-pending {
-        color: #6b7280;
+        color: var(--ink);
+        opacity: 0.52;
     }
 
+    /* ── services ── */
+    .service-list {
+        display: grid;
+        gap: 0.95rem;
+        margin: 0;
+    }
+
+    .profile-services-layout {
+        display: grid;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .profile-section-services {
+        padding-top: 2.75rem;
+    }
+
+    .profile-services-overview {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) repeat(2, minmax(180px, 0.7fr));
+        gap: 0.85rem;
+    }
+
+    .profile-services-lead,
+    .profile-services-stat,
+    .profile-services-access {
+        border-radius: 16px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: rgba(255, 255, 255, 0.64);
+        box-shadow: 0 12px 26px rgba(20, 28, 38, 0.04);
+    }
+
+    .profile-services-lead {
+        padding: 1.15rem 1.2rem;
+    }
+
+    .profile-services-lead h3 {
+        margin: 0;
+        font: 400 1.25rem/1.1 var(--font-serif);
+        color: var(--headline);
+    }
+
+    .profile-services-lead p {
+        margin: 0.55rem 0 0;
+        color: #53606c;
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .profile-services-stat,
+    .profile-services-access {
+        padding: 1rem 1.05rem;
+        display: grid;
+        gap: 0.2rem;
+        align-content: start;
+    }
+
+    .profile-services-stat h3,
+    .profile-services-access h3 {
+        margin: 0;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #53606c;
+        font-weight: 700;
+    }
+
+    .profile-services-stat strong,
+    .profile-services-access strong {
+        font: 400 1.5rem/1 var(--font-serif);
+        color: var(--headline);
+    }
+
+    .profile-services-stat p,
+    .profile-services-access p {
+        margin: 0.2rem 0 0;
+        color: #53606c;
+        font-size: 0.88rem;
+        line-height: 1.5;
+    }
+
+    .profile-services-access {
+        gap: 0.45rem;
+    }
+
+    .profile-services-access .profile-action-group {
+        margin-top: 0.2rem;
+    }
+
+    .service-card {
+        padding: 1.15rem 1.2rem;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(0, 0, 0, 0.09);
+        border-radius: 16px;
+        backdrop-filter: blur(4px);
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .profile-section-services .service-card {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.75fr);
+        gap: 1rem;
+    }
+
+    .service-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(47, 72, 174, 0.18);
+        box-shadow: 0 16px 28px rgba(20, 28, 38, 0.08);
+    }
+
+    .service-card-header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: start;
+        gap: 0.65rem;
+    }
+
+    .service-card-title {
+        margin: 0;
+        font-size: 1.15rem;
+        color: var(--headline);
+    }
+
+    .service-card-price {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.12rem;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--headline);
+    }
+
+    .service-card-price-label {
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #65727f;
+        font-weight: 700;
+    }
+
+    .service-card-meta {
+        margin: 0.6rem 0 0;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .service-card-meta span {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.32rem 0.62rem;
+        border-radius: 999px;
+        background: rgba(228, 221, 212, 0.48);
+        border: 1px solid rgba(47, 72, 174, 0.1);
+        color: #31414f;
+        line-height: 1.25;
+    }
+
+    .service-description {
+        margin: 0.8rem 0 0;
+        color: var(--ink);
+        line-height: 1.7;
+    }
+
+    .tier-list {
+        display: grid;
+        gap: 0.55rem;
+        margin: 0;
+    }
+
+    .tier-item {
+        padding: 0.8rem 0.85rem;
+        border: 1px dashed rgba(0, 0, 0, 0.14);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.55);
+    }
+
+    .tier-description {
+        margin-top: 0.25rem;
+    }
+
+    .service-card-side {
+        display: grid;
+        gap: 0.7rem;
+        align-content: start;
+        padding-left: 1rem;
+        border-left: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .service-side-title {
+        margin: 0;
+        font-size: 0.84rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #53606c;
+        font-weight: 700;
+    }
+
+    .service-book-button {
+        margin-top: 0.15rem;
+    }
+
+    .service-empty {
+        margin: 0;
+        padding: 1.1rem 1.15rem;
+        border-radius: 14px;
+        border: 1px dashed rgba(0, 0, 0, 0.14);
+        background: rgba(255, 255, 255, 0.54);
+    }
+
+    /* ── guest CTA ── */
     .guest-cta-box {
-        margin: 0.7rem 0 1.1rem;
-        padding: 0.85rem;
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: var(--surface-soft);
+        margin: 0 0 1.25rem;
+        padding: 1rem 1.2rem;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.6);
+        box-shadow: 0 12px 26px rgba(20, 28, 38, 0.05);
     }
 
     .guest-cta-box .hint {
@@ -230,72 +632,558 @@
         margin-top: 0.65rem;
     }
 
+    .button.button-secondary {
+        margin-top: 0;
+    }
+
     .button-inline {
         margin-top: 0;
     }
 
-    .service-card {
-        padding: 1rem;
-        border: 1px solid var(--border);
-        border-radius: 14px;
+    /* ── portal page shell ── */
+    .profile-page-shell {
+        padding-top: 1.5rem;
+        padding-bottom: 4rem;
     }
 
-    .service-card-header {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: baseline;
-        gap: 0.4rem;
+    /* ── responsive ── */
+    @media (max-width: 1080px) {
+
+        .profile-hero-pub {
+            grid-template-columns: minmax(140px, 0.24fr) minmax(0, 1fr);
+            gap: 1.6rem;
+        }
+
+        .profile-public-copy h1 {
+            font-size: clamp(2.25rem, 5vw, 3.6rem);
+        }
+
+        .profile-public-meta {
+            grid-template-columns: repeat(2, minmax(0, max-content));
+        }
+
+        .profile-services-overview {
+            grid-template-columns: minmax(0, 1fr) repeat(2, minmax(160px, 1fr));
+        }
+
+        .profile-section-services .service-card {
+            grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+        }
     }
 
-    .service-card-title {
-        margin: 0;
-    }
+    @media (max-width: 900px) {
 
-    .service-description {
-        margin: 0 0 0.7rem;
-    }
+        .profile-hero-band {
+            padding: 2.1rem 0 2.35rem;
+        }
 
-    .tier-list {
-        display: grid;
-        gap: 0.45rem;
-        margin-bottom: 0.8rem;
-    }
+        .profile-sections {
+            padding: 2.5rem 0 4rem;
+        }
 
-    .tier-item {
-        padding: 0.6rem;
-        border: 1px dashed #cbd5e1;
-        border-radius: 8px;
-    }
+        .profile-services-overview {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
 
-    .tier-description {
-        margin-top: 0.25rem;
-    }
+        .profile-services-lead {
+            grid-column: 1 / -1;
+        }
 
-    @media (max-width: 760px) {
-        .profile-hero {
+        .profile-section-services .service-card {
             grid-template-columns: 1fr;
         }
 
+        .service-card-side {
+            padding-left: 0;
+            padding-top: 0.85rem;
+            border-left: 0;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+    }
+
+    @media (max-width: 760px) {
+
+        .profile-hero-pub,
+        .profile-hero-portal {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-hero-band {
+            padding: 1.85rem 0 2rem;
+        }
+
+        .profile-public-copy {
+            max-width: none;
+        }
+
+        .profile-public-copy h1 {
+            font-size: clamp(2rem, 10vw, 3rem);
+            line-height: 1;
+        }
+
         .profile-portrait {
-            max-width: 12rem;
+            max-width: 11rem;
+        }
+
+        .profile-headline {
+            font-size: 1rem;
+        }
+
+        .profile-public-actions a,
+        .profile-quick-links a {
+            width: 100%;
+            justify-content: center;
         }
 
         .profile-meta-list {
             grid-template-columns: 1fr;
         }
+
+        .profile-public-meta {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-services-overview,
+        .profile-section-services .service-card {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-services-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-sections-inner {
+            max-width: none;
+        }
+
+        .profile-section {
+            padding: 2rem 0;
+        }
+
+        .profile-section-services {
+            padding-top: 2.25rem;
+        }
+
+        .profile-services-overview {
+            gap: 0.7rem;
+        }
+
+        .service-card {
+            padding: 1rem;
+        }
+
+        .service-card-header {
+            flex-direction: column;
+        }
+
+        .service-card-price {
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 520px) {
+
+        .profile-public-crumb {
+            margin-bottom: 1rem;
+            font-size: 0.82rem;
+        }
+
+        .profile-heading-row {
+            align-items: flex-start;
+        }
+
+        .profile-portrait {
+            max-width: 9rem;
+        }
+
+        .profile-services-overview {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-services-lead,
+        .profile-services-stat,
+        .profile-services-access,
+        .service-card,
+        .service-empty {
+            border-radius: 14px;
+        }
+
+        .service-card-meta span {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+        {
+        % if not is_own_profile %
+    }
+
+    /* ═══════════════════════════════════════════════════
+       PUBLIC PROFILE – Figma implementation
+       node 2043-809
+    ═══════════════════════════════════════════════════ */
+
+    /* --- Nav: terracotta override --- */
+    :root {
+        --site-nav-top-bg: var(--figma-brown);
+        --site-nav-top-border: rgba(0, 0, 0, 0.06);
+        --site-nav-link-top: var(--figma-aqua);
+        --site-nav-link-top-border: rgba(175, 235, 243, 0.28);
+        --site-nav-link-top-hover-bg: rgba(255, 255, 255, 0.12);
+        --site-nav-link-top-hover: #ffffff;
+        --site-nav-solid-bg: var(--figma-brown);
+        --site-nav-solid-border: rgba(0, 0, 0, 0.1);
+        --site-nav-solid-shadow: 0 6px 20px rgba(80, 20, 5, 0.2);
+        --site-nav-link-solid: var(--figma-aqua);
+        --site-nav-link-solid-border: rgba(175, 235, 243, 0.28);
+        --site-nav-link-solid-hover-bg: rgba(255, 255, 255, 0.12);
+        --site-nav-link-solid-hover: #ffffff;
+        --site-nav-brand-color: var(--figma-aqua);
+    }
+
+    /* --- Info band --- */
+    .pd-info-band {
+        background: var(--figma-beige);
+        padding: 3.5rem 0 2rem;
+    }
+
+    .pd-info-layout {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    .pd-avatar {
+        width: 100px;
+        height: 100px;
+        flex-shrink: 0;
+        border-radius: 4px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 60% 45%, rgba(175, 235, 243, 0.55) 0%, rgba(175, 235, 243, 0) 55%),
+            radial-gradient(circle at 30% 70%, rgba(47, 72, 174, 0.22) 0%, rgba(47, 72, 174, 0) 52%),
+            linear-gradient(135deg, var(--figma-beige) 0%, #d6e4ed 50%, rgba(175, 235, 243, 0.42) 100%);
+    }
+
+    .pd-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .pd-info-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .pd-business-name {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--figma-copy);
+        line-height: 1.4;
+    }
+
+    .pd-name {
+        margin: 0.3rem 0 0;
+        font: 400 2rem/1.15 var(--font-sans);
+        color: var(--figma-copy);
+        letter-spacing: 0;
+    }
+
+    .pd-tagline {
+        margin: 0.3rem 0 0;
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--figma-copy);
+        line-height: 1.5;
+    }
+
+    .pd-divider {
+        width: 100%;
+        height: 1px;
+        background: rgba(0, 0, 0, 0.1);
+        margin: 1rem 0;
+    }
+
+    .pd-meta-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .pd-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--figma-copy);
+        line-height: 1;
+    }
+
+    .pd-icon {
+        flex-shrink: 0;
+    }
+
+    .pd-links {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .pd-link-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--figma-copy);
+        text-decoration: none;
+    }
+
+    a.pd-link-item:hover {
+        color: var(--figma-blue);
+    }
+
+    .pd-section-label {
+        margin: 0 0 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--figma-copy);
+        line-height: 1;
+    }
+
+    .pd-specialties-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem 2rem;
+        font-size: 0.875rem;
+        color: var(--figma-copy);
+    }
+
+    .pd-about-text {
+        margin: 0;
+        font-size: 0.75rem;
+        color: var(--figma-copy);
+        line-height: 1.6;
+    }
+
+    .pd-about-text+.pd-about-text {
+        margin-top: 0.5rem;
+    }
+
+    /* --- Services band --- */
+    .pd-services-band {
+        background: var(--figma-beige);
+    }
+
+    .pd-services-inner {
+        background: rgba(255, 255, 255, 0.3);
+        padding: 3.5rem 0;
+    }
+
+    .pd-services-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+
+    .pd-services-title {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: var(--figma-copy);
+    }
+
+    .pd-consult-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--figma-copy);
+        text-decoration: none;
+    }
+
+    .pd-consult-link:hover {
+        opacity: 0.72;
+    }
+
+    .pd-service-divider {
+        height: 1px;
+        background: rgba(0, 0, 0, 0.08);
+        margin: 1.5rem 0;
+    }
+
+    .pd-service-card {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-start;
+    }
+
+    .pd-service-thumb {
+        width: 144px;
+        flex-shrink: 0;
+        align-self: stretch;
+        min-height: 96px;
+        border-radius: 4px;
+        overflow: hidden;
+        background:
+            radial-gradient(circle at 58% 40%, rgba(242, 113, 33, 0.78) 0%, rgba(195, 65, 20, 0.55) 38%, rgba(88, 135, 215, 0.48) 78%, rgba(88, 135, 215, 0) 100%),
+            linear-gradient(135deg, #d6e4ed 0%, #afebf3 100%);
+    }
+
+    .pd-service-info {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .pd-service-name {
+        margin: 0;
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: var(--figma-copy);
+        font-family: var(--font-sans);
+    }
+
+    .pd-service-desc {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--figma-copy);
+        line-height: 1.5;
+    }
+
+    .pd-duration-row {
+        display: flex;
+        gap: 1.25rem;
+        align-items: center;
+    }
+
+    .pd-dur-primary {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--figma-copy);
+        padding-bottom: 2px;
+        border-bottom: 1.5px solid var(--figma-copy);
+    }
+
+    .pd-dur-secondary {
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--figma-copy);
+    }
+
+    .pd-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1rem;
+        background: rgba(47, 72, 174, 0.08);
+        color: var(--figma-copy);
+        border: 0;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        align-self: flex-start;
+        margin-top: 0;
+        box-shadow: none;
+        transition: background 0.18s ease;
+    }
+
+    .pd-cta-btn:hover {
+        background: rgba(47, 72, 174, 0.14);
+        transform: none;
+        box-shadow: none;
+    }
+
+    .pd-services-empty {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #475569;
+    }
+
+    .pd-service-from {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #53606c;
+    }
+
+    .pd-tier-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .pd-tier-item {
+        font-size: 0.8rem;
+        color: #53606c;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 760px) {
+        .pd-info-layout {
+            flex-direction: column;
+        }
+
+        .pd-avatar {
+            width: 80px;
+            height: 80px;
+        }
+
+        .pd-name {
+            font-size: 1.75rem;
+        }
+
+        .pd-service-card {
+            flex-direction: column;
+        }
+
+        .pd-service-thumb {
+            width: 100%;
+            min-height: 160px;
+            align-self: auto;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .pd-specialties-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .pd-services-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+
+        {
+        % endif %
     }
 </style>
 {% endblock %}
 
 {% block content %}
+
+{# ═══ OWN PROFILE: portal view ═══ #}
 {% if is_own_profile %}
 <div class="shell profile-page-shell">
     <div id="practitioner-profile-portal" class="portal-shell" data-portal-shell>
         {% include 'professionals/_portal_sidebar.html' with active_portal_nav='profile' %}
-        <div class="portal-main profile-stack">
-            {% endif %}
-            <section class="card profile-hero" data-track-profile-id="{{ profile.pk }}">
+        <div class="portal-main">
+
+            {# Hero: open, no card box #}
+            <div class="profile-hero-portal" data-track-profile-id="{{ profile.pk }}">
                 <div class="profile-portrait">
                     {% if profile.profile_photo %}
                     <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo">
@@ -307,14 +1195,9 @@
                     <p class="cb-eyebrow">Practitioner Profile</p>
                     <div class="profile-heading-row">
                         <h1>{{ profile.display_name }}</h1>
-                        {% if is_own_profile %}
-                        <a class="button button-secondary" href="#core-inline-editor">Edit
-                            core details</a>
-                        {% endif %}
+                        <a class="button button-secondary" href="#core-inline-editor">Edit core details</a>
                         {% if profile.is_verified %}
-                        <span class="profile-verified">
-                            ✓ Verified
-                        </span>
+                        <span class="profile-verified">✓ Verified</span>
                         {% endif %}
                     </div>
                     <p class="hint">{{ profile.business_name|default:'Independent practice' }}</p>
@@ -332,10 +1215,8 @@
                         <p style="white-space: pre-line;">{{ profile.long_bio }}</p>
                         {% endif %}
                     </div>
-
-                    {% if is_own_profile %}
                     <details id="core-inline-editor" style="margin-top: 0.9rem;">
-                        <summary style="cursor: pointer; color: #334155; font-weight: 600;">Edit this section inline
+                        <summary style="cursor: pointer; color: var(--ink); font-weight: 600;">Edit this section inline
                         </summary>
                         <form method="post" enctype="multipart/form-data" style="margin-top: 0.8rem;">
                             {% csrf_token %}
@@ -343,24 +1224,21 @@
                             <div style="display: flex; gap: 0.55rem; flex-wrap: wrap;">
                                 <button type="submit">Save public profile</button>
                                 <a class="button button-secondary"
-                                    href="{% url 'professionals:profile_core' %}?edit=1">Open
-                                    full core tab</a>
+                                    href="{% url 'professionals:profile_core' %}?edit=1">Open full core tab</a>
                             </div>
                         </form>
                     </details>
-                    {% endif %}
                 </div>
-            </section>
+            </div>
 
+            {# Gallery #}
             {% with gallery=profile.gallery_images.all %}
             {% if gallery %}
-            <section class="card profile-section">
-                <div class="section-header section-header-compact">
+            <section class="profile-section">
+                <div class="section-header">
                     <h2>Gallery</h2>
-                    {% if is_own_profile %}
                     <a class="button button-secondary" href="{% url 'professionals:profile_gallery' %}?edit=1">Edit
                         gallery</a>
-                    {% endif %}
                 </div>
                 <div class="gallery-grid">
                     {% for image in gallery %}
@@ -379,15 +1257,14 @@
             {% endif %}
             {% endwith %}
 
+            {# Credentials #}
             {% with credentials=profile.credentials.all %}
             {% if credentials %}
-            <section class="card profile-section">
-                <div class="section-header section-header-compact">
+            <section class="profile-section">
+                <div class="section-header">
                     <h2>Credentials</h2>
-                    {% if is_own_profile %}
                     <a class="button button-secondary" href="{% url 'professionals:profile_credentials' %}?edit=1">Edit
                         credentials</a>
-                    {% endif %}
                 </div>
                 <ul class="credential-list">
                     {% for credential in credentials %}
@@ -413,16 +1290,15 @@
             {% endif %}
             {% endwith %}
 
-            {% if is_own_profile %}
-            <section class="card profile-section">
-                <div class="section-header section-header-compact">
+            {# Completeness #}
+            <section class="profile-section">
+                <div class="section-header">
                     <h2 class="completeness-title">Profile completeness — {{ profile.completeness_percent }}%</h2>
                     <a class="button button-secondary" href="{% url 'professionals:profile_core' %}?edit=1">Improve
                         profile</a>
                 </div>
                 <div class="completeness-bar">
-                    <div class="completeness-progress" style="width: {{ profile.completeness_percent }}%;">
-                    </div>
+                    <div class="completeness-progress" style="width: {{ profile.completeness_percent }};"></div>
                 </div>
                 <ul class="completeness-list">
                     {% for label, done in profile.completeness_checks %}
@@ -437,26 +1313,13 @@
                     {% endfor %}
                 </ul>
             </section>
-            {% endif %}
 
-            <section class="card profile-section">
-                <div class="section-header section-header-compact">
+            {# Services #}
+            <section class="profile-section">
+                <div class="section-header">
                     <h2>Services</h2>
-                    {% if is_own_profile %}
                     <a class="button button-secondary" href="{% url 'catalog:service_list' %}">Edit services</a>
-                    {% endif %}
                 </div>
-                {% if not user.is_authenticated %}
-                <div class="guest-cta-box">
-                    <p class="hint">Want early access to trusted practitioners?</p>
-                    <div class="profile-action-group">
-                        <a class="button button-inline" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
-                        <a class="button button-secondary button-inline"
-                            href="{% url 'accounts:login' %}?next={% url 'catalog:professional_detail' profile.pk %}">Log
-                            in</a>
-                    </div>
-                </div>
-                {% endif %}
                 <div class="service-list">
                     {% for service in profile.services.all %}
                     <article class="service-card">
@@ -488,19 +1351,204 @@
                             {% endfor %}
                         </div>
                         {% endif %}
-                        {% if user.is_authenticated and user.role == 'client' %}
-                        <a class="button service-book-button" href="{% url 'booking:create' service.pk %}">Book this
-                            service</a>
-                        {% endif %}
                     </article>
                     {% empty %}
-                    <p class="hint">This professional has not published services yet.</p>
+                    <p class="hint">No services published yet. <a href="{% url 'catalog:service_list' %}">Add your first
+                            service</a>.</p>
                     {% endfor %}
                 </div>
             </section>
-            {% if is_own_profile %}
+
         </div>
     </div>
 </div>
+
+{# ═══ PUBLIC VIEW ═══ #}
+{% else %}
+
+{# Profile info band #}
+<div class="pd-info-band" data-track-profile-id="{{ profile.pk }}">
+    <div class="shell">
+        <div class="pd-info-layout">
+            {# Square avatar #}
+            <div class="pd-avatar">
+                {% if profile.profile_photo %}
+                <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile photo">
+                {% elif profile.profile_image_url %}
+                <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile photo">
+                {% endif %}
+            </div>
+
+            {# Info column #}
+            <div class="pd-info-content">
+                {% if profile.business_name %}
+                <p class="pd-business-name">{{ profile.business_name }}</p>
+                {% endif %}
+                <h1 class="pd-name">{{ profile.display_name }}</h1>
+                {% if profile.headline %}
+                <p class="pd-tagline">{{ profile.headline }}</p>
+                {% endif %}
+
+                <div class="pd-divider"></div>
+
+                {# Location + session format chips #}
+                <div class="pd-meta-row">
+                    {% if profile.location %}
+                    <span class="pd-meta-item">
+                        <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="M8 1.5a4 4 0 0 1 4 4c0 3-4 9-4 9s-4-6-4-9a4 4 0 0 1 4-4z" stroke="currentColor"
+                                stroke-width="1.3" stroke-linejoin="round" />
+                            <circle cx="8" cy="5.5" r="1.5" stroke="currentColor" stroke-width="1.3" />
+                        </svg>
+                        {{ profile.location }}
+                    </span>
+                    {% endif %}
+                    {% if profile.is_virtual %}
+                    <span class="pd-meta-item">
+                        <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        Virtual sessions
+                    </span>
+                    {% endif %}
+                    <span class="pd-meta-item">
+                        <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        In-person sessions
+                    </span>
+                </div>
+
+                {# Credentials / verified status #}
+                {% with credentials=profile.credentials.all %}
+                {% if profile.is_verified or credentials %}
+                <div class="pd-divider"></div>
+                <div class="pd-links">
+                    {% if profile.is_verified %}
+                    <span class="pd-link-item">
+                        <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path d="M8 1.5 2.5 4v3.5C2.5 11 4.9 14.2 8 14.5c3.1-.3 5.5-3.5 5.5-7V4L8 1.5z"
+                                stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" />
+                            <path d="M5.5 8l1.5 1.5 3.5-3.5" stroke="currentColor" stroke-width="1.2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Verified practitioner
+                    </span>
+                    {% endif %}
+                    {% for cred in credentials %}
+                    {% if cred.is_active %}
+                    <span class="pd-link-item">
+                        <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                            <path
+                                d="M13 6.5L7.5 12A3.182 3.182 0 0 1 3 7.5l5.5-5.5A2 2 0 0 1 11.34 4.83L6.17 10A.91.91 0 0 1 4.83 8.66l5-5"
+                                stroke="currentColor" stroke-width="1.3" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                        {{ cred.title }}
+                    </span>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% endwith %}
+
+                {# Specialties – rendered via JS from modalities comma-string #}
+                {% if profile.modalities %}
+                <div class="pd-divider"></div>
+                <div>
+                    <p class="pd-section-label">Specialties</p>
+                    <div class="pd-specialties-grid" id="pd-specs-grid" data-mods="{{ profile.modalities }}"></div>
+                </div>
+                {% endif %}
+
+                {# Bio / About #}
+                {% if profile.bio %}
+                <div class="pd-divider"></div>
+                <div>
+                    <p class="pd-section-label">About</p>
+                    <p class="pd-about-text">{{ profile.bio }}</p>
+                    {% if profile.long_bio %}
+                    <p class="pd-about-text">{{ profile.long_bio }}</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Services band #}
+<div class="pd-services-band">
+    <div class="pd-services-inner">
+        <div class="shell">
+            <div class="pd-services-header">
+                <p class="pd-services-title">Services</p>
+                <a class="pd-consult-link" href="{% url 'waitlist:landing' %}">
+                    Book Free Consultation
+                    <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M6 11l4-3.5L6 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </a>
+            </div>
+            <div>
+                {% for service in profile.services.all %}
+                {% if not forloop.first %}
+                <div class="pd-service-divider"></div>
+                {% endif %}
+                <div class="pd-service-card">
+                    <div class="pd-service-thumb" aria-hidden="true"></div>
+                    <div class="pd-service-info">
+                        <h3 class="pd-service-name">{{ service.name }}</h3>
+                        <p class="pd-service-desc">{{ service.description }}</p>
+                        <div class="pd-duration-row">
+                            <span class="pd-dur-primary">{{ service.duration_display }}</span>
+                            {% for tier in service.tiers.all %}
+                            {% if tier.is_active and tier.duration_minutes %}
+                            <span class="pd-dur-secondary">{{ tier.duration_minutes }} min</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="pd-service-from">From ${{ service.price_display }}</p>
+                        {% with tier_list=service.tiers.all %}
+                        {% if tier_list %}
+                        <div class="pd-tier-list">
+                            {% for tier in tier_list %}
+                            {% if tier.is_active %}
+                            <span class="pd-tier-item">{{ tier.name }} &mdash; ${{ tier.price_display }}</span>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                        {% if user.is_authenticated and user.role == 'client' %}
+                        <a class="pd-cta-btn" href="{% url 'booking:create' service.pk %}">Check availability</a>
+                        {% else %}
+                        <a class="pd-cta-btn" href="{% url 'waitlist:landing' %}">Check availability</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="pd-services-empty">No services available yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var el = document.getElementById('pd-specs-grid');
+        if (!el) return;
+        var mods = (el.dataset.mods || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        el.innerHTML = mods.map(function (m) {
+            var safe = m.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return '<span>' + safe + '</span>';
+        }).join('');
+    }());
+</script>
+
 {% endif %}
 {% endblock %}

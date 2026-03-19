@@ -85,6 +85,92 @@ class MarketplaceDiscoveryTests(TestCase):
 
 		self.assertContains(response, 'Visible Healing Studio')
 		self.assertContains(response, 'Reiki Reset')
+		self.assertContains(response, '1 practitioner found')
+		self.assertContains(response, 'Query: reiki')
+		self.assertContains(response, 'Category: Energy Work')
+		self.assertContains(response, 'Clear filters')
+
+	def test_marketplace_results_count_visible_without_filters(self):
+		response = self.client.get(reverse('catalog:marketplace'))
+
+		self.assertContains(response, '1 practitioner found')
+
+	def test_marketplace_can_filter_virtual_only(self):
+		in_person_user = User.objects.create_user(
+			username='in-person-pro',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		in_person_profile = ProfessionalProfile.objects.create(
+			user=in_person_user,
+			business_name='In Person Studio',
+			headline='In person only sessions',
+			bio='In person support.',
+			modalities='coaching',
+			location='Austin',
+			is_virtual=False,
+			years_experience=4,
+			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
+			is_visible=True,
+		)
+		Service.objects.create(
+			professional=in_person_profile,
+			category=self.category,
+			name='Studio Session',
+			description='In office support.',
+			duration_minutes=60,
+			price_cents=11000,
+			delivery_format=Service.DeliveryFormat.IN_PERSON,
+		)
+
+		response = self.client.get(reverse('catalog:marketplace'), {'virtual': '1'})
+
+		self.assertContains(response, 'Visible Healing Studio')
+		self.assertNotContains(response, 'In Person Studio')
+		self.assertContains(response, 'Virtual only')
+
+	def test_marketplace_sort_desc_orders_results_by_name(self):
+		another_user = User.objects.create_user(
+			username='alpha-pro',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		another_profile = ProfessionalProfile.objects.create(
+			user=another_user,
+			business_name='A Aligned Studio',
+			headline='Support profile',
+			bio='Helpful support.',
+			modalities='breathwork',
+			location='Portland',
+			is_virtual=True,
+			years_experience=3,
+			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
+			is_visible=True,
+		)
+		Service.objects.create(
+			professional=another_profile,
+			category=self.category,
+			name='Aligned Session',
+			description='Virtual session.',
+			duration_minutes=45,
+			price_cents=9500,
+			delivery_format=Service.DeliveryFormat.VIRTUAL,
+		)
+
+		response = self.client.get(reverse('catalog:marketplace'), {'sort': 'name_desc'})
+
+		self.assertContains(response, 'Sort: Name (Z-A)')
+		self.assertContains(response, 'Visible Healing Studio', html=False)
+		self.assertContains(response, 'A Aligned Studio', html=False)
+		self.assertContains(
+			response,
+			'Visible Healing Studio',
+			html=False,
+		)
+		self.assertTrue(
+			response.content.decode().find('Visible Healing Studio')
+			< response.content.decode().find('A Aligned Studio')
+		)
 
 	def test_marketplace_preview_badge_shows_only_in_sample_mode(self):
 		response_without_sample = self.client.get(reverse('catalog:marketplace'))

@@ -31,6 +31,10 @@ class PractitionerWaitlistProfile(models.Model):
     years_experience = models.PositiveSmallIntegerField(default=0)
     website_url = models.URLField(blank=True)
     notes = models.TextField(blank=True)
+    is_founding_member = models.BooleanField(
+        default=False,
+        help_text='Opted in for the founding practitioner rate at sign-up.',
+    )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,

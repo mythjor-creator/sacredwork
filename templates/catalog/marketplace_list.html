@@ -1,10 +1,46 @@
 {% extends 'base.html' %}
 
+{% block title %}Discover Practitioners | clairbook{% endblock %}
+
+{% block body_class %}page-nav-overlay{% endblock %}
+
 {% block extra_head %}
+<meta name="description"
+    content="Browse Clairbook practitioners across wellness, spirituality, beauty, and coaching. Filter by category, search by modality, and explore trusted profiles.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ current_absolute_url }}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Discover Practitioners | clairbook">
+<meta property="og:description"
+    content="Browse Clairbook practitioners across wellness, spirituality, beauty, and coaching.">
+<meta property="og:url" content="{{ current_absolute_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Discover Practitioners | clairbook">
+<meta name="twitter:description"
+    content="Browse Clairbook practitioners across wellness, spirituality, beauty, and coaching.">
+<script type="application/ld+json">{{ breadcrumb_schema_json|safe }}</script>
+<script type="application/ld+json">{{ item_list_schema_json|safe }}</script>
 <style>
+    body {
+        --site-nav-top-bg: rgba(153, 76, 50, 0.96);
+        --site-nav-top-border: rgba(175, 235, 243, 0.3);
+        --site-nav-link-top: #afebf3;
+        --site-nav-link-top-border: rgba(175, 235, 243, 0.42);
+        --site-nav-link-top-hover-bg: rgba(175, 235, 243, 0.1);
+        --site-nav-link-top-hover: #e6f8fb;
+        --site-nav-solid-bg: rgba(228, 221, 212, 0.96);
+        --site-nav-solid-border: rgba(153, 76, 50, 0.18);
+        --site-nav-link-solid: #273a49;
+        --site-nav-link-solid-border: rgba(153, 76, 50, 0.22);
+        --site-nav-link-solid-hover-bg: rgba(255, 255, 255, 0.7);
+        --site-nav-link-solid-hover: #1d2d38;
+        --site-nav-brand-color: #afebf3;
+        --site-nav-solid-brand-color: var(--brand);
+    }
+
     .discover-hero {
         width: 100%;
-        background: linear-gradient(180deg, #2f48ae 0%, #3a51b3 100%);
+        background: linear-gradient(180deg, var(--figma-brown) 0%, var(--figma-brown-accent) 100%);
         border-bottom: 1px solid rgba(175, 235, 243, 0.24);
         padding: clamp(2.75rem, 4.8vw, 5rem) 0;
     }
@@ -37,45 +73,194 @@
         margin-top: 0.9rem;
     }
 
-    .discover-search {
-        margin-top: 2.2rem;
-        display: grid;
-        grid-template-columns: minmax(240px, 1fr) minmax(170px, 0.36fr) auto;
-        gap: 1rem;
-        align-items: stretch;
-    }
-
-    .discover-search input,
-    .discover-search select {
-        margin-top: 0;
-        min-height: 58px;
-        padding: 0.86rem 1rem;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.92);
-        font-size: 1.01rem;
-    }
-
-    .discover-search button {
-        margin-top: 0;
-        min-height: 58px;
-        border-radius: 8px;
-        padding: 0.84rem 1.42rem;
-        font-size: 1.01rem;
-        background: #afebf3;
-        color: #1f2022;
-        box-shadow: none;
-    }
-
-    .discover-search button:hover {
-        background: #c7f2f7;
-        box-shadow: none;
-    }
-
     .discover-results {
         width: 100%;
         background: #e4ddd4;
         padding: clamp(2.3rem, 4vw, 4rem) 0 4.2rem;
+    }
+
+    .discover-sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+        white-space: nowrap;
+    }
+
+    .discover-layout {
+        display: grid;
+        grid-template-columns: minmax(225px, 290px) minmax(0, 1fr);
+        gap: 1.15rem;
+        align-items: start;
+    }
+
+    .discover-panel {
+        position: sticky;
+        top: 96px;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid rgba(31, 32, 34, 0.12);
+        border-radius: 12px;
+        padding: 1rem;
+    }
+
+    .discover-panel-title {
+        margin: 0;
+        color: #1f2f3a;
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .discover-filter-form {
+        margin-top: 0.85rem;
+        display: grid;
+        gap: 0.82rem;
+    }
+
+    .discover-filter-group {
+        display: grid;
+        gap: 0.46rem;
+    }
+
+    .discover-filter-label {
+        margin: 0;
+        color: #2f3d48;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .discover-filter-form input[type="text"],
+    .discover-filter-form select {
+        margin-top: 0;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(31, 32, 34, 0.16);
+        min-height: 2.8rem;
+    }
+
+    .discover-categories {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.38rem;
+    }
+
+    .discover-categories label,
+    .discover-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0;
+        font-size: 0.92rem;
+        color: #2f4554;
+        cursor: pointer;
+    }
+
+    .discover-categories input,
+    .discover-checkbox input {
+        width: auto;
+        margin: 0;
+    }
+
+    .discover-filter-actions {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .discover-apply {
+        margin-top: 0;
+        border-radius: 8px;
+        padding: 0.52rem 0.88rem;
+        box-shadow: none;
+    }
+
+    .discover-apply:hover {
+        box-shadow: none;
+        transform: none;
+    }
+
+    .discover-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        margin-bottom: 1rem;
+    }
+
+    .discover-count {
+        margin: 0;
+        color: #2f4554;
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .discover-filters {
+        display: inline-flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.42rem;
+    }
+
+    .discover-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 1px solid rgba(153, 76, 50, 0.24);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        color: #8e4b35;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.26rem 0.62rem;
+    }
+
+    .discover-clear {
+        color: #7f3f2a;
+        font-size: 0.84rem;
+        font-weight: 700;
+        text-decoration: none;
+        border-bottom: 1px solid rgba(127, 63, 42, 0.4);
+    }
+
+    .discover-clear:hover {
+        border-bottom-color: #7f3f2a;
+    }
+
+    .discover-pagination {
+        margin-top: 1.25rem;
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .discover-page {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 2.2rem;
+        padding: 0.45rem 0.66rem;
+        border: 1px solid rgba(31, 32, 34, 0.2);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.72);
+        color: #243847;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .discover-page[aria-current="page"] {
+        background: var(--figma-brown);
+        border-color: var(--figma-brown);
+        color: #ffffff;
     }
 
     .results-grid {
@@ -127,7 +312,7 @@
 
     .standard-business {
         margin: 0.2rem 0 0;
-        color: #2f48ae;
+        color: #8e4b35;
         font-size: 0.84rem;
         text-transform: uppercase;
         letter-spacing: 0.08em;
@@ -187,6 +372,10 @@
         color: #5f6e7f;
     }
 
+    .discover-empty strong {
+        color: #25384a;
+    }
+
     .discover-empty .button {
         margin-top: 0.9rem;
         border-radius: 8px;
@@ -194,12 +383,12 @@
     }
 
     @media (max-width: 860px) {
-        .discover-search {
-            grid-template-columns: 1fr 1fr;
+        .discover-layout {
+            grid-template-columns: 1fr;
         }
 
-        .discover-search button {
-            grid-column: span 2;
+        .discover-panel {
+            position: static;
         }
 
         .standard-card {
@@ -210,6 +399,10 @@
         .standard-action {
             grid-column: 2;
             justify-self: start;
+        }
+
+        .discover-toolbar {
+            align-items: flex-start;
         }
     }
 
@@ -222,12 +415,9 @@
             font-size: 3.35rem;
         }
 
-        .discover-search {
+        .discover-filter-actions {
+            display: grid;
             grid-template-columns: 1fr;
-        }
-
-        .discover-search button {
-            grid-column: span 1;
         }
 
         .standard-card {
@@ -246,76 +436,204 @@
             padding: 0.72rem 0.95rem;
             font-size: 0.95rem;
         }
+
+        .discover-toolbar {
+            margin-bottom: 0.8rem;
+        }
+
+        .discover-pagination {
+            justify-content: stretch;
+        }
+
+        .discover-page {
+            flex: 1 1 auto;
+        }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<section class="discover-hero">
+<section class="discover-hero" data-nav-hero>
     <div class="discover-shell">
-        <p class="cb-eyebrow" style="color: rgba(175, 235, 243, 0.88);">Marketplace</p>
+        <p class="cb-eyebrow" style="color: rgba(175, 235, 243, 0.9);">Marketplace</p>
         <h1 class="discover-title">Discover practitioners</h1>
         <p class="discover-subtitle">Browse approved professionals across wellness, spirituality, beauty, and coaching.
         </p>
         <p class="hint discover-badge" style="{{ sample_badge_style }}">{{ sample_badge_text }}</p>
-        <form class="discover-search" method="get" data-track-event="search_submitted" data-track-source="discover">
-            <input id="search-query" type="text" name="q" value="{{ query }}"
-                placeholder="Search by modality, headline, or service">
-            <select id="category-select" name="category">
-                <option value="">All categories</option>
-                {% for category_option in categories %}
-                <option value="{{ category_option.category.slug }}" {{ category_option.selected_attr }}>{{
-                    category_option.category.name }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Search</button>
-        </form>
     </div>
 </section>
 
 <section class="discover-results">
     <div class="discover-shell">
-        <div class="results-grid">
-            {% for profile in profiles %}
-            <article class="standard-card">
-                <div class="standard-portrait">
-                    {% if profile.profile_photo %}
-                    <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }}">
-                    {% elif profile.profile_image_url %}
-                    <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }}">
+        <div class="discover-layout">
+            <aside class="discover-panel" aria-label="Discover filters">
+                <h2 class="discover-panel-title">Filter practitioners</h2>
+                <form class="discover-filter-form" method="get" data-track-event="search_submitted"
+                    data-track-source="discover">
+                    <section class="discover-filter-group">
+                        <p class="discover-filter-label">Search</p>
+                        <label class="discover-sr-only" for="search-query">Search professionals</label>
+                        <input id="search-query" type="text" name="q" value="{{ query }}"
+                            placeholder="Modality, headline, or service">
+                    </section>
+                    <section class="discover-filter-group">
+                        <p class="discover-filter-label">Category</p>
+                        <ul class="discover-categories">
+                            <li>
+                                <label>
+                                    {% if not active_category %}
+                                    <input type="radio" name="category" value="" checked>
+                                    {% else %}
+                                    <input type="radio" name="category" value="">
+                                    {% endif %}
+                                    <span>All categories</span>
+                                </label>
+                            </li>
+                            {% for category_option in categories %}
+                            <li>
+                                <label>
+                                    {% if active_category == category_option.category.slug %}
+                                    <input type="radio" name="category" value="{{ category_option.category.slug }}"
+                                        checked>
+                                    {% else %}
+                                    <input type="radio" name="category" value="{{ category_option.category.slug }}">
+                                    {% endif %}
+                                    <span>{{ category_option.category.name }}</span>
+                                </label>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </section>
+                    <section class="discover-filter-group">
+                        <p class="discover-filter-label">Additional</p>
+                        <label class="discover-checkbox">
+                            <input type="checkbox" name="virtual" value="1" {% if only_virtual %}checked{% endif %}>
+                            <span>Virtual available only</span>
+                        </label>
+                    </section>
+                    <section class="discover-filter-group">
+                        <p class="discover-filter-label">Sort</p>
+                        <label class="discover-sr-only" for="sort-select">Sort results</label>
+                        <select id="sort-select" name="sort">
+                            {% for option in sort_options %}
+                            <option value="{{ option.value }}" {{ option.selected_attr }}>{{ option.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </section>
+                    {% if sample_badge_text %}
+                    <input type="hidden" name="sample" value="1">
                     {% endif %}
-                </div>
-                <div class="standard-content">
-                    <h2 class="standard-name">{{ profile.display_name }}</h2>
-                    <p class="standard-business">{{ profile.business_name|default:'Independent practice' }}</p>
-                    <p class="standard-headline">{{ profile.headline|default:'Support tailored to your wellness and
-                        personal-growth goals.' }}</p>
-                    <p class="standard-bio">{{ profile.bio|truncatewords:28 }}</p>
-                    <p class="standard-meta">
-                        {{ profile.location|default:'Virtual practice' }}
-                        {% if profile.is_virtual %}
-                        · Virtual available
+                    <div class="discover-filter-actions">
+                        <button class="discover-apply" type="submit">Apply filters</button>
+                        <a class="discover-clear" href="{% url 'catalog:marketplace' %}">Reset</a>
+                    </div>
+                </form>
+            </aside>
+
+            <div>
+                <section class="discover-toolbar" aria-live="polite">
+                    <p class="discover-count">{{ result_count }} practitioner{{ result_count|pluralize }} found</p>
+                    {% if has_filters %}
+                    <div class="discover-filters">
+                        {% if query %}
+                        <span class="discover-pill">Query: {{ query }}</span>
                         {% endif %}
-                    </p>
-                    {% if profile.services.all %}
-                    <p class="standard-services">
-                        Services:
-                        {% for service in profile.services.all %}
-                        {{ service.name }}{% if not forloop.last %}, {% endif %}
-                        {% endfor %}
-                    </p>
+                        {% if selected_category_name %}
+                        <span class="discover-pill">Category: {{ selected_category_name }}</span>
+                        {% endif %}
+                        {% if only_virtual %}
+                        <span class="discover-pill">Virtual only</span>
+                        {% endif %}
+                        {% if sort != 'name_asc' %}
+                        <span class="discover-pill">Sort: {{ sort_label }}</span>
+                        {% endif %}
+                        <a class="discover-clear" href="{% url 'catalog:marketplace' %}">Clear filters</a>
+                    </div>
                     {% endif %}
+                </section>
+                <div class="results-grid">
+                    {% for profile in profiles %}
+                    <article class="standard-card">
+                        <div class="standard-portrait">
+                            {% if profile.profile_photo %}
+                            <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }}">
+                            {% elif profile.profile_image_url %}
+                            <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }}">
+                            {% endif %}
+                        </div>
+                        <div class="standard-content">
+                            <h2 class="standard-name">{{ profile.display_name }}</h2>
+                            <p class="standard-business">{{ profile.business_name|default:'Independent practice' }}</p>
+                            <p class="standard-headline">{{ profile.headline|default:'Support tailored to your wellness
+                                and personal-growth goals.' }}</p>
+                            <p class="standard-bio">{{ profile.bio|truncatewords:28 }}</p>
+                            <p class="standard-meta">
+                                {{ profile.location|default:'Virtual practice' }}
+                                {% if profile.is_virtual %}
+                                · Virtual available
+                                {% endif %}
+                            </p>
+                            {% if profile.services.all %}
+                            <p class="standard-services">
+                                Services:
+                                {% for service in profile.services.all %}
+                                {{ service.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <a class="button standard-action" href="{% url 'catalog:professional_detail' profile.pk %}">View
+                            profile</a>
+                    </article>
+                    {% empty %}
+                    <section class="discover-empty">
+                        <h2>No professionals match this search</h2>
+                        {% if has_filters %}
+                        <p>
+                            No results for
+                            {% if query %}
+                            <strong>"{{ query }}"</strong>
+                            {% endif %}
+                            {% if query and selected_category_name %}
+                            in
+                            {% endif %}
+                            {% if selected_category_name %}
+                            <strong>{{ selected_category_name }}</strong>
+                            {% endif %}
+                            {% if only_virtual %}
+                            with virtual sessions enabled
+                            {% endif %}
+                            right now.
+                        </p>
+                        {% endif %}
+                        <p>Try a broader modality or remove the category filter.</p>
+                        <a class="button" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
+                    </section>
+                    {% endfor %}
                 </div>
-                <a class="button standard-action" href="{% url 'catalog:professional_detail' profile.pk %}">View
-                    profile</a>
-            </article>
-            {% empty %}
-            <section class="discover-empty">
-                <h2>No professionals match this search</h2>
-                <p>Try a broader modality or remove the category filter.</p>
-                <a class="button" href="{% url 'waitlist:landing' %}">Join Waitlist</a>
-            </section>
-            {% endfor %}
+
+                {% if page_obj.paginator.num_pages > 1 %}
+                <nav class="discover-pagination" aria-label="Discover pagination">
+                    {% if page_obj.has_previous %}
+                    <a class="discover-page"
+                        href="?page={{ page_obj.previous_page_number }}{{ pagination_querystring }}">Prev</a>
+                    {% endif %}
+
+                    {% for number in page_obj.paginator.page_range %}
+                    {% if number == page_obj.number %}
+                    <span class="discover-page" aria-current="page">{{ number }}</span>
+                    {% elif number >= page_obj.number|add:'-2' and number <= page_obj.number|add:'2' %} <a
+                        class="discover-page" href="?page={{ number }}{{ pagination_querystring }}">{{ number }}</a>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <a class="discover-page"
+                            href="?page={{ page_obj.next_page_number }}{{ pagination_querystring }}">Next</a>
+                        {% endif %}
+                </nav>
+                {% endif %}
+            </div>
         </div>
     </div>
 </section>

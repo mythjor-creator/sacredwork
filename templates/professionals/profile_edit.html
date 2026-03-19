@@ -15,7 +15,7 @@
                 <p class="hint">Build your public profile, gallery, and optional credentials in one place.</p>
                 <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 0.8rem 0 1rem;">
                     <a class="button" href="{% url 'catalog:service_list' %}">Manage services and tiers</a>
-                    <a class="button" href="{% url 'booking:availability' %}" style="background: #334155;">Set hours</a>
+                    <a class="button button-secondary" href="{% url 'booking:availability' %}">Set hours</a>
                 </div>
                 <p class="hint">Active service count: {{ active_service_count }} · Active availability windows: {{
                     availability_count }}</p>

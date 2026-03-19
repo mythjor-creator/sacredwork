@@ -16,12 +16,28 @@ from .models import EmailVerificationToken, GDPRDataExportLog, GDPRAccountDeleti
 
 def privacy_view(request):
     """Render privacy policy page."""
-    return render(request, 'pages/privacy.html')
+    site_base_url = request.build_absolute_uri('/').rstrip('/')
+    current_absolute_url = request.build_absolute_uri()
+    return render(
+        request,
+        'pages/privacy.html',
+        {
+            'site_base_url': site_base_url,
+            'current_absolute_url': current_absolute_url,
+        },
+    )
+
+
+def style_sheet_view(request):
+    """Render visual style sheet preview page."""
+    profile = getattr(request.user, 'professional_profile', None) if request.user.is_authenticated else None
+    return render(request, 'pages/style_sheet.html', {'profile': profile})
 
 
 def terms_view(request):
     """Render Help page with terms accordion and issue reporting form."""
     profile = getattr(request.user, 'professional_profile', None) if request.user.is_authenticated else None
+    site_base_url = request.build_absolute_uri('/').rstrip('/')
 
     if request.method == 'POST':
         report_form = ReportProblemForm(request.POST)
@@ -39,6 +55,7 @@ def terms_view(request):
         {
             'profile': profile,
             'report_form': report_form,
+            'site_base_url': site_base_url,
         },
     )
 
@@ -51,6 +68,7 @@ def verify_email_view(request, token):
         context = {
             'error': 'This verification link has expired. Please sign up again.' if verification.verified_at else 'This verification link has expired (7-day window).',
             'profile': verification.waitlist_profile,
+            'current_absolute_url': request.build_absolute_uri(),
         }
         return render(request, 'pages/verify_email.html', context, status=400)
     
@@ -60,6 +78,7 @@ def verify_email_view(request, token):
     context = {
         'success': True,
         'profile': verification.waitlist_profile,
+        'current_absolute_url': request.build_absolute_uri(),
     }
     return render(request, 'pages/verify_email.html', context)
 

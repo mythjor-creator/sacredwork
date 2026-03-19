@@ -1,55 +1,98 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    body {
+        background: var(--figma-beige);
+    }
+
+    .portal-panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.75rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .portal-panel+.portal-panel {
+        margin-top: 1rem;
+    }
+
+    .portal-section-divider {
+        border: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        margin: 1.25rem 0;
+    }
+
+    .portal-page-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.7rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 0.35rem;
+    }
+
+    .portal-page-header h1 {
+        margin: 0;
+    }
+
+    .portal-field-row {
+        margin-bottom: 0.65rem;
+    }
+</style>
+{% endblock %}
+
 {% block top_nav_links %}
 {% include 'professionals/_portal_top_nav.html' with profile=profile %}
 {% endblock %}
 
 {% block content %}
-<div class="shell" style="padding-top: 1rem;">
+<div class="shell" style="padding-top: 1.5rem; padding-bottom: 4rem;">
     <div id="practitioner-core-portal" class="portal-shell" data-portal-shell>
         {% include 'professionals/_portal_sidebar.html' with active_portal_nav='core' %}
-        <div class="portal-main" style="display: grid; gap: 1rem;">
-            <section class="card">
-                <div
-                    style="display: flex; justify-content: space-between; gap: 0.7rem; align-items: center; flex-wrap: wrap;">
-                    <h1 style="margin: 0;">Core profile</h1>
+        <div class="portal-main">
+            <div class="portal-panel">
+                <div class="portal-page-header">
+                    <h1>Core profile</h1>
                     {% if edit_mode %}
-                    <a class="button" style="margin-top: 0; background: #334155;"
-                        href="{% url 'professionals:profile_core' %}">Cancel</a>
+                    <a class="button button-secondary" href="{% url 'professionals:profile_core' %}">Cancel</a>
                     {% else %}
                     <a class="button" style="margin-top: 0;"
                         href="{% url 'professionals:profile_core' %}?edit=1">Edit</a>
                     {% endif %}
                 </div>
-                <p class="hint" style="margin-top: 0.45rem;">Default view is read-only. Use Edit to update.</p>
-            </section>
+                <p class="hint">Default view is read-only. Use Edit to update.</p>
 
-            {% if edit_mode %}
-            <section class="card">
+                <hr class="portal-section-divider">
+
+                {% if edit_mode %}
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.as_p }}
                     <button type="submit">Save core details</button>
                 </form>
-            </section>
-            {% else %}
-            <section class="card">
-                <h2 style="margin-top: 0;">Public details</h2>
-                <p><strong>Display name:</strong> {{ profile.display_name|default:'—' }}</p>
-                <p><strong>Business:</strong> {{ profile.business_name|default:'Not provided yet' }}</p>
-                <p><strong>Headline:</strong> {{ profile.headline|default:'Add a clear headline' }}</p>
-                <p><strong>Bio:</strong> {{ profile.bio|default:'Add a short bio so clients can understand your work.'
-                    }}</p>
-                <p><strong>Long bio:</strong> {{ profile.long_bio|default:'Optional extended story not added yet.' }}
+                {% else %}
+                <h2 style="margin: 0 0 0.75rem;">Public details</h2>
+                <p class="portal-field-row"><strong>Display name:</strong> {{ profile.display_name|default:'—' }}</p>
+                <p class="portal-field-row"><strong>Business:</strong> {{ profile.business_name|default:'Not provided
+                    yet' }}</p>
+                <p class="portal-field-row"><strong>Headline:</strong> {{ profile.headline|default:'Add a clear
+                    headline' }}</p>
+                <p class="portal-field-row"><strong>Bio:</strong> {{ profile.bio|default:'Add a short bio so clients can
+                    understand your work.' }}</p>
+                <p class="portal-field-row"><strong>Long bio:</strong> {{ profile.long_bio|default:'Optional extended
+                    story not added yet.' }}</p>
+                <p class="portal-field-row"><strong>Modalities:</strong> {{ profile.modalities|default:'Add modalities
+                    to improve discoverability.' }}</p>
+                <p class="portal-field-row"><strong>Location:</strong> {{ profile.location|default:'Location not set' }}
                 </p>
-                <p><strong>Modalities:</strong> {{ profile.modalities|default:'Add modalities to improve
-                    discoverability.' }}</p>
-                <p><strong>Location:</strong> {{ profile.location|default:'Location not set' }}</p>
-                <p><strong>Virtual sessions:</strong> {% if profile.is_virtual %}Yes{% else %}No{% endif %}</p>
-                <p><strong>Years of experience:</strong> {{ profile.years_experience }}</p>
-                <p><strong>Profile image URL:</strong> {{ profile.profile_image_url|default:'Not set' }}</p>
-            </section>
-            {% endif %}
+                <p class="portal-field-row"><strong>Virtual sessions:</strong> {% if profile.is_virtual %}Yes{% else
+                    %}No{% endif %}</p>
+                <p class="portal-field-row"><strong>Years of experience:</strong> {{ profile.years_experience }}</p>
+                <p class="portal-field-row"><strong>Profile image URL:</strong> {{
+                    profile.profile_image_url|default:'Not set' }}</p>
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

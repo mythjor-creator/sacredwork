@@ -11,6 +11,11 @@ User = get_user_model()
 
 
 class PrivacyTermsPages(TestCase):
+    def test_style_sheet_renders(self):
+        response = self.client.get(reverse('pages:style_sheet'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Clairbook Style Sheet')
+
     def test_privacy_policy_renders(self):
         response = self.client.get(reverse('pages:privacy'))
         self.assertEqual(response.status_code, 200)

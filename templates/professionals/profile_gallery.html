@@ -1,54 +1,101 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    body {
+        background: var(--figma-beige);
+    }
+
+    .portal-panel {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.75rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .portal-section-divider {
+        border: none;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        margin: 1.25rem 0;
+    }
+
+    .portal-page-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.7rem;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 0.35rem;
+    }
+
+    .portal-page-header h1 {
+        margin: 0;
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .gallery-image {
+        width: 100%;
+        aspect-ratio: 1/1;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .formset-item {
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        padding-top: 1rem;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block top_nav_links %}
 {% include 'professionals/_portal_top_nav.html' with profile=profile %}
 {% endblock %}
 
 {% block content %}
-<div class="shell" style="padding-top: 1rem;">
+<div class="shell" style="padding-top: 1.5rem; padding-bottom: 4rem;">
     <div id="practitioner-gallery-portal" class="portal-shell" data-portal-shell>
         {% include 'professionals/_portal_sidebar.html' with active_portal_nav='gallery' %}
-        <div class="portal-main" style="display: grid; gap: 1rem;">
-            <section class="card">
-                <div
-                    style="display: flex; justify-content: space-between; gap: 0.7rem; align-items: center; flex-wrap: wrap;">
-                    <h1 style="margin: 0;">Gallery</h1>
+        <div class="portal-main">
+            <div class="portal-panel">
+                <div class="portal-page-header">
+                    <h1>Gallery</h1>
                     {% if edit_mode %}
-                    <a class="button" style="margin-top: 0; background: #334155;"
-                        href="{% url 'professionals:profile_gallery' %}">Cancel</a>
+                    <a class="button button-secondary" href="{% url 'professionals:profile_gallery' %}">Cancel</a>
                     {% else %}
                     <a class="button" style="margin-top: 0;"
                         href="{% url 'professionals:profile_gallery' %}?edit=1">Edit</a>
                     {% endif %}
                 </div>
-                <p class="hint" style="margin-top: 0.45rem;">Show your studio, environment, or visuals that represent
-                    your work.</p>
-            </section>
+                <p class="hint">Show your studio, environment, or visuals that represent your work.</p>
 
-            {% if edit_mode %}
-            <section class="card">
+                <hr class="portal-section-divider">
+
+                {% if edit_mode %}
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ gallery_formset.management_form }}
                     {% for gallery_form in gallery_formset %}
-                    <section
-                        style="border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem; margin-bottom: 0.7rem;">
+                    <div class="formset-item">
                         {{ gallery_form.as_p }}
-                    </section>
+                    </div>
                     {% endfor %}
-                    <button type="submit">Save gallery</button>
+                    <button type="submit" style="margin-top: 1.25rem;">Save gallery</button>
                 </form>
-            </section>
-            {% else %}
-            <section class="card">
+                {% else %}
                 {% with gallery=profile.gallery_images.all %}
                 {% if gallery %}
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem;">
+                <div class="gallery-grid">
                     {% for image in gallery %}
                     {% if image.is_active %}
                     <figure style="margin: 0;">
                         <img src="{{ image.image.url }}" alt="{{ image.caption|default:'Gallery image' }}"
-                            style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            class="gallery-image">
                         <figcaption class="hint" style="margin-top: 0.3rem;">{{ image.caption|default:'No caption' }}
                         </figcaption>
                     </figure>
@@ -59,8 +106,8 @@
                 <p class="hint">No gallery images yet. Add at least one image as a visual placeholder.</p>
                 {% endif %}
                 {% endwith %}
-            </section>
-            {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

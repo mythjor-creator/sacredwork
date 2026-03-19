@@ -16,7 +16,8 @@ def waitlist_landing_view(request):
             messages.success(request, 'You are on the waitlist. We will reach out soon.')
             return redirect(f"{reverse('waitlist:landing')}?submitted=1")
     else:
-        form = PractitionerWaitlistForm()
+        is_founding = request.GET.get('founding') == '1'
+        form = PractitionerWaitlistForm(initial={'is_founding_member': is_founding})
 
     service_tracks = [
         {
@@ -80,5 +81,7 @@ def waitlist_landing_view(request):
         'service_tracks': service_tracks,
         'practitioner_benefits': practitioner_benefits,
         'approval_flow': approval_flow,
+        'site_base_url': request.build_absolute_uri('/').rstrip('/'),
+        'current_absolute_url': request.build_absolute_uri(),
     }
     return render(request, 'waitlist/landing.html', context)

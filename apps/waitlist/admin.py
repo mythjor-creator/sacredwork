@@ -42,13 +42,14 @@ class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
         'full_name',
         'email',
         'practice_type',
+        'is_founding_member',
         'status',
         'location',
         'offers_in_person',
         'status_changed_at',
         'created_at',
     )
-    list_filter = ('practice_type', 'status', 'is_virtual', 'offers_in_person')
+    list_filter = ('is_founding_member', 'practice_type', 'status', 'is_virtual', 'offers_in_person')
     search_fields = ('business_name', 'full_name', 'email', 'headline', 'modalities', 'location')
     readonly_fields = ('status_changed_at', 'created_at', 'transition_history')
     actions = [mark_as_invited]

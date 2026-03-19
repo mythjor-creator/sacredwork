@@ -11,9 +11,9 @@ class WaitlistLandingTests(TestCase):
         response = self.client.get(reverse('waitlist:landing'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Service tracks we are launching first')
-        self.assertContains(response, 'Wellness Practitioners')
-        self.assertContains(response, 'Spiritual Guides')
+        self.assertContains(response, 'Be here before we open the doors')
+        self.assertContains(response, 'Founding practitioner rate')
+        self.assertContains(response, '$79')
 
     def test_practitioner_can_join_waitlist(self):
         response = self.client.post(
@@ -147,8 +147,35 @@ class WaitlistLandingTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertIn('mira@example.com', msg.to)
-        self.assertIn('verify', msg.subject.lower())
-        self.assertIn('Mira Bell', msg.body)
+        self.assertIn('waitlist', msg.subject.lower())
+        self.assertIn('Mira', msg.body)
+
+    def test_founding_signup_sends_founding_confirmation_email(self):
+        self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Nia Hart',
+                'email': 'nia@example.com',
+                'business_name': 'Hart Practice',
+                'headline': 'Intuitive coach',
+                'modalities': 'coaching, meditation',
+                'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
+                'location': 'Remote',
+                'is_virtual': True,
+                'offers_in_person': False,
+                'years_experience': 5,
+                'website_url': '',
+                'notes': '',
+                'is_founding_member': 'True',
+            },
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        msg = mail.outbox[0]
+        self.assertIn('nia@example.com', msg.to)
+        self.assertIn('welcome to clairbook', msg.subject.lower())
+        self.assertIn('founding rate of $79/year', msg.body.lower())
+        self.assertIn('verify your email', msg.body.lower())
 
     def test_new_signup_status_defaults_to_new(self):
         PractitionerWaitlistProfile.objects.create(
@@ -330,6 +357,14 @@ class WaitlistLandingTests(TestCase):
         self.assertEqual(t2.changed_by, admin_user)
         self.assertEqual(t1.to_status, PractitionerWaitlistProfile.Status.INVITED)
         self.assertEqual(t2.to_status, PractitionerWaitlistProfile.Status.INVITED)
+
+    def test_admin_list_filter_includes_founding_member(self):
+        from .admin import PractitionerWaitlistProfileAdmin
+        from django.contrib.admin.sites import AdminSite
+
+        admin_site = AdminSite()
+        model_admin = PractitionerWaitlistProfileAdmin(PractitionerWaitlistProfile, admin_site)
+        self.assertIn('is_founding_member', model_admin.list_filter)
 
     def test_status_change_sends_notification_email(self):
         """Verify that status transitions trigger notification emails."""

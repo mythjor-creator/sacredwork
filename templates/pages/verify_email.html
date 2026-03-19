@@ -1,5 +1,21 @@
 {% extends 'base.html' %}
 
+{% block title %}Verify Email | clairbook{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="{{ current_absolute_url }}">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Verify Email",
+    "url": "{{ current_absolute_url }}",
+    "description": "Email verification for the Clairbook practitioner waitlist."
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <div class="shell" style="max-width: 600px; padding: 2rem 1rem; text-align: center;">
     {% if success %}
@@ -14,7 +30,7 @@
     <p style="font-size: 1.1rem;">{{ error }}</p>
     <p class="hint">If you'd like to join the waitlist, please <a href="{% url 'waitlist:landing' %}">sign up again</a>.
     </p>
-    <a class="button" style="background: #334155;" href="{% url 'waitlist:landing' %}">Sign Up</a>
+    <a class="button button-secondary" href="{% url 'waitlist:landing' %}">Sign Up</a>
 
     {% endif %}
 </div>

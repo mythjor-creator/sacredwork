@@ -1,16 +1,39 @@
+<a href="{% url 'catalog:marketplace' %}">Discover</a>
+<a href="{% url 'waitlist:landing' %}">Join Waitlist</a>
 <details class="portal-user-menu">
     <summary class="mini-avatar-link" title="Open account menu" aria-label="Open account menu">
-        {% if profile.profile_photo %}
+        {% if profile and profile.profile_photo %}
         <img src="{{ profile.profile_photo.url }}" alt="{{ profile.display_name }} profile">
-        {% elif profile.profile_image_url %}
+        {% elif profile and profile.profile_image_url %}
         <img src="{{ profile.profile_image_url }}" alt="{{ profile.display_name }} profile">
         {% else %}
-        <span class="mini-avatar-fallback">{{ profile.display_name|slice:':2' }}</span>
+        <span class="mini-avatar-fallback">
+            {% if profile and profile.display_name %}
+            {{ profile.display_name|slice:':2' }}
+            {% elif user.get_full_name %}
+            {{ user.get_full_name|slice:':2' }}
+            {% else %}
+            {{ user.username|slice:':2' }}
+            {% endif %}
+        </span>
         {% endif %}
     </summary>
     <div class="portal-user-dropdown">
-        <span class="portal-user-label">{{ profile.display_name }}</span>
+        <span class="portal-user-label">
+            {% if profile and profile.display_name %}
+            {{ profile.display_name }}
+            {% elif user.get_full_name %}
+            {{ user.get_full_name }}
+            {% else %}
+            {{ user.username }}
+            {% endif %}
+        </span>
+        {% if profile %}
         <a href="{% url 'catalog:professional_detail' profile.pk %}">Public profile</a>
+        {% else %}
+        <a href="{% url 'professionals:onboarding' %}">Public profile</a>
+        {% endif %}
+        <a href="{% url 'accounts:dashboard' %}">Dashboard</a>
         <a href="{% url 'accounts:settings' %}">Account settings</a>
         <a href="{% url 'pages:terms' %}">Help</a>
         <a href="{% url 'accounts:logout' %}">Log out</a>

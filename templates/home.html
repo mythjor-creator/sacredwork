@@ -1,13 +1,62 @@
 {% extends 'base.html' %}
 
-{% block extra_head %}
-<style>
-    .site-nav {
-        display: none;
-    }
+{% block title %}Clairbook | Discover wellness, spiritual, beauty, and coaching practitioners{% endblock %}
 
-    .wrap {
-        padding: 0;
+{% block body_class %}page-nav-overlay{% endblock %}
+
+{% block extra_head %}
+<meta name="description"
+    content="Discover vetted wellness, spiritual, beauty, and coaching practitioners on Clairbook. Explore detailed profiles, modalities, and session formats to find the right fit.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ site_base_url }}/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Clairbook | Discover wellness, spiritual, beauty, and coaching practitioners">
+<meta property="og:description"
+    content="Explore trusted practitioner profiles and find aligned support in wellness, spirituality, beauty, and coaching.">
+<meta property="og:url" content="{{ site_base_url }}/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Clairbook | Discover wellness, spiritual, beauty, and coaching practitioners">
+<meta name="twitter:description"
+    content="Explore trusted practitioner profiles and find aligned support in wellness, spirituality, beauty, and coaching.">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Clairbook",
+    "url": "{{ site_base_url }}/",
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ site_base_url }}/marketplace/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+    }
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Clairbook",
+    "url": "{{ site_base_url }}/",
+    "description": "A marketplace for discovering wellness, spiritual, beauty, and coaching practitioners with detailed, human-centered profiles.",
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "hello@clairbook.com"
+    }
+}
+</script>
+<style>
+    body {
+        --site-nav-top-bg: transparent;
+        --site-nav-top-border: transparent;
+        --site-nav-link-top: #afebf3;
+        --site-nav-link-top-border: rgba(175, 235, 243, 0.4);
+        --site-nav-link-top-hover-bg: rgba(175, 235, 243, 0.12);
+        --site-nav-link-top-hover: #e6f8fb;
+        --site-nav-brand-color: #afebf3;
+        --site-nav-solid-bg: rgba(255, 255, 255, 0.96);
+        --site-nav-solid-border: rgba(47, 72, 174, 0.15);
+        --site-nav-solid-brand-color: var(--brand);
     }
 
     .home-shell {
@@ -21,75 +70,10 @@
     }
 
     .home-hero {
-        min-height: 72vh;
+        min-height: 100svh;
         display: flex;
         align-items: center;
         padding: clamp(1.9rem, 4vw, 4.7rem) 0 clamp(3rem, 7vw, 8rem);
-    }
-
-    .hero-header {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        align-items: start;
-        gap: 0.8rem;
-        margin-bottom: clamp(3rem, 7vw, 9rem);
-    }
-
-    .hero-brand {
-        margin: 0;
-        font-family: "Instrument Sans", sans-serif;
-        font-size: clamp(1.25rem, 2vw, 2rem);
-        line-height: 1;
-        font-weight: 600;
-        color: #afebf3;
-    }
-
-    .hero-tagline {
-        margin: 0;
-        font-family: "Instrument Sans", sans-serif;
-        font-size: 0.7rem;
-        line-height: 1.35;
-        color: #afebf3;
-        text-align: center;
-        opacity: 0.92;
-    }
-
-    .hero-links {
-        display: flex;
-        justify-content: flex-end;
-        gap: 0.8rem;
-    }
-
-    .hero-link {
-        color: #afebf3;
-        text-decoration: none;
-        font: 600 0.9rem/1.2 "Instrument Sans", sans-serif;
-        padding: 0.45rem 0.65rem;
-        border: 1px solid transparent;
-        border-radius: 4px;
-        transition: border-color 0.2s ease, background 0.2s ease;
-    }
-
-    .hero-link:hover {
-        border-color: rgba(175, 235, 243, 0.45);
-        background: rgba(175, 235, 243, 0.08);
-    }
-
-    .hero-menu {
-        display: none;
-        border: 0;
-        margin: 0;
-        color: #afebf3;
-        background: transparent;
-        font-size: 1.4rem;
-        padding: 0;
-        box-shadow: none;
-    }
-
-    .hero-menu:hover {
-        transform: none;
-        background: transparent;
-        box-shadow: none;
     }
 
     .hero-title {
@@ -102,6 +86,14 @@
         font-size: clamp(3.4rem, 11vw, 12.5rem);
         line-height: 0.95;
         margin-inline: auto;
+    }
+
+    .hero-lead {
+        margin: 1.35rem auto 0;
+        max-width: 56ch;
+        text-align: center;
+        color: rgba(175, 235, 243, 0.92);
+        font: 400 clamp(0.96rem, 1.35vw, 1.2rem)/1.6 "Instrument Sans", sans-serif;
     }
 
     .home-search {
@@ -466,35 +458,18 @@
 
         .home-hero {
             min-height: 38.375rem;
-            align-items: flex-start;
+            align-items: center;
             padding: 2.0625rem 0 6.8125rem;
-        }
-
-        .hero-header {
-            grid-template-columns: 1fr auto;
-            grid-template-areas:
-                "brand links"
-                "tagline tagline";
-            margin-bottom: 7.625rem;
-        }
-
-        .hero-brand {
-            grid-area: brand;
-        }
-
-        .hero-tagline {
-            grid-area: tagline;
-            text-align: left;
-        }
-
-        .hero-links {
-            grid-area: links;
         }
 
         .hero-title {
             max-width: none;
             font-size: 6.25rem;
             line-height: 1;
+        }
+
+        .hero-lead {
+            max-width: 48ch;
         }
 
         .home-search {
@@ -575,35 +550,20 @@
 
         .home-hero {
             min-height: 31.5rem;
-            align-items: flex-start;
             padding: 1.8125rem 0 3.5rem;
-        }
-
-        .hero-header {
-            grid-template-columns: 1fr auto;
-            grid-template-areas:
-                "brand menu"
-                "tagline tagline";
-            margin-bottom: 5.625rem;
-        }
-
-        .hero-links {
-            display: none;
-        }
-
-        .hero-menu {
-            display: inline-block;
-            grid-area: menu;
-        }
-
-        .hero-tagline {
-            text-align: left;
         }
 
         .hero-title {
             font-size: 3.5rem;
             max-width: 6ch;
             line-height: 1.04;
+        }
+
+        .hero-lead {
+            text-align: left;
+            margin-left: 0;
+            margin-right: 0;
+            max-width: 34ch;
         }
 
         .home-search {
@@ -765,16 +725,9 @@
 <section class="home-stage">
     <div class="home-hero">
         <div class="home-shell" data-reveal="1">
-            <header class="hero-header">
-                <p class="hero-brand">Clairbook</p>
-                <p class="hero-tagline">Sacred services<br>by intentional practitioners.</p>
-                <nav class="hero-links" aria-label="Home hero navigation">
-                    <a class="hero-link" href="{% url 'waitlist:landing' %}">Join the Waitlist</a>
-                    <a class="hero-link" href="#what-we-do">Learn more</a>
-                </nav>
-                <button class="hero-menu" type="button" aria-label="Open menu">&#8801;</button>
-            </header>
             <h1 class="hero-title">This was meant to find you.</h1>
+            <p class="hero-lead">Discover trusted practitioners in wellness, spirituality, beauty, and coaching with
+                profiles that feel human, specific, and easy to book.</p>
         </div>
     </div>
 </section>
@@ -784,18 +737,21 @@
         <form class="search-form" method="get" action="{% url 'catalog:marketplace' %}"
             data-track-event="search_submitted" data-track-source="home">
             <span class="search-icon" aria-hidden="true">&#9711;</span>
-            <input type="text" name="q" value="{{ query }}" placeholder="Psychic medium in Sedona, AZ"
+            <input type="text" name="q" value="{{ query }}" placeholder="Somatic therapist in Portland, OR"
                 aria-label="Search practitioners">
             <button class="search-go" type="submit" aria-label="Search"><span class="search-arrow"
                     aria-hidden="true">&#8594;</span></button>
         </form>
 
         <ul class="search-suggestions" aria-label="Suggested searches">
-            <li><a href="{% url 'catalog:marketplace' %}?q=organic+facial+near+me">organic facial<br>near me</a></li>
-            <li><a href="{% url 'catalog:marketplace' %}?q=sound+bath+yoga+retreat">sound bath yoga<br>retreat</a></li>
-            <li><a href="{% url 'catalog:marketplace' %}?q=reiki+healer+near+me">reiki healer near<br>me</a></li>
-            <li><a href="{% url 'catalog:marketplace' %}?q=best+palm+reader+in+NYC">best palm reader<br>in NYC</a></li>
-            <li><a href="{% url 'catalog:marketplace' %}?q=astrology+reading+online">astrology<br>reading online</a>
+            <li><a href="{% url 'catalog:marketplace' %}?q=energy+healer+in+Sedona">energy healer<br>in Sedona</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=trauma-informed+breathwork">trauma-informed<br>breathwork</a>
+            </li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=virtual+career+coach+for+founders">virtual coach<br>for
+                    founders</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=holistic+esthetician+in+Austin">holistic esthetician<br>in
+                    Austin</a></li>
+            <li><a href="{% url 'catalog:marketplace' %}?q=intuitive+reading+online">intuitive reading<br>online</a>
             </li>
         </ul>
     </div>
@@ -804,7 +760,7 @@
 <section class="home-featured" data-reveal="3">
     <div class="home-shell">
         <div class="featured-head">
-            <h2>Featured practitioners</h2>
+            <h2>Featured practitioners this week</h2>
             <a class="featured-more" href="{% url 'catalog:marketplace' %}">More <span
                     aria-hidden="true">&#8594;</span></a>
         </div>
@@ -833,7 +789,7 @@
                     <div class="placeholder-image" aria-hidden="true"></div>
                 </div>
                 <div>
-                    <p class="featured-name">Explore practitioners<br>Personalized guidance</p>
+                    <p class="featured-name">Explore vetted professionals<br>Grounded support for real life</p>
                     <span class="featured-cta">Start exploring</span>
                 </div>
             </a>
@@ -847,45 +803,46 @@
 
 <section id="what-we-do" class="home-services" data-reveal="4">
     <div class="home-shell">
-        <h2 class="services-title">What we do</h2>
+        <h2 class="services-title">What clairbook makes possible</h2>
 
         <div class="services-hero">
             <div class="services-image" style="aspect-ratio: 1.53 / 1;">
                 <div class="placeholder-image" style="aspect-ratio: 1.53 / 1;"></div>
             </div>
             <div class="services-panel">
-                <h3>Discover practitioners who align with your rituals</h3>
-                <p>Clairbook helps people find experienced spiritual, wellness, and beauty providers by energy,
-                    modality, and intention, so the right session feels clear from the first click.</p>
-                <a class="services-button" href="{% url 'catalog:marketplace' %}">Browse sessions</a>
+                <h3>Find practitioners who match your needs, values, and pace</h3>
+                <p>We pair thoughtful search with rich practitioner profiles so you can move from "just browsing" to
+                    "this feels right" without second-guessing the fit.</p>
+                <a class="services-button" href="{% url 'catalog:marketplace' %}">Browse practitioners</a>
             </div>
         </div>
 
         <div class="services-grid">
-            {% for item in categories|slice:':3' %}
+            {% for snippet in featured_service_snippets %}
             <article class="services-list">
-                <h3>{{ item.category.name }}</h3>
-                <p>{{ item.category.description|default:'Explore aligned offerings, practitioner styles, and session
-                    formats in this category.'|truncatewords:18 }}</p>
-                <a href="{% url 'catalog:marketplace' %}?category={{ item.category.slug }}">Explore {{
-                    item.category.name }}</a>
+                <h3>{{ snippet.title }}</h3>
+                <p>{{ snippet.description|truncatewords:20 }}</p>
+                <a href="{{ snippet.cta_url }}">{{ snippet.cta_label }}</a>
             </article>
             {% empty %}
             <article class="services-list">
-                <h3>Intentional search experience</h3>
-                <p>Filter by modality, location, session format, and specialties to quickly narrow to aligned options.
+                <h3>Intentional search and matching</h3>
+                <p>Filter by modality, focus area, location, and delivery format to quickly narrow toward aligned
+                    options.
                 </p>
                 <a href="{% url 'catalog:marketplace' %}">Explore categories</a>
             </article>
             <article class="services-list">
-                <h3>Practitioner-first onboarding</h3>
-                <p>Professionals join through a guided profile flow that highlights voice, values, and service clarity.
+                <h3>Practitioner-first publishing</h3>
+                <p>Professionals build public profiles with services, outcomes, and credentials that help clients book
+                    confidently.
                 </p>
                 <a href="{% url 'waitlist:landing' %}">Join as a practitioner</a>
             </article>
             <article class="services-list">
-                <h3>Trust and transparency layers</h3>
-                <p>Profiles surface credentials, focus areas, and practical details so clients can book with confidence.
+                <h3>Trust and transparency</h3>
+                <p>Clear service descriptions, delivery details, and profile standards create safer, clearer booking
+                    decisions.
                 </p>
                 <a href="{% url 'pages:terms' %}">Read platform standards</a>
             </article>
@@ -898,16 +855,16 @@
             <div class="foot-grid">
                 <p class="foot-brand">Clairbook</p>
                 <a class="foot-link" href="{% url 'pages:terms' %}">Terms of Service</a>
-                <a class="foot-link" href="{% url 'waitlist:landing' %}">Sign up for the waitlist</a>
+                <a class="foot-link" href="{% url 'waitlist:landing' %}">Join practitioner waitlist</a>
                 <p class="foot-link">Contact<br>hello@clairbook.com</p>
-                <p class="foot-copy">Copyright Clairbook,<br>2026</p>
+                <p class="foot-copy">Copyright Clairbook,<br>2026.</p>
             </div>
 
             <div class="foot-news">
-                <p>Sign up for our newsletter</p>
+                <p>Get launch notes, featured practitioners, and thoughtful resources.</p>
                 <form method="get" action="{% url 'waitlist:landing' %}">
                     <span aria-hidden="true">&#9993;</span>
-                    <input name="email" type="email" placeholder="yourname@email.com" aria-label="Email address">
+                    <input name="email" type="email" placeholder="you@example.com" aria-label="Email address">
                     <button type="submit" aria-label="Submit newsletter email">&#8594;</button>
                 </form>
             </div>

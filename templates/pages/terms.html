@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% block title %}Help | clairbook{% endblock %}
+
 {% block top_nav_links %}
 {% if profile %}
 {% include 'professionals/_portal_top_nav.html' with profile=profile %}
@@ -9,6 +11,50 @@
 {% endblock %}
 
 {% block extra_head %}
+<meta name="description"
+    content="Get help with Clairbook, review the terms of service, report a problem, and find support contact information.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ site_base_url }}/terms/">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "How do I contact Clairbook support?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "You can contact support at support@clairbook.app."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How do I report a problem?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Use the report a problem form on the Help page to share what went wrong and what you expected to happen."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Where can I review the Clairbook visual system?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Open the style sheet preview from the Help page to review the current visual system, including buttons, colors, and typography."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Where can I review the terms of service?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "The Help page includes the current Terms of Service in an expandable section."
+            }
+        }
+    ]
+}
+</script>
 <style>
     .help-shell {
         padding-top: 1rem;

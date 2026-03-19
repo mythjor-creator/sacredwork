@@ -8,29 +8,52 @@ SITE_URL = getattr(settings, 'SITE_URL', 'http://localhost:8000')
 
 
 def send_waitlist_confirmation(profile):
-    """Send email verification link to a practitioner who just joined the waitlist."""
+    """Send confirmation email after a practitioner joins the waitlist.
+
+    Sends founding-member copy if profile.is_founding_member is True,
+    otherwise sends the standard free-waitlist confirmation.
+    """
     from apps.pages.models import EmailVerificationToken
-    
-    # Create verification token
+
     token = EmailVerificationToken.create_for_profile(profile)
-    
     verification_url = f"{SITE_URL}{reverse('pages:verify_email', args=[token.token])}"
-    
+    first_name = profile.full_name.split()[0] if profile.full_name else profile.full_name
+
+    if profile.is_founding_member:
+        subject = f"You're in. Welcome to {SITE_NAME}."
+        message = (
+            f"Hi {first_name},\n\n"
+            f"You're one of our founding practitioners. That means something to us.\n\n"
+            f"Your spot is reserved, your rate is locked, and your profile will go live the day we launch. "
+            f"Between now and then, you'll hear from us directly — no newsletters, no noise. "
+            f"Just real updates on how the build is going, and the occasional question where your opinion "
+            f"actually shapes what we make.\n\n"
+            f"A few things to know:\n"
+            f"  · Your founding rate of $79/year is locked in permanently, as long as you're with us.\n"
+            f"  · You'll get early access to set up your profile before we open to the public.\n"
+            f"  · If for any reason we don't launch, you'll receive a full refund. No process, no questions.\n\n"
+            f"One last step — please verify your email so we can keep your spot secure:\n"
+            f"{verification_url}\n\n"
+            f"This link expires in 7 days.\n\n"
+            f"We're building this carefully and we're building it for you. Thank you for being here early.\n\n"
+            f"— The {SITE_NAME} team\n\n"
+            f"Questions? Just reply to this email."
+        )
+    else:
+        subject = f"[{SITE_NAME}] You're on the waitlist"
+        message = (
+            f"Hi {first_name},\n\n"
+            f"Thanks for joining the {SITE_NAME} waitlist. We'll reach out before we open to the public "
+            f"with details on how to get your profile set up.\n\n"
+            f"Please verify your email to confirm your spot:\n"
+            f"{verification_url}\n\n"
+            f"This link expires in 7 days.\n\n"
+            f"— The {SITE_NAME} team"
+        )
+
     send_mail(
-        subject=f"[{SITE_NAME}] Verify your email to complete your application",
-        message=(
-            f'Hi {profile.full_name},\n\n'
-            f"Thanks for joining the {SITE_NAME} practitioner waitlist! "
-            f"To complete your application, please verify your email address by clicking the link below.\n\n"
-            f"Verification link:\n{verification_url}\n\n"
-            f"This link will expire in 7 days.\n\n"
-            f"Here's what we have on file:\n"
-            f"  Practice type: {profile.get_practice_type_display()}\n"
-            f"  Offerings: {profile.modalities}\n"
-            f"  Location: {profile.location or 'Not specified'}\n\n"
-            f"We'll review your application and reach out to this address ({profile.email}) when it's your turn.\n\n"
-            f'— The {SITE_NAME} team'
-        ),
+        subject=subject,
+        message=message,
         from_email=FROM_EMAIL,
         recipient_list=[profile.email],
         fail_silently=True,

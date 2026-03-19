@@ -19,7 +19,11 @@ class PractitionerWaitlistForm(forms.ModelForm):
             'years_experience',
             'website_url',
             'notes',
+            'is_founding_member',
         )
+        widgets = {
+            'is_founding_member': forms.HiddenInput(),
+        }
         labels = {
             'full_name': 'Practitioner name',
             'email': 'Email',
