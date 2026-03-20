@@ -85,3 +85,46 @@ class Booking(models.Model):
 	@property
 	def is_confirmed(self) -> bool:
 		return self.status == self.Status.CONFIRMED
+
+
+class BookingPaymentIntent(models.Model):
+	class Status(models.TextChoices):
+		PENDING = 'pending', 'Pending'
+		COMPLETED = 'completed', 'Completed'
+		EXPIRED = 'expired', 'Expired'
+		FAILED = 'failed', 'Failed'
+
+	client = models.ForeignKey(
+		'accounts.User',
+		on_delete=models.CASCADE,
+		related_name='booking_payment_intents',
+	)
+	service = models.ForeignKey(
+		'catalog.Service',
+		on_delete=models.PROTECT,
+		related_name='payment_intents',
+	)
+	start_at = models.DateTimeField()
+	intake_notes = models.TextField(blank=True)
+	status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+	stripe_checkout_session_id = models.CharField(max_length=255, blank=True, null=True, unique=True)
+	stripe_payment_intent_id = models.CharField(max_length=255, blank=True)
+	failure_reason = models.CharField(max_length=255, blank=True)
+	requires_manual_refund = models.BooleanField(default=False)
+	refund_id = models.CharField(max_length=255, blank=True, help_text='Stripe refund ID (re_...) once issued.')
+	refund_resolved_at = models.DateTimeField(null=True, blank=True, help_text='When the manual refund was marked resolved.')
+	booking = models.OneToOneField(
+		Booking,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name='payment_intent',
+	)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		ordering = ['-created_at']
+
+	def __str__(self) -> str:
+		return f'Payment intent {self.pk} for {self.service.name}'

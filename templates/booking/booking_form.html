@@ -7,10 +7,14 @@
         service.get_delivery_format_display }} · ${{ service.price_display
         }}</p>
     <p>{{ service.description }}</p>
+    {% if payments_enabled %}
+    <p class="hint">You will complete secure payment in Stripe before your booking request is submitted.</p>
+    {% endif %}
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Request booking</button>
+        <button type="submit">{% if payments_enabled %}Continue to secure checkout{% else %}Request booking{% endif
+            %}</button>
     </form>
     {% if not slots %}
     <p class="hint">This professional has not opened any bookable slots yet.</p>

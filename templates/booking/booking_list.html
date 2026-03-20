@@ -6,6 +6,31 @@
     <p class="hint">Track upcoming and past sessions from one place.</p>
 </section>
 
+{% if view_type == 'client' and pending_payment_intents %}
+<section style="display: grid; gap: 1rem; margin-top: 1rem;">
+    {% for intent in pending_payment_intents %}
+    <article class="card">
+        <h2 style="margin-top: 0;">Payment in progress</h2>
+        <p class="hint">{{ intent.service.name }} with {{ intent.service.professional.display_name }}{{
+            intent.service.professional.business_name_suffix }}</p>
+        <p>{{ intent.start_at|date:"D, M j, Y" }} at {{ intent.start_at|time:"g:i A" }}</p>
+        <p class="hint">Status: {{ intent.get_status_display }}</p>
+        {% if intent.requires_manual_refund %}
+        <p class="hint">Payment was captured but the time slot became unavailable. A manual refund is required.</p>
+        {% elif intent.failure_reason %}
+        <p class="hint">{{ intent.failure_reason }}</p>
+        {% endif %}
+        {% if not intent.requires_manual_refund %}
+        <form method="post" action="{% url 'booking:payment_retry' intent.pk %}" style="margin-top: 1rem;">
+            {% csrf_token %}
+            <button type="submit">Retry checkout</button>
+        </form>
+        {% endif %}
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
+
 <section style="display: grid; gap: 1rem; margin-top: 1rem;">
     {% for booking in bookings %}
     <article class="card">

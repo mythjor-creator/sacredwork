@@ -202,6 +202,13 @@ ANALYTICS_PLAUSIBLE_SCRIPT_URL = os.environ.get(
     'https://plausible.io/js/script.js',
 ).strip()
 
+# Booking payments (Stripe)
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '').strip()
+STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '').strip()
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '').strip()
+STRIPE_CURRENCY = os.environ.get('STRIPE_CURRENCY', 'usd').strip().lower()
+BOOKING_REQUIRE_PAYMENT = os.environ.get('BOOKING_REQUIRE_PAYMENT', 'False') == 'True'
+
 # Site URL for email links and GDPR exports
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 
