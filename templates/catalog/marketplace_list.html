@@ -107,6 +107,13 @@
         padding: 1rem;
     }
 
+    .discover-panel-note {
+        margin: 0.42rem 0 0;
+        color: #5e6772;
+        font-size: 0.8rem;
+        line-height: 1.35;
+    }
+
     .discover-panel-title {
         margin: 0;
         color: #1f2f3a;
@@ -195,6 +202,12 @@
         margin-bottom: 1rem;
     }
 
+    .discover-toolbar-note {
+        margin: 0.1rem 0 0;
+        color: #4f5a66;
+        font-size: 0.82rem;
+    }
+
     .discover-count {
         margin: 0;
         color: #2f4554;
@@ -280,6 +293,11 @@
         box-shadow: none;
     }
 
+    .standard-card:hover {
+        border-color: rgba(153, 76, 50, 0.34);
+        background: rgba(255, 255, 255, 0.76);
+    }
+
     .standard-portrait {
         width: 100%;
         aspect-ratio: 1 / 1.08;
@@ -352,6 +370,7 @@
         padding: 0.62rem 0.96rem;
         font-size: 0.9rem;
         white-space: nowrap;
+        text-align: center;
     }
 
     .discover-empty {
@@ -468,6 +487,8 @@
         <div class="discover-layout">
             <aside class="discover-panel" aria-label="Discover filters">
                 <h2 class="discover-panel-title">Filter practitioners</h2>
+                <p class="discover-panel-note">Use 2 to 3 filters to narrow quickly without over-restricting results.
+                </p>
                 <form class="discover-filter-form" method="get" data-track-event="search_submitted"
                     data-track-source="discover">
                     <section class="discover-filter-group">
@@ -532,7 +553,11 @@
 
             <div>
                 <section class="discover-toolbar" aria-live="polite">
-                    <p class="discover-count">{{ result_count }} practitioner{{ result_count|pluralize }} found</p>
+                    <div>
+                        <p class="discover-count">{{ result_count }} practitioner{{ result_count|pluralize }} found</p>
+                        <p class="discover-toolbar-note">Open a profile to review credentials, services, and booking
+                            fit.</p>
+                    </div>
                     {% if has_filters %}
                     <div class="discover-filters">
                         {% if query %}
@@ -583,7 +608,8 @@
                             {% endif %}
                         </div>
                         <a class="button standard-action" href="{% url 'catalog:professional_detail' profile.pk %}">View
-                            profile</a>
+                            profile
+                            and services</a>
                     </article>
                     {% empty %}
                     <section class="discover-empty">

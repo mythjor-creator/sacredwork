@@ -1081,6 +1081,36 @@
         color: var(--figma-copy);
     }
 
+    .pd-hero-actions {
+        margin-top: 0.95rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.55rem;
+    }
+
+    .pd-hero-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.45rem 0.86rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 0.82rem;
+        font-weight: 600;
+    }
+
+    .pd-hero-action-primary {
+        background: rgba(47, 72, 174, 0.11);
+        color: var(--figma-copy);
+        border: 1px solid rgba(47, 72, 174, 0.28);
+    }
+
+    .pd-hero-action-secondary {
+        background: rgba(153, 76, 50, 0.08);
+        color: #734131;
+        border: 1px solid rgba(153, 76, 50, 0.22);
+    }
+
     .pd-cta-btn {
         display: inline-flex;
         align-items: center;
@@ -1389,6 +1419,12 @@
                 <p class="pd-tagline">{{ profile.headline }}</p>
                 {% endif %}
 
+                <div class="pd-hero-actions">
+                    <a class="pd-hero-action pd-hero-action-primary" href="#services">View services</a>
+                    <a class="pd-hero-action pd-hero-action-secondary" href="{% url 'waitlist:landing' %}">Book free
+                        consultation</a>
+                </div>
+
                 <div class="pd-divider"></div>
 
                 {# Location + session format chips #}
@@ -1412,6 +1448,7 @@
                         Virtual sessions
                     </span>
                     {% endif %}
+                    {% if not profile.is_virtual %}
                     <span class="pd-meta-item">
                         <svg class="pd-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                             <path d="M3 8.5l3 3 7-7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -1419,6 +1456,7 @@
                         </svg>
                         In-person sessions
                     </span>
+                    {% endif %}
                 </div>
 
                 {# Credentials / verified status #}
@@ -1480,7 +1518,7 @@
 </div>
 
 {# Services band #}
-<div class="pd-services-band">
+<div id="services" class="pd-services-band">
     <div class="pd-services-inner">
         <div class="shell">
             <div class="pd-services-header">

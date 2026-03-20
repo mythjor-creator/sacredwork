@@ -96,6 +96,43 @@
         font: 400 clamp(0.96rem, 1.35vw, 1.2rem)/1.6 "Instrument Sans", sans-serif;
     }
 
+    .hero-actions {
+        margin: 1.4rem auto 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.65rem;
+    }
+
+    .hero-action-primary,
+    .hero-action-secondary {
+        text-decoration: none;
+        border-radius: 999px;
+        padding: 0.66rem 1rem;
+        font: 600 0.9rem/1.2 "Instrument Sans", sans-serif;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.34rem;
+    }
+
+    .hero-action-primary {
+        color: #1f2022;
+        background: #afebf3;
+        border: 1px solid rgba(175, 235, 243, 0.45);
+    }
+
+    .hero-action-secondary {
+        color: #afebf3;
+        border: 1px solid rgba(175, 235, 243, 0.42);
+        background: rgba(175, 235, 243, 0.08);
+    }
+
+    .hero-action-primary:hover,
+    .hero-action-secondary:hover {
+        transform: none;
+        box-shadow: none;
+    }
+
     .home-search {
         background: #e4ddd4;
         padding: clamp(2.8rem, 5vw, 9.5rem) 0;
@@ -167,6 +204,12 @@
 
     .search-suggestions a:hover {
         text-decoration: underline;
+    }
+
+    .search-note {
+        margin: 0.95rem 0 0;
+        color: rgba(31, 32, 34, 0.66);
+        font: 500 0.8rem/1.35 "Instrument Sans", sans-serif;
     }
 
     .home-featured {
@@ -472,6 +515,10 @@
             max-width: 48ch;
         }
 
+        .hero-actions {
+            margin-top: 1.2rem;
+        }
+
         .home-search {
             padding: 6rem 0;
         }
@@ -492,6 +539,10 @@
 
         .search-suggestions a {
             font-size: 0.875rem;
+        }
+
+        .search-note {
+            margin-top: 0.82rem;
         }
 
         .home-featured {
@@ -564,6 +615,10 @@
             margin-left: 0;
             margin-right: 0;
             max-width: 34ch;
+        }
+
+        .hero-actions {
+            justify-content: flex-start;
         }
 
         .home-search {
@@ -728,6 +783,11 @@
             <h1 class="hero-title">This was meant to find you.</h1>
             <p class="hero-lead">Discover trusted practitioners in wellness, spirituality, beauty, and coaching with
                 profiles that feel human, specific, and easy to book.</p>
+            <div class="hero-actions" aria-label="Primary actions">
+                <a class="hero-action-primary" href="{% url 'catalog:marketplace' %}">Discover practitioners <span
+                        aria-hidden="true">&#8594;</span></a>
+                <a class="hero-action-secondary" href="{% url 'waitlist:landing' %}">Join practitioner waitlist</a>
+            </div>
         </div>
     </div>
 </section>
@@ -754,6 +814,7 @@
             <li><a href="{% url 'catalog:marketplace' %}?q=intuitive+reading+online">intuitive reading<br>online</a>
             </li>
         </ul>
+        <p class="search-note">Try modality + location together for better matches.</p>
     </div>
 </section>
 

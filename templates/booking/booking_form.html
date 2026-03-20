@@ -1,23 +1,142 @@
 {% extends 'base.html' %}
 
+{% block extra_head %}
+<style>
+    .booking-shell {
+        max-width: 760px;
+        margin: 0 auto;
+        display: grid;
+        gap: 0.95rem;
+    }
+
+    .booking-back {
+        color: #2f4554;
+        text-decoration: none;
+        font-size: 0.86rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .booking-card {
+        background: rgba(255, 255, 255, 0.92);
+        border: 1px solid rgba(31, 32, 34, 0.12);
+        border-radius: 14px;
+        padding: clamp(1rem, 3.5vw, 1.4rem);
+    }
+
+    .booking-kicker {
+        margin: 0;
+        color: #6d7783;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.74rem;
+        font-weight: 700;
+    }
+
+    .booking-title {
+        margin: 0.28rem 0 0;
+        color: #1a2933;
+        line-height: 1.2;
+        font-size: clamp(1.4rem, 4.7vw, 2rem);
+    }
+
+    .booking-meta,
+    .booking-description,
+    .booking-payment-note,
+    .booking-empty {
+        margin: 0.68rem 0 0;
+    }
+
+    .booking-form {
+        margin-top: 0.95rem;
+        display: grid;
+        gap: 0.72rem;
+    }
+
+    .booking-form p {
+        margin: 0;
+        display: grid;
+        gap: 0.34rem;
+    }
+
+    .booking-form label {
+        color: #1f2f3a;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+    }
+
+    .booking-form input,
+    .booking-form select,
+    .booking-form textarea {
+        margin: 0;
+        border: 1px solid rgba(31, 32, 34, 0.2);
+        border-radius: 10px;
+        padding: 0.62rem 0.72rem;
+        background: #fff;
+    }
+
+    .booking-submit {
+        justify-self: start;
+        margin-top: 0.25rem;
+        border-radius: 999px;
+        padding-inline: 1rem;
+    }
+
+    .booking-checklist {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 0.4rem;
+        color: #4f5f71;
+        font-size: 0.84rem;
+    }
+
+    .booking-checklist li::before {
+        content: "\2713";
+        margin-right: 0.4rem;
+        color: #2f48ae;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="card">
-    <h1>Book {{ service.name }}</h1>
-    <p class="hint">{{ profile.display_name }}{{ profile.business_name_suffix }} · {{
-        service.get_delivery_format_display }} · ${{ service.price_display
-        }}</p>
-    <p>{{ service.description }}</p>
-    {% if payments_enabled %}
-    <p class="hint">You will complete secure payment in Stripe before your booking request is submitted.</p>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">{% if payments_enabled %}Continue to secure checkout{% else %}Request booking{% endif
-            %}</button>
-    </form>
-    {% if not slots %}
-    <p class="hint">This professional has not opened any bookable slots yet.</p>
-    {% endif %}
+<section class="booking-shell">
+    <a class="booking-back" href="{% url 'catalog:professional_detail' profile.pk %}">&#8592; Back to profile</a>
+
+    <article class="booking-card">
+        <p class="booking-kicker">Booking request</p>
+        <h1 class="booking-title">Book {{ service.name }}</h1>
+        <p class="hint booking-meta">{{ profile.display_name }}{{ profile.business_name_suffix }} · {{
+            service.get_delivery_format_display }} · ${{ service.price_display }}</p>
+        <p class="booking-description">{{ service.description }}</p>
+        {% if payments_enabled %}
+        <p class="hint booking-payment-note">You will complete secure payment in Stripe before your request is
+            submitted.</p>
+        {% endif %}
+
+        <form class="booking-form" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="booking-submit" type="submit">{% if payments_enabled %}Continue to secure checkout{% else
+                %}Request booking{% endif %}</button>
+        </form>
+    </article>
+
+    <article class="booking-card">
+        <h2 style="margin: 0; font-size: 1rem; color: #1f2f3a;">What happens next</h2>
+        <ul class="booking-checklist">
+            <li>Your request is sent to the practitioner for confirmation.</li>
+            <li>You will receive a confirmation email with final details.</li>
+            <li>If timing is unavailable, you can choose another slot quickly.</li>
+        </ul>
+        {% if not slots %}
+        <p class="hint booking-empty" style="margin-top: 0.72rem;">This professional has not opened bookable slots yet.
+            Try another service or check back soon.</p>
+        {% endif %}
+    </article>
 </section>
 {% endblock %}
