@@ -517,3 +517,23 @@ class BillingAdminTests(TestCase):
         mock_sync.assert_called_once_with(subscription)
         messages = [str(item) for item in response.context['messages']]
         self.assertTrue(any('0 synced, 0 skipped, 1 failed' in item for item in messages))
+
+
+class BillingWebhookViewTests(TestCase):
+    @patch('apps.billing.views.process_billing_webhook')
+    def test_webhook_returns_bad_request_on_invalid_signature(self, mock_process_webhook):
+        mock_process_webhook.side_effect = ValueError('Invalid webhook')
+
+        response = self.client.post(
+            reverse('billing:stripe_webhook'),
+            data='{}',
+            content_type='application/json',
+            HTTP_STRIPE_SIGNATURE='sig_invalid',
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_webhook_rejects_get(self):
+        response = self.client.get(reverse('billing:stripe_webhook'))
+
+        self.assertEqual(response.status_code, 405)
