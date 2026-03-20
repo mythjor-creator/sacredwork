@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotAllowed
@@ -14,6 +16,9 @@ from .payments import (
     practitioner_billing_enabled,
     process_billing_webhook,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -116,6 +121,7 @@ def stripe_billing_webhook_view(request):
     try:
         process_billing_webhook(request.body, signature)
     except (ValueError, stripe.error.SignatureVerificationError):
+        logger.warning('Rejected billing webhook due to invalid payload/signature')
         return HttpResponseBadRequest('Invalid webhook')
 
     return HttpResponse(status=200)

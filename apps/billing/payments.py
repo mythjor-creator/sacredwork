@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone as dt_timezone
 
 from django.conf import settings
@@ -9,6 +10,9 @@ import stripe
 from apps.professionals.models import ProfessionalProfile
 
 from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
+
+
+logger = logging.getLogger(__name__)
 
 
 def practitioner_billing_enabled() -> bool:
@@ -145,6 +149,9 @@ def process_billing_webhook(payload, signature_header):
 
     event_type = event.get('type')
     event_object = event.get('data', {}).get('object', {})
+    event_id = (event.get('id') or '').strip()
+
+    logger.info('Received billing webhook event=%s id=%s', event_type, event_id)
 
     if event_type == 'checkout.session.completed':
         _handle_checkout_completed(event_object)
@@ -154,6 +161,8 @@ def process_billing_webhook(payload, signature_header):
         _handle_invoice_paid(event_object)
     elif event_type == 'invoice.payment_failed':
         _handle_invoice_payment_failed(event_object)
+    else:
+        logger.info('Ignoring unsupported billing webhook event=%s id=%s', event_type, event_id)
 
 
 def _handle_checkout_completed(session):

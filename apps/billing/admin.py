@@ -1,8 +1,13 @@
+import logging
+
 from django.contrib import admin
 from django.contrib import messages as django_messages
 
 from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 from .payments import sync_subscription_from_stripe
+
+
+logger = logging.getLogger(__name__)
 
 
 @admin.register(SubscriptionPlan)
@@ -48,6 +53,11 @@ class ProfessionalSubscriptionAdmin(admin.ModelAdmin):
                 if sync_subscription_from_stripe(subscription):
                     synced += 1
             except Exception:
+                logger.exception(
+                    'Stripe sync failed for professional_subscription_id=%s stripe_subscription_id=%s',
+                    subscription.pk,
+                    subscription.stripe_subscription_id,
+                )
                 failed += 1
 
         level = django_messages.SUCCESS
