@@ -1,8 +1,10 @@
 from django.test import TestCase
 from django.urls import reverse
 
+from apps.billing.models import ProfessionalSubscription
 from apps.accounts.models import User
 from apps.moderation.models import ModerationDecision
+from apps.waitlist.models import PractitionerWaitlistProfile
 
 from .models import ProfessionalCredential, ProfessionalProfile
 
@@ -217,6 +219,15 @@ class ModerationAdminTests(TestCase):
 			approval_status=ProfessionalProfile.ApprovalStatus.PENDING,
 			is_visible=False,
 		)
+		PractitionerWaitlistProfile.objects.create(
+			full_name='Pending Pro',
+			email=pending_user.email,
+			headline='Founding waitlist record',
+			modalities='breathwork',
+			practice_type=PractitionerWaitlistProfile.PracticeType.WELLNESS,
+			is_virtual=True,
+			is_founding_member=True,
+		)
 
 	def test_approve_profile_action(self):
 		self.client.force_login(self.admin_user)
@@ -229,6 +240,15 @@ class ModerationAdminTests(TestCase):
 		self.pending_profile.refresh_from_db()
 		self.assertEqual(self.pending_profile.approval_status, ProfessionalProfile.ApprovalStatus.APPROVED)
 		self.assertTrue(self.pending_profile.is_visible)
+		self.assertEqual(
+			self.pending_profile.subscription_status,
+			ProfessionalProfile.SubscriptionStatus.PRELAUNCH,
+		)
+		subscription = ProfessionalSubscription.objects.get(professional=self.pending_profile)
+		self.assertEqual(subscription.status, ProfessionalSubscription.Status.PENDING_LAUNCH)
+		self.assertTrue(subscription.founding_member_rate_locked)
+		self.assertIsNotNone(subscription.plan)
+		self.assertEqual(subscription.plan.code, 'founding-annual')
 		self.assertTrue(
 			ModerationDecision.objects.filter(
 				profile=self.pending_profile,
@@ -254,3 +274,38 @@ class ModerationAdminTests(TestCase):
 				decision=ModerationDecision.Decision.REJECTED,
 			).exists()
 		)
+
+
+class ProfessionalBillingStateTests(TestCase):
+	def test_prelaunch_status_grants_billing_access(self):
+		user = User.objects.create_user(
+			username='billing-state-pro',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		profile = ProfessionalProfile.objects.create(
+			user=user,
+			business_name='Access Studio',
+			headline='Billing access profile',
+			bio='Used to test billing access.',
+			modalities='reiki',
+			subscription_status=ProfessionalProfile.SubscriptionStatus.PRELAUNCH,
+		)
+
+		self.assertTrue(profile.billing_access_granted)
+
+	def test_not_started_status_does_not_grant_billing_access(self):
+		user = User.objects.create_user(
+			username='billing-state-none',
+			password='StrongPass123!!',
+			role=User.Role.PROFESSIONAL,
+		)
+		profile = ProfessionalProfile.objects.create(
+			user=user,
+			business_name='No Access Studio',
+			headline='No billing access profile',
+			bio='Used to test missing billing access.',
+			modalities='coaching',
+		)
+
+		self.assertFalse(profile.billing_access_granted)

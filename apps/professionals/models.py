@@ -2,6 +2,14 @@ from django.db import models
 
 
 class ProfessionalProfile(models.Model):
+	class SubscriptionStatus(models.TextChoices):
+		NOT_STARTED = 'not_started', 'Not Started'
+		PRELAUNCH = 'prelaunch', 'Prelaunch Access'
+		ACTIVE = 'active', 'Active'
+		PAST_DUE = 'past_due', 'Past Due'
+		CANCELED = 'canceled', 'Canceled'
+		GRANDFATHERED = 'grandfathered', 'Grandfathered'
+
 	class ApprovalStatus(models.TextChoices):
 		DRAFT = 'draft', 'Draft'
 		PENDING = 'pending', 'Pending Review'
@@ -28,6 +36,14 @@ class ProfessionalProfile(models.Model):
 		choices=ApprovalStatus.choices,
 		default=ApprovalStatus.DRAFT,
 	)
+	subscription_status = models.CharField(
+		max_length=20,
+		choices=SubscriptionStatus.choices,
+		default=SubscriptionStatus.NOT_STARTED,
+		db_index=True,
+	)
+	stripe_customer_id = models.CharField(max_length=255, blank=True, db_index=True)
+	subscription_fails_count = models.PositiveSmallIntegerField(default=0)
 	is_visible = models.BooleanField(default=False)
 	is_verified = models.BooleanField(
 		default=False,
@@ -80,6 +96,14 @@ class ProfessionalProfile(models.Model):
 		checks = self.completeness_checks
 		done = sum(1 for _, ok in checks if ok)
 		return round(done / len(checks) * 100)
+
+	@property
+	def billing_access_granted(self) -> bool:
+		return self.subscription_status in {
+			self.SubscriptionStatus.PRELAUNCH,
+			self.SubscriptionStatus.ACTIVE,
+			self.SubscriptionStatus.GRANDFATHERED,
+		}
 
 	def __str__(self) -> str:
 		return self.display_name
