@@ -329,3 +329,94 @@ class BillingSyncTests(TestCase):
         self.assertIsNotNone(self.subscription.current_period_end)
         self.assertEqual(self.profile.subscription_status, ProfessionalProfile.SubscriptionStatus.PAST_DUE)
         self.assertEqual(self.profile.stripe_customer_id, 'cus_sync_new')
+
+
+class BillingAdminTests(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser(
+            username='billing-admin',
+            password='AdminPass123!!',
+        )
+        pro_user = User.objects.create_user(
+            username='billing-admin-pro',
+            password='StrongPass123!!',
+            role=User.Role.PROFESSIONAL,
+        )
+        self.profile = ProfessionalProfile.objects.create(
+            user=pro_user,
+            business_name='Admin Billing Studio',
+            headline='Admin billing profile',
+            bio='Used for billing admin action tests.',
+            modalities='coaching',
+            subscription_status=ProfessionalProfile.SubscriptionStatus.ACTIVE,
+        )
+        self.plan = SubscriptionPlan.objects.get(code='founding-annual')
+
+    @patch('apps.billing.admin.sync_subscription_from_stripe')
+    def test_admin_sync_now_skips_records_without_stripe_subscription_id(self, mock_sync):
+        with_stripe_id = ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=self.plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_subscription_id='sub_admin_sync_123',
+        )
+        other_user = User.objects.create_user(
+            username='billing-admin-pro-2',
+            password='StrongPass123!!',
+            role=User.Role.PROFESSIONAL,
+        )
+        other_profile = ProfessionalProfile.objects.create(
+            user=other_user,
+            business_name='Admin Billing Studio 2',
+            headline='Admin billing profile 2',
+            bio='Second profile for admin action tests.',
+            modalities='reiki',
+            subscription_status=ProfessionalProfile.SubscriptionStatus.PRELAUNCH,
+        )
+        without_stripe_id = ProfessionalSubscription.objects.create(
+            professional=other_profile,
+            plan=self.plan,
+            status=ProfessionalSubscription.Status.PENDING_LAUNCH,
+            stripe_subscription_id='',
+        )
+        mock_sync.return_value = True
+
+        self.client.force_login(self.admin_user)
+        response = self.client.post(
+            reverse('admin:billing_professionalsubscription_changelist'),
+            {
+                'action': 'sync_now',
+                '_selected_action': [with_stripe_id.pk, without_stripe_id.pk],
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_sync.assert_called_once_with(with_stripe_id)
+        messages = [str(item) for item in response.context['messages']]
+        self.assertTrue(any('1 synced, 1 skipped, 0 failed' in item for item in messages))
+
+    @patch('apps.billing.admin.sync_subscription_from_stripe')
+    def test_admin_sync_now_reports_failures(self, mock_sync):
+        subscription = ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=self.plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_subscription_id='sub_admin_sync_fail_123',
+        )
+        mock_sync.side_effect = RuntimeError('Stripe error')
+
+        self.client.force_login(self.admin_user)
+        response = self.client.post(
+            reverse('admin:billing_professionalsubscription_changelist'),
+            {
+                'action': 'sync_now',
+                '_selected_action': [subscription.pk],
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_sync.assert_called_once_with(subscription)
+        messages = [str(item) for item in response.context['messages']]
+        self.assertTrue(any('0 synced, 0 skipped, 1 failed' in item for item in messages))
