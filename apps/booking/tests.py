@@ -237,6 +237,7 @@ class BookingPaymentTests(TestCase):
 		self.professional_user = User.objects.create_user(
 			username='payment-pro',
 			password='StrongPass123!!',
+			email='payment-pro@example.com',
 			role=User.Role.PROFESSIONAL,
 		)
 		self.profile = ProfessionalProfile.objects.create(
@@ -329,6 +330,75 @@ class BookingPaymentTests(TestCase):
 		self.assertEqual(intent.stripe_payment_intent_id, 'pi_test_456')
 		self.assertFalse(intent.requires_manual_refund)
 		self.assertIsNotNone(intent.booking)
+
+	@override_settings(STRIPE_SECRET_KEY='sk_test_123', STRIPE_WEBHOOK_SECRET='whsec_test_123')
+	@patch('apps.booking.payments.stripe.Webhook.construct_event')
+	def test_webhook_completion_sends_payment_received_email(self, mock_construct_event):
+		intent = BookingPaymentIntent.objects.create(
+			client=self.client_user,
+			service=self.service,
+			start_at=self.start_at,
+			intake_notes='Email test',
+			stripe_checkout_session_id='cs_test_email',
+		)
+		mock_construct_event.return_value = {
+			'type': 'checkout.session.completed',
+			'data': {
+				'object': {
+					'id': 'cs_test_email',
+					'payment_intent': 'pi_test_email',
+					'metadata': {'booking_payment_intent_id': str(intent.pk)},
+				}
+			},
+		}
+
+		mail.outbox.clear()
+		self.client.post(
+			reverse('booking:stripe_webhook'),
+			data='{}',
+			content_type='application/json',
+			HTTP_STRIPE_SIGNATURE='sig_test',
+		)
+
+		self.assertEqual(len(mail.outbox), 2)
+		recipients = {msg.to[0] for msg in mail.outbox}
+		self.assertIn('payment-client@example.com', recipients)
+		self.assertIn(self.professional_user.email, recipients)
+		subjects = [msg.subject for msg in mail.outbox]
+		self.assertTrue(any('payment received' in s.lower() for s in subjects))
+		self.assertTrue(any('paid booking' in s.lower() for s in subjects))
+
+	@override_settings(STRIPE_SECRET_KEY='sk_test_123', STRIPE_WEBHOOK_SECRET='whsec_test_123')
+	@patch('apps.booking.payments.stripe.Webhook.construct_event')
+	def test_webhook_slot_collision_sends_no_email(self, mock_construct_event):
+		_ = create_booking(self.client_user, self.service, self.start_at)
+		intent = BookingPaymentIntent.objects.create(
+			client=self.client_user,
+			service=self.service,
+			start_at=self.start_at,
+			intake_notes='Collision no-email test',
+			stripe_checkout_session_id='cs_test_collision_email',
+		)
+		mock_construct_event.return_value = {
+			'type': 'checkout.session.completed',
+			'data': {
+				'object': {
+					'id': 'cs_test_collision_email',
+					'payment_intent': 'pi_test_collision_email',
+					'metadata': {'booking_payment_intent_id': str(intent.pk)},
+				}
+			},
+		}
+
+		mail.outbox.clear()
+		self.client.post(
+			reverse('booking:stripe_webhook'),
+			data='{}',
+			content_type='application/json',
+			HTTP_STRIPE_SIGNATURE='sig_test',
+		)
+
+		self.assertEqual(len(mail.outbox), 0)
 
 	@override_settings(STRIPE_SECRET_KEY='sk_test_123', STRIPE_WEBHOOK_SECRET='whsec_test_123')
 	@patch('apps.booking.payments.stripe.Webhook.construct_event')

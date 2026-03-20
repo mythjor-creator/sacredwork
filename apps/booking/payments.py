@@ -6,6 +6,7 @@ import stripe
 
 from .models import BookingPaymentIntent
 from .services import create_booking
+from .emails import send_booking_payment_received
 
 
 def payment_gateway_enabled() -> bool:
@@ -89,6 +90,8 @@ def _complete_checkout_session(session):
     if not intent_id:
         return
 
+    booking_created = None
+
     with transaction.atomic():
         intent = BookingPaymentIntent.objects.select_for_update().select_related(
             'client',
@@ -106,6 +109,7 @@ def _complete_checkout_session(session):
                 service=intent.service,
                 start_at=intent.start_at,
                 intake_notes=intent.intake_notes,
+                send_notification=False,
             )
         except ValueError:
             intent.status = BookingPaymentIntent.Status.FAILED
@@ -136,6 +140,10 @@ def _complete_checkout_session(session):
                 'updated_at',
             ]
         )
+        booking_created = booking
+
+    if booking_created is not None:
+        send_booking_payment_received(booking_created)
 
 
 def _expire_checkout_session(session):

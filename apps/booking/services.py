@@ -52,7 +52,7 @@ def generate_service_slots(service, days=14, from_date=None):
 	return slots
 
 
-def create_booking(client, service, start_at, intake_notes=''):
+def create_booking(client, service, start_at, intake_notes='', send_notification=True):
 	end_at = start_at + timedelta(minutes=service.duration_minutes)
 	with transaction.atomic():
 		active_bookings = service.professional.bookings.select_for_update().filter(
@@ -74,7 +74,8 @@ def create_booking(client, service, start_at, intake_notes=''):
 			)
 		except IntegrityError as exc:
 			raise ValueError('That time is no longer available.') from exc
-	send_booking_requested(booking)
+	if send_notification:
+		send_booking_requested(booking)
 	return booking
 
 
