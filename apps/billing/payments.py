@@ -15,6 +15,60 @@ def practitioner_billing_enabled() -> bool:
     return bool(getattr(settings, 'PRACTITIONER_BILLING_ENABLED', False))
 
 
+def sync_subscription_from_stripe(subscription: ProfessionalSubscription) -> bool:
+    stripe_subscription_id = (subscription.stripe_subscription_id or '').strip()
+    if not stripe_subscription_id:
+        raise ValueError('Subscription has no Stripe subscription id.')
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    if not stripe.api_key:
+        raise ValueError('STRIPE_SECRET_KEY is not configured.')
+
+    stripe_subscription = stripe.Subscription.retrieve(stripe_subscription_id)
+    stripe_status = (stripe_subscription.get('status') or '').strip().lower()
+    period_end = _parse_stripe_timestamp(stripe_subscription.get('current_period_end'))
+    cancel_at_period_end = bool(stripe_subscription.get('cancel_at_period_end'))
+    stripe_customer_id = (stripe_subscription.get('customer') or '').strip()
+
+    with transaction.atomic():
+        locked = (
+            ProfessionalSubscription.objects.select_for_update()
+            .select_related('professional')
+            .filter(pk=subscription.pk)
+            .first()
+        )
+        if locked is None:
+            return False
+
+        locked.status = _map_stripe_subscription_status(stripe_status)
+        locked.current_period_end = period_end
+        locked.cancel_at_period_end = cancel_at_period_end
+        if stripe_customer_id:
+            locked.stripe_customer_id = stripe_customer_id
+        if locked.status == ProfessionalSubscription.Status.CANCELED and locked.canceled_at is None:
+            locked.canceled_at = timezone.now()
+        if locked.status != ProfessionalSubscription.Status.CANCELED:
+            locked.canceled_at = None
+        locked.save(
+            update_fields=[
+                'status',
+                'current_period_end',
+                'cancel_at_period_end',
+                'stripe_customer_id',
+                'canceled_at',
+                'updated_at',
+            ]
+        )
+
+        profile = locked.professional
+        profile.subscription_status = _map_profile_subscription_status(locked.status)
+        if stripe_customer_id:
+            profile.stripe_customer_id = stripe_customer_id
+        profile.save(update_fields=['subscription_status', 'stripe_customer_id', 'updated_at'])
+
+    return True
+
+
 def create_practitioner_checkout_session(request, profile: ProfessionalProfile) -> str:
     if not practitioner_billing_enabled():
         raise ValueError('Practitioner billing is not enabled.')

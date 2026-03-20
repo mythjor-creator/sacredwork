@@ -9,6 +9,7 @@ from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
 
 from .models import ProfessionalSubscription, SubscriptionPlan
+from .payments import sync_subscription_from_stripe
 
 
 class BillingOverviewTests(TestCase):
@@ -279,3 +280,52 @@ class BillingCheckoutTests(TestCase):
         self.assertEqual(invoice.amount_due_cents, 7900)
         self.assertEqual(invoice.amount_paid_cents, 0)
         self.assertIsNone(invoice.paid_at)
+
+
+class BillingSyncTests(TestCase):
+    def setUp(self):
+        user = User.objects.create_user(
+            username='sync-pro',
+            password='StrongPass123!!',
+            email='sync-pro@example.com',
+            role=User.Role.PROFESSIONAL,
+        )
+        self.profile = ProfessionalProfile.objects.create(
+            user=user,
+            business_name='Sync Studio',
+            headline='Sync profile',
+            bio='Profile used for Stripe sync tests.',
+            modalities='coaching',
+            subscription_status=ProfessionalProfile.SubscriptionStatus.ACTIVE,
+        )
+        self.plan = SubscriptionPlan.objects.get(code='founding-annual')
+        self.subscription = ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=self.plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_subscription_id='sub_sync_123',
+            stripe_customer_id='cus_sync_old',
+        )
+
+    @override_settings(STRIPE_SECRET_KEY='sk_test_123')
+    @patch('apps.billing.payments.stripe.Subscription.retrieve')
+    def test_sync_subscription_from_stripe_updates_local_records(self, mock_retrieve):
+        mock_retrieve.return_value = {
+            'id': 'sub_sync_123',
+            'status': 'past_due',
+            'current_period_end': 1700000000,
+            'cancel_at_period_end': True,
+            'customer': 'cus_sync_new',
+        }
+
+        result = sync_subscription_from_stripe(self.subscription)
+
+        self.assertTrue(result)
+        self.subscription.refresh_from_db()
+        self.profile.refresh_from_db()
+        self.assertEqual(self.subscription.status, ProfessionalSubscription.Status.PAST_DUE)
+        self.assertEqual(self.subscription.stripe_customer_id, 'cus_sync_new')
+        self.assertTrue(self.subscription.cancel_at_period_end)
+        self.assertIsNotNone(self.subscription.current_period_end)
+        self.assertEqual(self.profile.subscription_status, ProfessionalProfile.SubscriptionStatus.PAST_DUE)
+        self.assertEqual(self.profile.stripe_customer_id, 'cus_sync_new')

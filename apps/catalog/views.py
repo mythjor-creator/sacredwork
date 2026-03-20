@@ -25,6 +25,22 @@ from .forms import ServiceForm, ServiceTierFormSet
 from .models import AnalyticsEvent, Category, Service
 
 
+def _public_professional_queryset():
+	queryset = ProfessionalProfile.objects.filter(
+		approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
+		is_visible=True,
+	)
+	if getattr(settings, 'ENFORCE_PRACTITIONER_BILLING_ACCESS', False):
+		queryset = queryset.filter(
+			subscription_status__in=[
+				ProfessionalProfile.SubscriptionStatus.PRELAUNCH,
+				ProfessionalProfile.SubscriptionStatus.ACTIVE,
+				ProfessionalProfile.SubscriptionStatus.GRANDFATHERED,
+			]
+		)
+	return queryset
+
+
 def marketplace_view(request):
 	query = request.GET.get('q', '').strip()
 	category_slug = request.GET.get('category', '').strip()
@@ -42,10 +58,7 @@ def marketplace_view(request):
 
 	active_services = Service.objects.filter(is_active=True).select_related('category')
 	profiles = (
-		ProfessionalProfile.objects.filter(
-			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
-			is_visible=True,
-		)
+		_public_professional_queryset()
 		.select_related('user')
 		.prefetch_related(Prefetch('services', queryset=active_services))
 	)
@@ -171,10 +184,7 @@ def home_view(request):
 	query = request.GET.get('q', '').strip()
 	category_slug = request.GET.get('category', '').strip()
 	featured_profiles = list(
-		ProfessionalProfile.objects.filter(
-			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
-			is_visible=True,
-		)
+		_public_professional_queryset()
 		.select_related('user')
 		.prefetch_related(
 			Prefetch(
@@ -239,11 +249,20 @@ def professional_detail_view(request, pk):
 	if is_own_profile:
 		profile = get_object_or_404(profile_queryset, pk=pk)
 	else:
+		public_profile_filters = {
+			'approval_status': ProfessionalProfile.ApprovalStatus.APPROVED,
+			'is_visible': True,
+		}
+		if getattr(settings, 'ENFORCE_PRACTITIONER_BILLING_ACCESS', False):
+			public_profile_filters['subscription_status__in'] = [
+				ProfessionalProfile.SubscriptionStatus.PRELAUNCH,
+				ProfessionalProfile.SubscriptionStatus.ACTIVE,
+				ProfessionalProfile.SubscriptionStatus.GRANDFATHERED,
+			]
 		profile = get_object_or_404(
 			profile_queryset,
 			pk=pk,
-			approval_status=ProfessionalProfile.ApprovalStatus.APPROVED,
-			is_visible=True,
+			**public_profile_filters,
 		)
 
 	if is_own_profile and request.method == 'POST':

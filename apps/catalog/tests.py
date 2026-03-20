@@ -180,6 +180,26 @@ class MarketplaceDiscoveryTests(TestCase):
 			response_with_sample = self.client.get(reverse('catalog:marketplace'), {'sample': '1'})
 		self.assertContains(response_with_sample, 'Preview mode: sample data')
 
+	@override_settings(ENFORCE_PRACTITIONER_BILLING_ACCESS=True)
+	def test_marketplace_hides_profiles_without_billing_access_when_enforced(self):
+		self.visible_profile.subscription_status = ProfessionalProfile.SubscriptionStatus.NOT_STARTED
+		self.visible_profile.save(update_fields=['subscription_status', 'updated_at'])
+
+		response = self.client.get(reverse('catalog:marketplace'))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertNotContains(response, 'Visible Healing Studio')
+
+	@override_settings(ENFORCE_PRACTITIONER_BILLING_ACCESS=True)
+	def test_marketplace_shows_active_subscription_profiles_when_enforced(self):
+		self.visible_profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+		self.visible_profile.save(update_fields=['subscription_status', 'updated_at'])
+
+		response = self.client.get(reverse('catalog:marketplace'))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, 'Visible Healing Studio')
+
 
 class ServiceManagementTests(TestCase):
 	def setUp(self):

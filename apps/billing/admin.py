@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.contrib import messages as django_messages
 
 from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
+from .payments import sync_subscription_from_stripe
 
 
 @admin.register(SubscriptionPlan)
@@ -30,6 +32,32 @@ class ProfessionalSubscriptionAdmin(admin.ModelAdmin):
         'stripe_subscription_id',
     )
     autocomplete_fields = ('professional', 'plan')
+    actions = ('sync_now',)
+
+    @admin.action(description='Sync selected from Stripe now')
+    def sync_now(self, request, queryset):
+        synced = 0
+        skipped = 0
+        failed = 0
+
+        for subscription in queryset.select_related('professional'):
+            if not (subscription.stripe_subscription_id or '').strip():
+                skipped += 1
+                continue
+            try:
+                if sync_subscription_from_stripe(subscription):
+                    synced += 1
+            except Exception:
+                failed += 1
+
+        level = django_messages.SUCCESS
+        if failed:
+            level = django_messages.WARNING
+        self.message_user(
+            request,
+            f'Stripe sync complete: {synced} synced, {skipped} skipped, {failed} failed.',
+            level,
+        )
 
 
 @admin.register(SubscriptionInvoice)
