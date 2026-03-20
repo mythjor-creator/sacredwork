@@ -8,7 +8,7 @@ import stripe
 
 from apps.professionals.models import ProfessionalProfile
 
-from .models import ProfessionalSubscription, SubscriptionPlan
+from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 
 
 def practitioner_billing_enabled() -> bool:
@@ -96,6 +96,10 @@ def process_billing_webhook(payload, signature_header):
         _handle_checkout_completed(event_object)
     elif event_type in {'customer.subscription.updated', 'customer.subscription.deleted'}:
         _handle_subscription_updated(event_object)
+    elif event_type == 'invoice.paid':
+        _handle_invoice_paid(event_object)
+    elif event_type == 'invoice.payment_failed':
+        _handle_invoice_payment_failed(event_object)
 
 
 def _handle_checkout_completed(session):
@@ -175,6 +179,87 @@ def _handle_subscription_updated(subscription_event):
         if subscription.status == ProfessionalSubscription.Status.PAST_DUE:
             profile.subscription_fails_count += 1
         profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+
+def _handle_invoice_paid(invoice_event):
+    stripe_invoice_id = (invoice_event.get('id') or '').strip()
+    stripe_subscription_id = (invoice_event.get('subscription') or '').strip()
+    if not stripe_invoice_id or not stripe_subscription_id:
+        return
+
+    with transaction.atomic():
+        subscription = (
+            ProfessionalSubscription.objects.select_for_update()
+            .select_related('professional')
+            .filter(stripe_subscription_id=stripe_subscription_id)
+            .first()
+        )
+        if subscription is None:
+            return
+
+        _upsert_invoice(invoice_event, subscription, SubscriptionInvoice.Status.PAID)
+
+        subscription.status = ProfessionalSubscription.Status.ACTIVE
+        subscription.save(update_fields=['status', 'updated_at'])
+
+        profile = subscription.professional
+        profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+        profile.subscription_fails_count = 0
+        profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+
+def _handle_invoice_payment_failed(invoice_event):
+    stripe_invoice_id = (invoice_event.get('id') or '').strip()
+    stripe_subscription_id = (invoice_event.get('subscription') or '').strip()
+    if not stripe_invoice_id or not stripe_subscription_id:
+        return
+
+    with transaction.atomic():
+        subscription = (
+            ProfessionalSubscription.objects.select_for_update()
+            .select_related('professional')
+            .filter(stripe_subscription_id=stripe_subscription_id)
+            .first()
+        )
+        if subscription is None:
+            return
+
+        _upsert_invoice(invoice_event, subscription, SubscriptionInvoice.Status.OPEN)
+
+        subscription.status = ProfessionalSubscription.Status.PAST_DUE
+        subscription.save(update_fields=['status', 'updated_at'])
+
+        profile = subscription.professional
+        profile.subscription_status = ProfessionalProfile.SubscriptionStatus.PAST_DUE
+        profile.subscription_fails_count += 1
+        profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+
+def _upsert_invoice(invoice_event, subscription, status_override=None):
+    stripe_invoice_id = (invoice_event.get('id') or '').strip()
+    if not stripe_invoice_id:
+        return
+
+    raw_status = (invoice_event.get('status') or '').strip().lower()
+    status = status_override if status_override is not None else (raw_status or SubscriptionInvoice.Status.DRAFT)
+
+    paid_at = None
+    status_transitions = invoice_event.get('status_transitions') or {}
+    if status_transitions.get('paid_at'):
+        paid_at = _parse_stripe_timestamp(status_transitions['paid_at'])
+
+    SubscriptionInvoice.objects.update_or_create(
+        stripe_invoice_id=stripe_invoice_id,
+        defaults={
+            'subscription': subscription,
+            'status': status,
+            'amount_due_cents': invoice_event.get('amount_due') or 0,
+            'amount_paid_cents': invoice_event.get('amount_paid') or 0,
+            'currency': (invoice_event.get('currency') or 'usd').lower(),
+            'hosted_invoice_url': (invoice_event.get('hosted_invoice_url') or '').strip(),
+            'paid_at': paid_at,
+        },
+    )
 
 
 def _map_stripe_subscription_status(stripe_status: str) -> str:
