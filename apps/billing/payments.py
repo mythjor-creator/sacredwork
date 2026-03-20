@@ -2,14 +2,14 @@ import logging
 from datetime import datetime, timezone as dt_timezone
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 import stripe
 
 from apps.professionals.models import ProfessionalProfile
 
-from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
+from .models import BillingWebhookEvent, ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 
 
 logger = logging.getLogger(__name__)
@@ -152,6 +152,66 @@ def process_billing_webhook(payload, signature_header):
     event_id = (event.get('id') or '').strip()
 
     logger.info('Received billing webhook event=%s id=%s', event_type, event_id)
+
+    webhook_event_id = _acquire_webhook_event(event_id, event_type)
+    if event_id and webhook_event_id is None:
+        return
+
+    try:
+        _dispatch_billing_webhook_event(event_type, event_object, event_id)
+    except Exception as exc:
+        if webhook_event_id is not None:
+            _mark_webhook_event_failed(webhook_event_id, exc)
+        raise
+    else:
+        if webhook_event_id is not None:
+            _mark_webhook_event_processed(webhook_event_id)
+
+
+def _acquire_webhook_event(event_id: str, event_type: str):
+    if not event_id:
+        return None
+
+    try:
+        with transaction.atomic():
+            webhook_event, _ = BillingWebhookEvent.objects.select_for_update().get_or_create(
+                stripe_event_id=event_id,
+                defaults={'event_type': event_type or ''},
+            )
+            if webhook_event.processed_at is not None:
+                logger.info('Skipping duplicate processed billing webhook id=%s type=%s', event_id, event_type)
+                return None
+            if webhook_event.is_processing:
+                logger.info('Skipping in-flight billing webhook id=%s type=%s', event_id, event_type)
+                return None
+
+            webhook_event.is_processing = True
+            webhook_event.event_type = event_type or webhook_event.event_type
+            webhook_event.attempt_count += 1
+            webhook_event.last_error = ''
+            webhook_event.save(update_fields=['is_processing', 'event_type', 'attempt_count', 'last_error', 'updated_at'])
+            return webhook_event.pk
+    except IntegrityError:
+        logger.info('Skipping duplicate billing webhook due to race id=%s type=%s', event_id, event_type)
+        return None
+
+
+def _mark_webhook_event_processed(webhook_event_id: int):
+    BillingWebhookEvent.objects.filter(pk=webhook_event_id).update(
+        is_processing=False,
+        processed_at=timezone.now(),
+        last_error='',
+    )
+
+
+def _mark_webhook_event_failed(webhook_event_id: int, exc: Exception):
+    BillingWebhookEvent.objects.filter(pk=webhook_event_id).update(
+        is_processing=False,
+        last_error=str(exc)[:500],
+    )
+
+
+def _dispatch_billing_webhook_event(event_type, event_object, event_id):
 
     if event_type == 'checkout.session.completed':
         _handle_checkout_completed(event_object)

@@ -3,7 +3,7 @@ import logging
 from django.contrib import admin
 from django.contrib import messages as django_messages
 
-from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
+from .models import BillingWebhookEvent, ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 from .payments import sync_subscription_from_stripe
 
 
@@ -76,3 +76,10 @@ class SubscriptionInvoiceAdmin(admin.ModelAdmin):
     list_filter = ('status', 'currency')
     search_fields = ('stripe_invoice_id', 'subscription__professional__user__email')
     autocomplete_fields = ('subscription',)
+
+
+@admin.register(BillingWebhookEvent)
+class BillingWebhookEventAdmin(admin.ModelAdmin):
+    list_display = ('stripe_event_id', 'event_type', 'attempt_count', 'is_processing', 'processed_at', 'received_at')
+    list_filter = ('event_type', 'is_processing')
+    search_fields = ('stripe_event_id', 'event_type')

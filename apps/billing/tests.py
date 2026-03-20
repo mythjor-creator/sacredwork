@@ -8,7 +8,7 @@ from django.urls import reverse
 from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
 
-from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
+from .models import BillingWebhookEvent, ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 from .payments import sync_subscription_from_stripe
 
 
@@ -377,6 +377,59 @@ class BillingCheckoutTests(TestCase):
         self.assertEqual(subscription.status, ProfessionalSubscription.Status.PAST_DUE)
         self.assertEqual(self.profile.subscription_status, ProfessionalProfile.SubscriptionStatus.PAST_DUE)
         self.assertEqual(self.profile.subscription_fails_count, 1)
+
+    @override_settings(
+        PRACTITIONER_BILLING_ENABLED=True,
+        STRIPE_SECRET_KEY='sk_test_123',
+        STRIPE_BILLING_WEBHOOK_SECRET='whsec_bill_test',
+    )
+    @patch('apps.billing.payments.stripe.Webhook.construct_event')
+    def test_webhook_duplicate_event_id_is_processed_once(self, mock_construct_event):
+        seeded_plan = SubscriptionPlan.objects.get(code='founding-annual')
+        subscription = ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=seeded_plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_subscription_id='sub_evt_once_123',
+            stripe_customer_id='cus_evt_once_123',
+        )
+        self.profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+        self.profile.subscription_fails_count = 0
+        self.profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+        mock_construct_event.return_value = {
+            'id': 'evt_billing_once_123',
+            'type': 'invoice.payment_failed',
+            'data': {
+                'object': {
+                    'id': 'in_evt_once_123',
+                    'subscription': 'sub_evt_once_123',
+                    'status': 'open',
+                    'amount_due': 7900,
+                    'amount_paid': 0,
+                    'currency': 'usd',
+                    'hosted_invoice_url': 'https://invoice.stripe.com/i/in_evt_once_123',
+                    'status_transitions': {'paid_at': None},
+                }
+            },
+        }
+
+        for _ in range(2):
+            response = self.client.post(
+                reverse('billing:stripe_webhook'),
+                data='{}',
+                content_type='application/json',
+                HTTP_STRIPE_SIGNATURE='sig_test',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        subscription.refresh_from_db()
+        self.profile.refresh_from_db()
+        webhook_event = BillingWebhookEvent.objects.get(stripe_event_id='evt_billing_once_123')
+        self.assertEqual(subscription.status, ProfessionalSubscription.Status.PAST_DUE)
+        self.assertEqual(self.profile.subscription_fails_count, 1)
+        self.assertEqual(webhook_event.attempt_count, 1)
+        self.assertIsNotNone(webhook_event.processed_at)
 
 
 class BillingSyncTests(TestCase):

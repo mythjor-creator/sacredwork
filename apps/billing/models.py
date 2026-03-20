@@ -97,3 +97,20 @@ class SubscriptionInvoice(models.Model):
 
     def __str__(self) -> str:
         return self.stripe_invoice_id
+
+
+class BillingWebhookEvent(models.Model):
+    stripe_event_id = models.CharField(max_length=255, unique=True)
+    event_type = models.CharField(max_length=120, blank=True)
+    is_processing = models.BooleanField(default=False)
+    attempt_count = models.PositiveIntegerField(default=0)
+    processed_at = models.DateTimeField(null=True, blank=True)
+    last_error = models.CharField(max_length=500, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-received_at']
+
+    def __str__(self) -> str:
+        return self.stripe_event_id
