@@ -8,7 +8,7 @@ from django.urls import reverse
 from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
 
-from .models import ProfessionalSubscription, SubscriptionPlan
+from .models import ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 from .payments import sync_subscription_from_stripe
 
 
@@ -274,12 +274,109 @@ class BillingCheckoutTests(TestCase):
         self.assertEqual(subscription.status, ProfessionalSubscription.Status.PAST_DUE)
         self.assertEqual(self.profile.subscription_status, ProfessionalProfile.SubscriptionStatus.PAST_DUE)
         self.assertEqual(self.profile.subscription_fails_count, 1)
-        from apps.billing.models import SubscriptionInvoice
         invoice = SubscriptionInvoice.objects.get(stripe_invoice_id='in_fail_test_123')
         self.assertEqual(invoice.status, SubscriptionInvoice.Status.OPEN)
         self.assertEqual(invoice.amount_due_cents, 7900)
         self.assertEqual(invoice.amount_paid_cents, 0)
         self.assertIsNone(invoice.paid_at)
+
+    @override_settings(
+        PRACTITIONER_BILLING_ENABLED=True,
+        STRIPE_SECRET_KEY='sk_test_123',
+        STRIPE_BILLING_WEBHOOK_SECRET='whsec_bill_test',
+    )
+    @patch('apps.billing.payments.stripe.Webhook.construct_event')
+    def test_webhook_duplicate_invoice_payment_failed_is_idempotent(self, mock_construct_event):
+        seeded_plan = SubscriptionPlan.objects.get(code='founding-annual')
+        subscription = ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=seeded_plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_subscription_id='sub_inv_dup_fail_123',
+            stripe_customer_id='cus_inv_dup_fail_123',
+        )
+        self.profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+        self.profile.subscription_fails_count = 0
+        self.profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+        mock_construct_event.return_value = {
+            'type': 'invoice.payment_failed',
+            'data': {
+                'object': {
+                    'id': 'in_fail_dup_test_123',
+                    'subscription': 'sub_inv_dup_fail_123',
+                    'customer': 'cus_inv_dup_fail_123',
+                    'status': 'open',
+                    'amount_due': 7900,
+                    'amount_paid': 0,
+                    'currency': 'usd',
+                    'hosted_invoice_url': 'https://invoice.stripe.com/i/in_fail_dup_test_123',
+                    'status_transitions': {'paid_at': None},
+                }
+            },
+        }
+
+        for _ in range(2):
+            response = self.client.post(
+                reverse('billing:stripe_webhook'),
+                data='{}',
+                content_type='application/json',
+                HTTP_STRIPE_SIGNATURE='sig_test',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        subscription.refresh_from_db()
+        self.profile.refresh_from_db()
+        self.assertEqual(subscription.status, ProfessionalSubscription.Status.PAST_DUE)
+        self.assertEqual(self.profile.subscription_status, ProfessionalProfile.SubscriptionStatus.PAST_DUE)
+        self.assertEqual(self.profile.subscription_fails_count, 1)
+        self.assertEqual(SubscriptionInvoice.objects.filter(stripe_invoice_id='in_fail_dup_test_123').count(), 1)
+
+    @override_settings(
+        PRACTITIONER_BILLING_ENABLED=True,
+        STRIPE_SECRET_KEY='sk_test_123',
+        STRIPE_BILLING_WEBHOOK_SECRET='whsec_bill_test',
+    )
+    @patch('apps.billing.payments.stripe.Webhook.construct_event')
+    def test_webhook_duplicate_subscription_updated_past_due_is_idempotent(self, mock_construct_event):
+        seeded_plan = SubscriptionPlan.objects.get(code='founding-annual')
+        subscription = ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=seeded_plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_subscription_id='sub_upd_dup_123',
+            stripe_customer_id='cus_upd_dup_123',
+        )
+        self.profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+        self.profile.subscription_fails_count = 0
+        self.profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+        mock_construct_event.return_value = {
+            'type': 'customer.subscription.updated',
+            'data': {
+                'object': {
+                    'id': 'sub_upd_dup_123',
+                    'status': 'past_due',
+                    'current_period_end': 1700000000,
+                    'cancel_at_period_end': False,
+                }
+            },
+        }
+
+        for _ in range(2):
+            response = self.client.post(
+                reverse('billing:stripe_webhook'),
+                data='{}',
+                content_type='application/json',
+                HTTP_STRIPE_SIGNATURE='sig_test',
+            )
+            self.assertEqual(response.status_code, 200)
+
+        subscription.refresh_from_db()
+        self.profile.refresh_from_db()
+        self.assertEqual(subscription.status, ProfessionalSubscription.Status.PAST_DUE)
+        self.assertEqual(self.profile.subscription_status, ProfessionalProfile.SubscriptionStatus.PAST_DUE)
+        self.assertEqual(self.profile.subscription_fails_count, 1)
 
 
 class BillingSyncTests(TestCase):

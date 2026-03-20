@@ -213,11 +213,14 @@ def _handle_subscription_updated(subscription_event):
         if subscription is None:
             return
 
+        previous_subscription_status = subscription.status
         subscription.status = _map_stripe_subscription_status(stripe_status)
         subscription.current_period_end = period_end
         subscription.cancel_at_period_end = cancel_at_period_end
         if subscription.status == ProfessionalSubscription.Status.CANCELED and subscription.canceled_at is None:
             subscription.canceled_at = timezone.now()
+        if subscription.status != ProfessionalSubscription.Status.CANCELED:
+            subscription.canceled_at = None
         subscription.save(
             update_fields=[
                 'status',
@@ -230,8 +233,13 @@ def _handle_subscription_updated(subscription_event):
 
         profile = subscription.professional
         profile.subscription_status = _map_profile_subscription_status(subscription.status)
-        if subscription.status == ProfessionalSubscription.Status.PAST_DUE:
+        if (
+            subscription.status == ProfessionalSubscription.Status.PAST_DUE
+            and previous_subscription_status != ProfessionalSubscription.Status.PAST_DUE
+        ):
             profile.subscription_fails_count += 1
+        if subscription.status == ProfessionalSubscription.Status.ACTIVE:
+            profile.subscription_fails_count = 0
         profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
 
 
@@ -278,21 +286,26 @@ def _handle_invoice_payment_failed(invoice_event):
         if subscription is None:
             return
 
-        _upsert_invoice(invoice_event, subscription, SubscriptionInvoice.Status.OPEN)
+        _, created, previous_invoice_status = _upsert_invoice(
+            invoice_event,
+            subscription,
+            SubscriptionInvoice.Status.OPEN,
+        )
 
         subscription.status = ProfessionalSubscription.Status.PAST_DUE
         subscription.save(update_fields=['status', 'updated_at'])
 
         profile = subscription.professional
         profile.subscription_status = ProfessionalProfile.SubscriptionStatus.PAST_DUE
-        profile.subscription_fails_count += 1
+        if created or previous_invoice_status != SubscriptionInvoice.Status.OPEN:
+            profile.subscription_fails_count += 1
         profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
 
 
 def _upsert_invoice(invoice_event, subscription, status_override=None):
     stripe_invoice_id = (invoice_event.get('id') or '').strip()
     if not stripe_invoice_id:
-        return
+        return None, False, None
 
     raw_status = (invoice_event.get('status') or '').strip().lower()
     status = status_override if status_override is not None else (raw_status or SubscriptionInvoice.Status.DRAFT)
@@ -302,7 +315,10 @@ def _upsert_invoice(invoice_event, subscription, status_override=None):
     if status_transitions.get('paid_at'):
         paid_at = _parse_stripe_timestamp(status_transitions['paid_at'])
 
-    SubscriptionInvoice.objects.update_or_create(
+    existing_invoice = SubscriptionInvoice.objects.filter(stripe_invoice_id=stripe_invoice_id).first()
+    previous_status = existing_invoice.status if existing_invoice is not None else None
+
+    invoice, created = SubscriptionInvoice.objects.update_or_create(
         stripe_invoice_id=stripe_invoice_id,
         defaults={
             'subscription': subscription,
@@ -314,6 +330,7 @@ def _upsert_invoice(invoice_event, subscription, status_override=None):
             'paid_at': paid_at,
         },
     )
+    return invoice, created, previous_status
 
 
 def _map_stripe_subscription_status(stripe_status: str) -> str:
