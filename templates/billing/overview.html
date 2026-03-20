@@ -23,6 +23,12 @@
             <button type="submit" class="button">Start subscription checkout</button>
         </form>
         {% endif %}
+        {% if can_manage_portal %}
+        <form method="post" action="{% url 'billing:portal_start' %}" style="margin-top: 0.75rem;">
+            {% csrf_token %}
+            <button type="submit" class="button">Manage billing</button>
+        </form>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

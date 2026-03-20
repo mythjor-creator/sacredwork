@@ -93,6 +93,37 @@ class BillingCheckoutTests(TestCase):
         self.assertEqual(subscription.status, ProfessionalSubscription.Status.PENDING_LAUNCH)
         self.assertEqual(subscription.plan.code, 'founding-annual')
 
+    @override_settings(PRACTITIONER_BILLING_ENABLED=True, STRIPE_SECRET_KEY='sk_test_123')
+    @patch('apps.billing.payments.stripe.billing_portal.Session.create')
+    def test_portal_start_redirects_to_stripe_billing_portal(self, mock_portal_create):
+        mock_portal_create.return_value = SimpleNamespace(
+            id='bps_test_123',
+            url='https://billing.stripe.com/p/session/test_123',
+        )
+        ProfessionalSubscription.objects.create(
+            professional=self.profile,
+            plan=self.plan,
+            status=ProfessionalSubscription.Status.ACTIVE,
+            stripe_customer_id='cus_portal_123',
+            stripe_subscription_id='sub_portal_123',
+        )
+        self.profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+        self.profile.stripe_customer_id = 'cus_portal_123'
+        self.profile.save(update_fields=['subscription_status', 'stripe_customer_id', 'updated_at'])
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse('billing:portal_start'))
+
+        self.assertRedirects(response, 'https://billing.stripe.com/p/session/test_123', fetch_redirect_response=False)
+
+    @override_settings(PRACTITIONER_BILLING_ENABLED=True, STRIPE_SECRET_KEY='sk_test_123')
+    def test_portal_start_requires_stripe_customer(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse('billing:portal_start'))
+
+        self.assertRedirects(response, reverse('billing:overview'))
+
     @override_settings(
         PRACTITIONER_BILLING_ENABLED=True,
         STRIPE_SECRET_KEY='sk_test_123',

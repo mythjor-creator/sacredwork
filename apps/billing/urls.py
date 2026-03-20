@@ -5,6 +5,7 @@ from .views import (
     billing_checkout_start_view,
     billing_checkout_success_view,
     billing_overview_view,
+    billing_portal_start_view,
     stripe_billing_webhook_view,
 )
 
@@ -15,5 +16,6 @@ urlpatterns = [
     path('checkout/start/', billing_checkout_start_view, name='checkout_start'),
     path('checkout/success/', billing_checkout_success_view, name='checkout_success'),
     path('checkout/cancel/', billing_checkout_cancel_view, name='checkout_cancel'),
+    path('portal/start/', billing_portal_start_view, name='portal_start'),
     path('webhook/stripe/', stripe_billing_webhook_view, name='stripe_webhook'),
 ]

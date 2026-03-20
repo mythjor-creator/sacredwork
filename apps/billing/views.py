@@ -8,7 +8,12 @@ import stripe
 
 from apps.accounts.models import User
 
-from .payments import create_practitioner_checkout_session, practitioner_billing_enabled, process_billing_webhook
+from .payments import (
+    create_billing_portal_session,
+    create_practitioner_checkout_session,
+    practitioner_billing_enabled,
+    process_billing_webhook,
+)
 
 
 @login_required
@@ -31,6 +36,9 @@ def billing_overview_view(request):
             profile.SubscriptionStatus.CANCELED,
         }
     )
+    can_manage_portal = practitioner_billing_enabled() and bool(
+        (subscription and subscription.stripe_customer_id) or profile.stripe_customer_id
+    )
 
     return render(
         request,
@@ -40,6 +48,7 @@ def billing_overview_view(request):
             'subscription': subscription,
             'billing_enabled': practitioner_billing_enabled(),
             'can_start_checkout': can_start_checkout,
+            'can_manage_portal': can_manage_portal,
         },
     )
 
@@ -75,6 +84,27 @@ def billing_checkout_success_view(request):
 def billing_checkout_cancel_view(request):
     messages.warning(request, 'Checkout was canceled. You can restart anytime from billing.')
     return redirect('billing:overview')
+
+
+@login_required
+def billing_portal_start_view(request):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
+    if request.user.role != User.Role.PROFESSIONAL:
+        return redirect('accounts:dashboard')
+
+    profile = getattr(request.user, 'professional_profile', None)
+    if profile is None:
+        return redirect('professionals:onboarding')
+
+    try:
+        portal_url = create_billing_portal_session(request, profile)
+    except ValueError as exc:
+        messages.error(request, str(exc))
+        return redirect('billing:overview')
+
+    return redirect(portal_url)
 
 
 @csrf_exempt

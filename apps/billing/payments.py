@@ -58,6 +58,29 @@ def create_practitioner_checkout_session(request, profile: ProfessionalProfile) 
     return session.url
 
 
+def create_billing_portal_session(request, profile: ProfessionalProfile) -> str:
+    if not practitioner_billing_enabled():
+        raise ValueError('Practitioner billing is not enabled.')
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    subscription = getattr(profile, 'subscription', None)
+    customer_id = ''
+    if subscription is not None:
+        customer_id = (subscription.stripe_customer_id or '').strip()
+    if not customer_id:
+        customer_id = (profile.stripe_customer_id or '').strip()
+    if not customer_id:
+        raise ValueError('No Stripe customer is connected yet. Complete checkout first.')
+
+    return_url = request.build_absolute_uri('/billing/')
+    session = stripe.billing_portal.Session.create(
+        customer=customer_id,
+        return_url=return_url,
+    )
+    return session.url
+
+
 def process_billing_webhook(payload, signature_header):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     event = stripe.Webhook.construct_event(
