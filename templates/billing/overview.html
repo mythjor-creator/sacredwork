@@ -8,11 +8,20 @@
         <h1>Billing</h1>
         <p>{{ profile.display_name }}</p>
         <p>Subscription status: {{ profile.get_subscription_status_display }}</p>
+        {% if not billing_enabled %}
+        <p><strong>Billing checkout is disabled right now.</strong> We are still in prelaunch mode.</p>
+        {% endif %}
         {% if subscription %}
         <p>Plan: {{ subscription.plan|default:'Founding plan pending assignment' }}</p>
         <p>Subscription record status: {{ subscription.get_status_display }}</p>
         {% else %}
         <p>No Stripe subscription has been created yet.</p>
+        {% endif %}
+        {% if can_start_checkout %}
+        <form method="post" action="{% url 'billing:checkout_start' %}" style="margin-top: 1rem;">
+            {% csrf_token %}
+            <button type="submit" class="button">Start subscription checkout</button>
+        </form>
         {% endif %}
     </div>
 </section>

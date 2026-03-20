@@ -1,0 +1,183 @@
+from datetime import datetime, timezone as dt_timezone
+
+from django.conf import settings
+from django.db import transaction
+from django.utils import timezone
+
+import stripe
+
+from apps.professionals.models import ProfessionalProfile
+
+from .models import ProfessionalSubscription, SubscriptionPlan
+
+
+def practitioner_billing_enabled() -> bool:
+    return bool(getattr(settings, 'PRACTITIONER_BILLING_ENABLED', False))
+
+
+def create_practitioner_checkout_session(request, profile: ProfessionalProfile) -> str:
+    if not practitioner_billing_enabled():
+        raise ValueError('Practitioner billing is not enabled.')
+
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    plan = SubscriptionPlan.objects.filter(code='founding-annual', is_active=True).first()
+    if plan is None:
+        raise ValueError('Founding annual plan is not configured.')
+
+    price_id = getattr(settings, 'STRIPE_PRO_FOUNDING_PRICE_ID', '').strip() or plan.stripe_price_id
+    if not price_id:
+        raise ValueError('No Stripe price is configured for founding practitioner billing.')
+
+    subscription, _ = ProfessionalSubscription.objects.get_or_create(
+        professional=profile,
+        defaults={
+            'plan': plan,
+            'status': ProfessionalSubscription.Status.PENDING_LAUNCH,
+        },
+    )
+    if subscription.plan_id != plan.id:
+        subscription.plan = plan
+        subscription.save(update_fields=['plan', 'updated_at'])
+
+    success_url = request.build_absolute_uri('/billing/checkout/success/')
+    cancel_url = request.build_absolute_uri('/billing/checkout/cancel/')
+
+    session = stripe.checkout.Session.create(
+        mode='subscription',
+        line_items=[{'price': price_id, 'quantity': 1}],
+        customer_email=profile.user.email or None,
+        metadata={
+            'professional_profile_id': str(profile.pk),
+            'professional_subscription_id': str(subscription.pk),
+        },
+        success_url=f'{success_url}?session_id={{CHECKOUT_SESSION_ID}}',
+        cancel_url=cancel_url,
+    )
+
+    return session.url
+
+
+def process_billing_webhook(payload, signature_header):
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    event = stripe.Webhook.construct_event(
+        payload=payload,
+        sig_header=signature_header,
+        secret=getattr(settings, 'STRIPE_BILLING_WEBHOOK_SECRET', settings.STRIPE_WEBHOOK_SECRET),
+    )
+
+    event_type = event.get('type')
+    event_object = event.get('data', {}).get('object', {})
+
+    if event_type == 'checkout.session.completed':
+        _handle_checkout_completed(event_object)
+    elif event_type in {'customer.subscription.updated', 'customer.subscription.deleted'}:
+        _handle_subscription_updated(event_object)
+
+
+def _handle_checkout_completed(session):
+    metadata = session.get('metadata') or {}
+    subscription_id = metadata.get('professional_subscription_id')
+    profile_id = metadata.get('professional_profile_id')
+    stripe_subscription_id = session.get('subscription') or ''
+    stripe_customer_id = session.get('customer') or ''
+
+    if not subscription_id or not profile_id:
+        return
+
+    with transaction.atomic():
+        subscription = ProfessionalSubscription.objects.select_for_update().filter(pk=subscription_id).first()
+        profile = ProfessionalProfile.objects.select_for_update().filter(pk=profile_id).first()
+        if subscription is None or profile is None:
+            return
+
+        subscription.status = ProfessionalSubscription.Status.ACTIVE
+        subscription.stripe_subscription_id = stripe_subscription_id or subscription.stripe_subscription_id
+        subscription.stripe_customer_id = stripe_customer_id or subscription.stripe_customer_id
+        if subscription.activated_at is None:
+            subscription.activated_at = timezone.now()
+        subscription.save(
+            update_fields=[
+                'status',
+                'stripe_subscription_id',
+                'stripe_customer_id',
+                'activated_at',
+                'updated_at',
+            ]
+        )
+
+        profile.subscription_status = ProfessionalProfile.SubscriptionStatus.ACTIVE
+        if stripe_customer_id:
+            profile.stripe_customer_id = stripe_customer_id
+        profile.subscription_fails_count = 0
+        profile.save(update_fields=['subscription_status', 'stripe_customer_id', 'subscription_fails_count', 'updated_at'])
+
+
+def _handle_subscription_updated(subscription_event):
+    stripe_subscription_id = subscription_event.get('id')
+    if not stripe_subscription_id:
+        return
+
+    stripe_status = (subscription_event.get('status') or '').strip().lower()
+    period_end = _parse_stripe_timestamp(subscription_event.get('current_period_end'))
+    cancel_at_period_end = bool(subscription_event.get('cancel_at_period_end'))
+
+    with transaction.atomic():
+        subscription = (
+            ProfessionalSubscription.objects.select_for_update()
+            .select_related('professional')
+            .filter(stripe_subscription_id=stripe_subscription_id)
+            .first()
+        )
+        if subscription is None:
+            return
+
+        subscription.status = _map_stripe_subscription_status(stripe_status)
+        subscription.current_period_end = period_end
+        subscription.cancel_at_period_end = cancel_at_period_end
+        if subscription.status == ProfessionalSubscription.Status.CANCELED and subscription.canceled_at is None:
+            subscription.canceled_at = timezone.now()
+        subscription.save(
+            update_fields=[
+                'status',
+                'current_period_end',
+                'cancel_at_period_end',
+                'canceled_at',
+                'updated_at',
+            ]
+        )
+
+        profile = subscription.professional
+        profile.subscription_status = _map_profile_subscription_status(subscription.status)
+        if subscription.status == ProfessionalSubscription.Status.PAST_DUE:
+            profile.subscription_fails_count += 1
+        profile.save(update_fields=['subscription_status', 'subscription_fails_count', 'updated_at'])
+
+
+def _map_stripe_subscription_status(stripe_status: str) -> str:
+    if stripe_status in {'active', 'trialing'}:
+        return ProfessionalSubscription.Status.ACTIVE
+    if stripe_status in {'past_due', 'incomplete', 'incomplete_expired', 'unpaid'}:
+        return ProfessionalSubscription.Status.PAST_DUE
+    if stripe_status in {'canceled'}:
+        return ProfessionalSubscription.Status.CANCELED
+    return ProfessionalSubscription.Status.PENDING_LAUNCH
+
+
+def _map_profile_subscription_status(subscription_status: str) -> str:
+    if subscription_status == ProfessionalSubscription.Status.ACTIVE:
+        return ProfessionalProfile.SubscriptionStatus.ACTIVE
+    if subscription_status == ProfessionalSubscription.Status.PAST_DUE:
+        return ProfessionalProfile.SubscriptionStatus.PAST_DUE
+    if subscription_status == ProfessionalSubscription.Status.CANCELED:
+        return ProfessionalProfile.SubscriptionStatus.CANCELED
+    return ProfessionalProfile.SubscriptionStatus.PRELAUNCH
+
+
+def _parse_stripe_timestamp(value):
+    if not value:
+        return None
+    try:
+        return datetime.fromtimestamp(int(value), tz=dt_timezone.utc)
+    except (TypeError, ValueError, OSError):
+        return None

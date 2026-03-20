@@ -210,6 +210,11 @@ STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '').strip()
 STRIPE_CURRENCY = os.environ.get('STRIPE_CURRENCY', 'usd').strip().lower()
 BOOKING_REQUIRE_PAYMENT = os.environ.get('BOOKING_REQUIRE_PAYMENT', 'False') == 'True'
 
+# Practitioner subscriptions (Stripe Billing)
+PRACTITIONER_BILLING_ENABLED = os.environ.get('PRACTITIONER_BILLING_ENABLED', 'False') == 'True'
+STRIPE_PRO_FOUNDING_PRICE_ID = os.environ.get('STRIPE_PRO_FOUNDING_PRICE_ID', '').strip()
+STRIPE_BILLING_WEBHOOK_SECRET = os.environ.get('STRIPE_BILLING_WEBHOOK_SECRET', STRIPE_WEBHOOK_SECRET).strip()
+
 # Site URL for email links and GDPR exports
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 
