@@ -35,53 +35,47 @@
 <style>
     body {
         background: var(--figma-beige);
-        --wl-green: #474c16;
-        --wl-green-strong: #3b4012;
-        --site-nav-top-bg: rgba(71, 76, 22, 0.96);
+        --wl-green: #374442;
+        --wl-green-strong: #2c3735;
+        --site-nav-top-bg: rgba(55, 68, 66, 0.96);
         --site-nav-top-border: rgba(175, 235, 243, 0.28);
-        --site-nav-link-top: #afebf3;
+        --site-nav-link-top: #D4EDF0;
         --site-nav-link-top-border: rgba(175, 235, 243, 0.4);
         --site-nav-link-top-hover-bg: rgba(175, 235, 243, 0.12);
-        --site-nav-link-top-hover: #e6f8fb;
-        --site-nav-solid-bg: rgba(71, 76, 22, 0.96);
+        --site-nav-link-top-hover: #ffffff;
+        --site-nav-solid-bg: rgba(55, 68, 66, 0.96);
         --site-nav-solid-border: rgba(175, 235, 243, 0.2);
-        --site-nav-link-solid: #afebf3;
+        --site-nav-link-solid: #D4EDF0;
         --site-nav-link-solid-border: rgba(175, 235, 243, 0.35);
         --site-nav-link-solid-hover-bg: rgba(175, 235, 243, 0.14);
         --site-nav-link-solid-hover: #ffffff;
-        --site-nav-brand-color: #afebf3;
-        --site-nav-solid-brand-color: #afebf3;
+        --site-nav-brand-color: #D4EDF0;
+        --site-nav-solid-brand-color: #D4EDF0;
     }
 
     /* ── Hero ── */
     .wl-hero {
-        background: linear-gradient(180deg, var(--wl-green) 0%, var(--wl-green-strong) 100%);
+        background: var(--wl-green);
         border-bottom: 1px solid rgba(175, 235, 243, 0.26);
-        padding: clamp(3.5rem, 7vw, 6rem) 0 clamp(3rem, 6vw, 5rem);
+        padding: calc(82px + 1.5rem) 0 clamp(3rem, 6vw, 5rem);
         position: relative;
         overflow: hidden;
     }
 
-    .wl-hero::before {
-        content: "";
-        position: absolute;
-        inset: auto auto -4rem -8rem;
-        width: 24rem;
-        height: 24rem;
-        border-radius: 999px;
-        background: radial-gradient(circle, rgba(175, 235, 243, 0.28) 0%, rgba(175, 235, 243, 0) 70%);
-        pointer-events: none;
+    /* ── Embedded hero breadcrumb ── */
+    .wl-hero-crumb {
+        margin: 0 0 1.6rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(175, 235, 243, 0.28);
+        color: rgba(212, 237, 240, 0.85);
     }
 
-    .wl-hero::after {
-        content: "";
-        position: absolute;
-        inset: 2rem -5rem auto auto;
-        width: 18rem;
-        height: 18rem;
-        border-radius: 999px;
-        background: radial-gradient(circle, rgba(175, 235, 243, 0.16) 0%, rgba(175, 235, 243, 0) 70%);
-        pointer-events: none;
+    .wl-hero-crumb a {
+        color: rgba(212, 237, 240, 0.82);
+    }
+
+    .wl-hero-crumb a:hover {
+        color: #ffffff;
     }
 
     .wl-hero-inner {
@@ -92,7 +86,7 @@
 
     .wl-hero h1 {
         font: 400 clamp(3rem, 7vw, 5.5rem) / 0.95 var(--font-serif);
-        color: #afebf3;
+        color: #D4EDF0;
         letter-spacing: 0.01em;
         margin: 0.55rem 0 1.1rem;
     }
@@ -100,13 +94,13 @@
     .wl-hero-body {
         font-size: 1.15rem;
         line-height: 1.7;
-        color: rgba(175, 235, 243, 0.94);
+        color: rgba(212, 237, 240, 0.94);
         max-width: 44rem;
         margin: 0 0 2rem;
     }
 
     .wl-hero .cb-eyebrow {
-        color: rgba(175, 235, 243, 0.86);
+        color: rgba(212, 237, 240, 0.86);
     }
 
     .wl-hero-actions {
@@ -114,6 +108,35 @@
         flex-wrap: wrap;
         gap: 0.75rem;
         align-items: center;
+    }
+
+    .wl-hero-actions .button {
+        margin-top: 0;
+        background: #afebf3;
+        color: #2f3610;
+        border-color: transparent;
+        border-radius: 999px;
+        padding: 0.75rem 1.6rem;
+        font-size: 1rem;
+    }
+
+    .wl-hero-actions .button:hover {
+        background: #d2f4f9;
+        color: #1e2808;
+    }
+
+    .wl-hero-actions .cb-chip-button {
+        background: transparent;
+        border-color: rgba(212, 237, 240, 0.45);
+        color: rgba(212, 237, 240, 0.9);
+        padding: 0.68rem 1.3rem;
+        font-size: 0.95rem;
+    }
+
+    .wl-hero-actions .cb-chip-button:hover {
+        background: rgba(175, 235, 243, 0.1);
+        border-color: rgba(175, 235, 243, 0.7);
+        color: #ffffff;
     }
 
     /* ── Offer block ── */
@@ -206,6 +229,13 @@
         justify-content: center;
         padding: 0.85rem 1.4rem;
         font-size: 1rem;
+        margin-top: 0;
+        background: var(--wl-green);
+        border-radius: 999px;
+    }
+
+    .wl-offer-cta-group .button:hover {
+        background: var(--wl-green-strong);
     }
 
     .wl-below-cta {
@@ -273,6 +303,13 @@
         justify-content: center;
         padding: 0.8rem 1.2rem;
         font-size: 0.95rem;
+        margin-top: 0;
+        background: var(--wl-green);
+        border-radius: 999px;
+    }
+
+    .wl-price-card .button:hover {
+        background: var(--wl-green-strong);
     }
 
     .wl-price-guarantee {
@@ -512,17 +549,24 @@
 </style>
 {% endblock %}
 
+{% block breadcrumbs %}{% endblock %}
+
 {% block content %}
 
 {# ── Hero ── #}
 <section class="wl-hero">
     <div class="shell">
         <div class="wl-hero-inner">
+            <nav class="cb-breadcrumbs wl-hero-crumb" aria-label="Breadcrumb">
+                <a href="{% url 'catalog:home' %}">Home</a>
+                <span aria-hidden="true">/</span>
+                <span class="cb-breadcrumb-current">Join Waitlist</span>
+            </nav>
             <p class="cb-eyebrow">For practitioners who are ready.</p>
-            <h1>Be here before we open the doors.</h1>
-            <p class="wl-hero-body">Clairbook is a focused marketplace for wellness, spiritual, beauty, and coaching
-                practitioners. We're building something the industry doesn't have yet&nbsp;— a home that actually
-                understands your work.</p>
+            <h1>Get in before we launch.</h1>
+            <p class="wl-hero-body">Clairbook is a marketplace built specifically for wellness, spiritual, beauty, and
+                coaching practitioners. Most booking platforms treat all services the same. We're not building that.
+                We're building a space that actually knows what your work requires.</p>
             <div class="wl-hero-actions">
                 <a class="button" href="?founding=1#waitlist-profile">Claim your founding spot&nbsp;—&nbsp;$79/year</a>
                 <a class="cb-chip-button" href="#waitlist-profile">Join the free waitlist</a>
@@ -538,31 +582,30 @@
             <div>
                 <p class="wl-offer-label">Founding practitioner rate</p>
                 <h2 class="wl-offer-headline">$79 for your first year.</h2>
-                <p class="wl-offer-subhead">Normally $119.88. Lock in this rate permanently&nbsp;— it never goes up as
-                    long as you stay.</p>
+                <p class="wl-offer-subhead">Normally $119.88. Lock this rate in permanently. It won't increase as long
+                    as you're with us.</p>
                 <ul class="wl-features">
                     <li>Your public practitioner profile, live on launch day</li>
-                    <li>A personal booking page you can share right now</li>
+                    <li>A booking page you can share immediately</li>
                     <li>Priority placement in search and discovery</li>
-                    <li>Verified founding member badge on your profile</li>
-                    <li>Direct input into how the platform develops</li>
-                    <li>Early access to every new feature we ship</li>
+                    <li>Verified founding member badge</li>
+                    <li>A real voice in how we build this</li>
+                    <li>Early access to every new feature</li>
                 </ul>
-                <p class="wl-scarcity">We're capping founding memberships at 100 practitioners.</p>
+                <p class="wl-scarcity">We're keeping founding memberships to 100 practitioners.</p>
             </div>
             <div>
                 <div class="wl-price-card">
                     <p class="wl-price-card-label">Founding practitioner rate</p>
                     <p class="wl-price-main">$79<span class="wl-price-period">/year</span></p>
                     <p class="wl-price-was">Normally $119.88/year</p>
-                    <p class="wl-price-note">Locked in permanently — it never goes up.</p>
+                    <p class="wl-price-note">Locked in permanently. Won't increase.</p>
                     <hr class="wl-price-divider">
                     <div class="wl-offer-cta-group">
                         <a class="button" href="?founding=1#waitlist-profile">Claim your founding
                             spot&nbsp;—&nbsp;$79/year</a>
                     </div>
-                    <p class="wl-price-guarantee">No charge until launch. Cancel anytime before then for a full refund.
-                    </p>
+                    <p class="wl-price-guarantee">No charge until launch. Full refund if you change your mind.</p>
                 </div>
             </div>
         </div>
@@ -574,8 +617,8 @@
     <div class="shell">
         <div class="wl-free-inner">
             <div class="wl-free-copy">
-                <p>Not ready to commit? That's okay.</p>
-                <p>Join the free waitlist and we'll reach out before we open to the public.</p>
+                <p>Not ready to commit? Join the free waitlist instead.</p>
+                <p>We'll get in touch before we open to everyone.</p>
             </div>
             <a class="cb-chip-button" href="#waitlist-profile">Join the free waitlist</a>
         </div>
@@ -586,12 +629,56 @@
 <div class="wl-trust-band">
     <div class="shell">
         <div class="wl-trust-inner">
-            <p>Clairbook is pre-launch and actively in development. Founding memberships are billed now and go toward
-                building the platform. If we don't launch, you get a full refund&nbsp;— no questions asked. We'd rather
-                earn your trust than ask for it.</p>
+            <p>Clairbook is pre-launch and actively in development. When you join as a founding member, you're
+                supporting the build. If we don't launch, you get a full refund. Simple as that.</p>
         </div>
     </div>
 </div>
+
+{# ── What we're building ── #}
+<section class="wl-offer-band" style="border-top: 1px solid rgba(0,0,0,0.09); padding-top: clamp(2.5rem,4vw,4rem);">
+    <div class="shell">
+        <div style="max-width: 52rem;">
+            <h2 class="wl-offer-headline" style="margin: 0 0 1.1rem;">A marketplace built for your work.</h2>
+            <p style="font-size: 1.05rem; line-height: 1.75; color: #53606c; margin: 0 0 1.5rem;">Most booking platforms
+                were designed for gyms and hair salons. The intake forms, the categories, how services get
+                described&nbsp;— none of it was built with you in mind.</p>
+            <p style="font-size: 1.05rem; line-height: 1.75; color: #53606c; margin: 0 0 2rem;">Clairbook is different.
+                We're building a space for practitioners whose work requires real trust, nuance, and a client who gets
+                what they're booking. That means better discovery, better context, and a booking experience that honors
+                the quality of your practice.</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                <div
+                    style="background: rgba(71,76,22,0.07); border: 1px solid rgba(71,76,22,0.16); border-radius: 12px; padding: 1.1rem 1.2rem;">
+                    <p style="margin: 0 0 0.3rem; font-weight: 700; color: #2f3610; font-size: 0.95rem;">Wellness</p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #53606c; line-height: 1.55;">Yoga, somatic work,
+                        mindfulness, nutrition, holistic care</p>
+                </div>
+                <div
+                    style="background: rgba(71,76,22,0.07); border: 1px solid rgba(71,76,22,0.16); border-radius: 12px; padding: 1.1rem 1.2rem;">
+                    <p style="margin: 0 0 0.3rem; font-weight: 700; color: #2f3610; font-size: 0.95rem;">Spiritual</p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #53606c; line-height: 1.55;">Energy work, astrology,
+                        tarot, mediumship, ceremony</p>
+                </div>
+                <div
+                    style="background: rgba(71,76,22,0.07); border: 1px solid rgba(71,76,22,0.16); border-radius: 12px; padding: 1.1rem 1.2rem;">
+                    <p style="margin: 0 0 0.3rem; font-weight: 700; color: #2f3610; font-size: 0.95rem;">Beauty &amp;
+                        ritual</p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #53606c; line-height: 1.55;">Practices where care,
+                        confidence, and intentional self-care converge</p>
+                </div>
+                <div
+                    style="background: rgba(71,76,22,0.07); border: 1px solid rgba(71,76,22,0.16); border-radius: 12px; padding: 1.1rem 1.2rem;">
+                    <p style="margin: 0 0 0.3rem; font-weight: 700; color: #2f3610; font-size: 0.95rem;">Coaching</p>
+                    <p style="margin: 0; font-size: 0.9rem; color: #53606c; line-height: 1.55;">Relationship, career,
+                        leadership, and transformational work</p>
+                </div>
+            </div>
+            <p style="margin: 1.8rem 0 0; font-size: 1rem; color: #53606c; line-height: 1.7;">If your practice has ever
+                felt too specific for generic platforms, we're building this for you.</p>
+        </div>
+    </div>
+</section>
 
 {# ── Sign-up form ── #}
 <section id="waitlist-profile" class="wl-form-band">

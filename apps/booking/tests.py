@@ -147,6 +147,48 @@ class BookingFlowTests(TestCase):
 		booking.refresh_from_db()
 		self.assertEqual(booking.status, Booking.Status.REQUESTED)
 
+	def test_guest_booking_post_redirects_to_signup_with_resume_target(self):
+		target_date = self._add_future_window()
+		slots = generate_service_slots(self.service, from_date=target_date)
+
+		response = self.client.post(
+			reverse('booking:create', args=[self.service.pk]),
+			{
+				'slot': slots[0]['start_at'].isoformat(),
+				'intake_notes': 'Guest handoff test',
+			},
+		)
+
+		self.assertRedirects(
+			response,
+			f"{reverse('accounts:signup')}?next={reverse('booking:guest_resume')}",
+			fetch_redirect_response=False,
+		)
+		pending = self.client.session.get('pending_guest_booking')
+		self.assertIsNotNone(pending)
+		self.assertEqual(pending['service_id'], self.service.pk)
+
+	@override_settings(BOOKING_REQUIRE_PAYMENT=False)
+	def test_guest_resume_creates_booking_for_authenticated_client(self):
+		target_date = self._add_future_window()
+		slot = generate_service_slots(self.service, from_date=target_date)[0]['start_at']
+		session = self.client.session
+		session['pending_guest_booking'] = {
+			'service_id': self.service.pk,
+			'start_at': slot.isoformat(),
+			'intake_notes': 'Resume flow test',
+		}
+		session.save()
+
+		self.client.force_login(self.client_user)
+		response = self.client.get(reverse('booking:guest_resume'))
+
+		self.assertRedirects(response, reverse('booking:list'))
+		booking = Booking.objects.get(client=self.client_user)
+		self.assertEqual(booking.service, self.service)
+		self.assertEqual(booking.intake_notes, 'Resume flow test')
+		self.assertNotIn('pending_guest_booking', self.client.session)
+
 
 class BookingEmailTests(TestCase):
 	def setUp(self):

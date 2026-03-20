@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .mod-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .mod-header {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .mod-header h1 {
+        margin: 0;
+        font-size: 2rem;
+    }
+
+    .mod-badge {
+        display: inline-block;
+        background: #e74c3c;
+        color: white;
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .mod-queue {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .mod-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.2rem;
+        display: grid;
+        gap: 0.8rem;
+    }
+
+    .mod-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        gap: 1rem;
+    }
+
+    .mod-name {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .mod-status {
+        display: inline-block;
+        background: #f0f0f0;
+        padding: 0.25rem 0.7rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        color: #666;
+    }
+
+    .mod-status.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .mod-status.approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .mod-status.rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .mod-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    .mod-meta-item {
+        display: grid;
+        gap: 0.25rem;
+    }
+
+    .mod-meta-label {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .mod-services {
+        display: grid;
+        gap: 0.5rem;
+    }
+
+    .mod-service-item {
+        padding: 0.5rem;
+        background: #f9f9f9;
+        border-left: 3px solid #2c3e50;
+        border-radius: 0 4px 4px 0;
+        font-size: 0.9rem;
+    }
+
+    .mod-actions {
+        display: grid;
+        grid-auto-flow: column;
+        gap: 0.5rem;
+        justify-content: start;
+        margin-top: 0.5rem;
+    }
+
+    .mod-actions form {
+        display: contents;
+    }
+
+    .mod-button {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .mod-button.approve {
+        background: #27ae60;
+        color: white;
+    }
+
+    .mod-button.approve:hover {
+        background: #229954;
+    }
+
+    .mod-button.reject {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .mod-button.reject:hover {
+        background: #c0392b;
+    }
+
+    .mod-section-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .mod-empty {
+        padding: 2rem 1rem;
+        text-align: center;
+        color: #999;
+        background: #f9f9f9;
+        border-radius: 8px;
+    }
+</style>
+
+<section class="mod-container">
+    <div class="mod-header">
+        <h1>Moderation Queue</h1>
+        <p class="hint">Review and approve professional practitioners to appear on the marketplace.</p>
+    </div>
+
+    {% if queue_count > 0 %}
+    <div class="mod-queue">
+        <h2 class="mod-section-title">
+            Pending Review
+            <span class="mod-badge">{{ queue_count }}</span>
+        </h2>
+
+        {% for profile in pending_profiles %}
+        <div class="mod-card">
+            <div class="mod-card-header">
+                <div>
+                    <p class="mod-name">{{ profile.display_name }}</p>
+                    <p class="hint" style="margin: 0; font-size: 0.85rem;">{{ profile.business_name }}</p>
+                </div>
+                <span class="mod-status pending">Pending</span>
+            </div>
+
+            <div class="mod-meta">
+                <div class="mod-meta-item">
+                    <span class="mod-meta-label">Email</span>
+                    <span>{{ profile.user.email }}</span>
+                </div>
+                <div class="mod-meta-item">
+                    <span class="mod-meta-label">Location</span>
+                    <span>{{ profile.location or 'Not specified' }}</span>
+                </div>
+                <div class="mod-meta-item">
+                    <span class="mod-meta-label">Profile Created</span>
+                    <span>{{ profile.created_at|date:"M d, Y" }}</span>
+                </div>
+                <div class="mod-meta-item">
+                    <span class="mod-meta-label">Completion</span>
+                    <span>{{ profile.completeness_percent }}%</span>
+                </div>
+            </div>
+
+            {% if profile.bio %}
+            <div>
+                <p style="margin: 0; color: #666; font-size: 0.95rem;">{{ profile.bio|truncatewords:30 }}</p>
+            </div>
+            {% endif %}
+
+            {% if profile.services.all %}
+            <div class="mod-services">
+                <strong style="font-size: 0.9rem;">Services:</strong>
+                {% for service in profile.services.all|slice:":3" %}
+                <div class="mod-service-item">
+                    {{ service.name }} · ${{ service.price_display }} · {{ service.duration_minutes }}min
+                </div>
+                {% endfor %}
+                {% if profile.services.count > 3 %}
+                <div class="mod-service-item" style="color: #999;">
+                    +{{ profile.services.count|add:"-3" }} more services
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="mod-actions">
+                <form method="post" action="{% url 'moderation:decide' profile.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="decision" value="approved">
+                    <button class="mod-button approve" type="submit">Approve</button>
+                </form>
+                <form method="post" action="{% url 'moderation:decide' profile.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="decision" value="rejected">
+                    <button class="mod-button reject" type="submit">Reject</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="mod-empty">
+        <p style="font-size: 1.1rem; margin: 0;">✓ All profiles have been reviewed!</p>
+        <p style="margin: 0.5rem 0 0; font-size: 0.9rem;">No pending applications at this time.</p>
+    </div>
+    {% endif %}
+
+    {% if reviewed_profiles %}
+    <div>
+        <h2 class="mod-section-title">Recently Reviewed</h2>
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+            <thead style="background: #f0f0f0; border-bottom: 2px solid #ddd;">
+                <tr>
+                    <th style="padding: 0.8rem; text-align: left; font-weight: 600;">Name</th>
+                    <th style="padding: 0.8rem; text-align: left; font-weight: 600;">Status</th>
+                    <th style="padding: 0.8rem; text-align: left; font-weight: 600;">Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in reviewed_profiles %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 0.8rem;">{{ profile.display_name }}</td>
+                    <td style="padding: 0.8rem;">
+                        <span
+                            class="mod-status {% if profile.approval_status == 'approved' %}approved{% elif profile.approval_status == 'rejected' %}rejected{% else %}pending{% endif %}">
+                            {{ profile.get_approval_status_display }}
+                        </span>
+                    </td>
+                    <td style="padding: 0.8rem;">{{ profile.updated_at|date:"M d, Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

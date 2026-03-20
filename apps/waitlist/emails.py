@@ -20,35 +20,35 @@ def send_waitlist_confirmation(profile):
     first_name = profile.full_name.split()[0] if profile.full_name else profile.full_name
 
     if profile.is_founding_member:
-        subject = f"You're in. Welcome to {SITE_NAME}."
+        subject = "You're in."
         message = (
             f"Hi {first_name},\n\n"
-            f"You're one of our founding practitioners. That means something to us.\n\n"
-            f"Your spot is reserved, your rate is locked, and your profile will go live the day we launch. "
-            f"Between now and then, you'll hear from us directly — no newsletters, no noise. "
-            f"Just real updates on how the build is going, and the occasional question where your opinion "
-            f"actually shapes what we make.\n\n"
+            f"You're one of our founding practitioners. That actually means something to us.\n\n"
+            f"Your spot is reserved, your rate is locked, and your profile launches when we do. Until then, "
+            f"you'll hear from us directly\u2014just real updates about the build and the occasional question "
+            f"where your input actually shapes what we make.\n\n"
             f"A few things to know:\n"
-            f"  · Your founding rate of $79/year is locked in permanently, as long as you're with us.\n"
-            f"  · You'll get early access to set up your profile before we open to the public.\n"
-            f"  · If for any reason we don't launch, you'll receive a full refund. No process, no questions.\n\n"
-            f"One last step — please verify your email so we can keep your spot secure:\n"
+            f"  \u00b7 Your $79/year rate is locked in permanently, no matter how long you're with us.\n"
+            f"  \u00b7 You'll get early access to set up your profile before we open publicly.\n"
+            f"  \u00b7 If we don't launch, you get a full refund. No process, no questions.\n\n"
+            f"One last step \u2014 please verify your email so we can keep your spot secure:\n"
             f"{verification_url}\n\n"
             f"This link expires in 7 days.\n\n"
-            f"We're building this carefully and we're building it for you. Thank you for being here early.\n\n"
-            f"— The {SITE_NAME} team\n\n"
-            f"Questions? Just reply to this email."
+            f"We're building this with you in mind. Thank you for being here early.\n\n"
+            f"\u2014 The {SITE_NAME} team\n\n"
+            f"Questions? Reply to this email."
         )
     else:
-        subject = f"[{SITE_NAME}] You're on the waitlist"
+        subject = "You're on the list."
         message = (
             f"Hi {first_name},\n\n"
-            f"Thanks for joining the {SITE_NAME} waitlist. We'll reach out before we open to the public "
-            f"with details on how to get your profile set up.\n\n"
+            f"You're on the {SITE_NAME} waitlist. We'll reach out before we launch so you're first to know.\n\n"
+            f"If you know another practitioner who'd fit well here, send them our way. "
+            f"The community we're building is only as strong as the people in it.\n\n"
             f"Please verify your email to confirm your spot:\n"
             f"{verification_url}\n\n"
             f"This link expires in 7 days.\n\n"
-            f"— The {SITE_NAME} team"
+            f"\u2014 The {SITE_NAME} team"
         )
 
     send_mail(

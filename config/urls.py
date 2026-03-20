@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include('apps.pages.urls')),
     path('billing/', include('apps.billing.urls')),
     path('waitlist/', include('apps.waitlist.urls')),
+    path('moderation/', include('apps.moderation.urls')),
     path('', include('apps.catalog.urls')),
     path('', include('apps.booking.urls')),
     path('', include('apps.accounts.urls')),

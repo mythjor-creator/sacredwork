@@ -27,6 +27,11 @@ class PrivacyTermsPages(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Clairbook Style Sheet')
 
+    def test_about_renders(self):
+        response = self.client.get(reverse('pages:about'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'About Clairbook')
+
     def test_privacy_policy_renders(self):
         response = self.client.get(reverse('pages:privacy'))
         self.assertEqual(response.status_code, 200)

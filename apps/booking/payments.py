@@ -7,6 +7,7 @@ import stripe
 from .models import BookingPaymentIntent
 from .services import create_booking
 from .emails import send_booking_payment_received
+from .holds import release_hold
 
 
 def payment_gateway_enabled() -> bool:
@@ -141,6 +142,8 @@ def _complete_checkout_session(session):
             ]
         )
         booking_created = booking
+        # Release hold now that booking is confirmed
+        release_hold(intent.service.professional, intent.start_at)
 
     if booking_created is not None:
         send_booking_payment_received(booking_created)
@@ -151,6 +154,9 @@ def _expire_checkout_session(session):
     if not intent_id:
         return
 
+    intent = BookingPaymentIntent.objects.select_related('service__professional').get(pk=intent_id)
+    release_hold(intent.service.professional, intent.start_at)
+    
     BookingPaymentIntent.objects.filter(
         pk=intent_id,
         status=BookingPaymentIntent.Status.PENDING,

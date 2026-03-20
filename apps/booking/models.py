@@ -128,3 +128,44 @@ class BookingPaymentIntent(models.Model):
 
 	def __str__(self) -> str:
 		return f'Payment intent {self.pk} for {self.service.name}'
+
+
+class BookingHold(models.Model):
+	"""Short-lived reservation to prevent concurrent booking of the same slot."""
+
+	client = models.ForeignKey(
+		'accounts.User',
+		on_delete=models.CASCADE,
+		related_name='booking_holds',
+	)
+	professional = models.ForeignKey(
+		'professionals.ProfessionalProfile',
+		on_delete=models.CASCADE,
+		related_name='booking_holds',
+	)
+	service = models.ForeignKey(
+		'catalog.Service',
+		on_delete=models.CASCADE,
+		related_name='booking_holds',
+	)
+	start_at = models.DateTimeField()
+	expires_at = models.DateTimeField()
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ['-created_at']
+		# Prevent multiple holds for the same slot
+		constraints = [
+			models.UniqueConstraint(
+				fields=['professional', 'start_at'],
+				name='unique_professional_hold_slot',
+			)
+		]
+
+	def __str__(self) -> str:
+		return f'Hold {self.pk}: {self.service.name} with {self.professional.display_name} at {self.start_at}'
+
+	@property
+	def is_expired(self) -> bool:
+		from django.utils import timezone
+		return timezone.now() >= self.expires_at

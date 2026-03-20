@@ -39,6 +39,20 @@ def style_sheet_view(request):
     return render(request, 'pages/style_sheet.html', {'profile': profile})
 
 
+def about_view(request):
+    """Render public about page with inclusive brand positioning."""
+    site_base_url = request.build_absolute_uri('/').rstrip('/')
+    current_absolute_url = request.build_absolute_uri()
+    return render(
+        request,
+        'pages/about.html',
+        {
+            'site_base_url': site_base_url,
+            'current_absolute_url': current_absolute_url,
+        },
+    )
+
+
 def terms_view(request):
     """Render Help page with terms accordion and issue reporting form."""
     profile = getattr(request.user, 'professional_profile', None) if request.user.is_authenticated else None
@@ -149,7 +163,6 @@ def gdpr_export_view(request):
                     'id': prof.id,
                     'bio': prof.bio,
                     'profile_photo_url': prof.profile_photo.url if prof.profile_photo else None,
-                    'website_url': prof.website_url,
                     'is_verified': prof.is_verified,
                     'is_visible': prof.is_visible,
                     'approval_status': prof.get_approval_status_display(),

@@ -6,9 +6,21 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.views import LoginView
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .forms import AccountSettingsForm, SignUpForm
 from .models import User
+
+
+def _safe_next_url(request):
+	next_url = (request.POST.get('next') or request.GET.get('next') or '').strip()
+	if next_url and url_has_allowed_host_and_scheme(
+		next_url,
+		allowed_hosts={request.get_host()},
+		require_https=request.is_secure(),
+	):
+		return next_url
+	return ''
 
 
 class ClairbookLoginView(LoginView):
@@ -25,17 +37,25 @@ def signup_view(request):
 	if request.user.is_authenticated:
 		return redirect('accounts:dashboard')
 
+	next_url = _safe_next_url(request)
+	is_booking_flow = 'guest_resume' in next_url
+
 	if request.method == 'POST':
 		form = SignUpForm(request.POST)
 		if form.is_valid():
 			user = form.save()
 			login(request, user)
+			if next_url:
+				return redirect(next_url)
 			if user.role == User.Role.PROFESSIONAL:
 				return redirect('professionals:onboarding')
 			return redirect('accounts:dashboard')
 	else:
-		form = SignUpForm()
-	return render(request, 'accounts/signup.html', {'form': form})
+		form_initial = {}
+		if is_booking_flow:
+			form_initial['role'] = User.Role.CLIENT
+		form = SignUpForm(initial=form_initial)
+	return render(request, 'accounts/signup.html', {'form': form, 'next': next_url, 'is_booking_flow': is_booking_flow})
 
 
 @login_required

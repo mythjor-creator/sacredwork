@@ -22,27 +22,44 @@
 <script type="application/ld+json">{{ item_list_schema_json|safe }}</script>
 <style>
     body {
-        --site-nav-top-bg: rgba(153, 76, 50, 0.96);
+        --wl-green: #374442;
+        --wl-green-strong: #2c3735;
+        --site-nav-top-bg: rgba(55, 68, 66, 0.96);
         --site-nav-top-border: rgba(175, 235, 243, 0.3);
-        --site-nav-link-top: #afebf3;
+        --site-nav-link-top: #D4EDF0;
         --site-nav-link-top-border: rgba(175, 235, 243, 0.42);
         --site-nav-link-top-hover-bg: rgba(175, 235, 243, 0.1);
-        --site-nav-link-top-hover: #e6f8fb;
-        --site-nav-solid-bg: rgba(228, 221, 212, 0.96);
-        --site-nav-solid-border: rgba(153, 76, 50, 0.18);
-        --site-nav-link-solid: #273a49;
-        --site-nav-link-solid-border: rgba(153, 76, 50, 0.22);
-        --site-nav-link-solid-hover-bg: rgba(255, 255, 255, 0.7);
-        --site-nav-link-solid-hover: #1d2d38;
-        --site-nav-brand-color: #afebf3;
-        --site-nav-solid-brand-color: var(--brand);
+        --site-nav-link-top-hover: #ffffff;
+        --site-nav-solid-bg: rgba(55, 68, 66, 0.96);
+        --site-nav-solid-border: rgba(175, 235, 243, 0.2);
+        --site-nav-link-solid: #D4EDF0;
+        --site-nav-link-solid-border: rgba(175, 235, 243, 0.35);
+        --site-nav-link-solid-hover-bg: rgba(175, 235, 243, 0.14);
+        --site-nav-link-solid-hover: #ffffff;
+        --site-nav-brand-color: #D4EDF0;
+        --site-nav-solid-brand-color: #D4EDF0;
     }
 
     .discover-hero {
         width: 100%;
-        background: linear-gradient(180deg, var(--figma-brown) 0%, var(--figma-brown-accent) 100%);
+        background: var(--wl-green);
         border-bottom: 1px solid rgba(175, 235, 243, 0.24);
-        padding: clamp(2.75rem, 4.8vw, 5rem) 0;
+        padding: calc(82px + 1.4rem) 0 clamp(2.75rem, 4.8vw, 5rem);
+    }
+
+    .discover-crumb {
+        margin: 0 0 1.1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(175, 235, 243, 0.28);
+        color: rgba(212, 237, 240, 0.85);
+    }
+
+    .discover-crumb a {
+        color: rgba(212, 237, 240, 0.82);
+    }
+
+    .discover-crumb a:hover {
+        color: #ffffff;
     }
 
     .discover-shell {
@@ -57,12 +74,12 @@
         font-weight: 400;
         font-size: clamp(3rem, 8vw, 5.8rem);
         line-height: 0.95;
-        color: #afebf3;
+        color: #D4EDF0;
     }
 
     .discover-subtitle {
         margin: 0.95rem 0 0;
-        color: rgba(175, 235, 243, 0.92);
+        color: rgba(212, 237, 240, 0.92);
         max-width: 46rem;
         line-height: 1.6;
         font-size: 1rem;
@@ -183,14 +200,16 @@
 
     .discover-apply {
         margin-top: 0;
-        border-radius: 8px;
+        border-radius: 999px;
         padding: 0.52rem 0.88rem;
         box-shadow: none;
+        background: var(--wl-green);
     }
 
     .discover-apply:hover {
         box-shadow: none;
         transform: none;
+        background: var(--wl-green-strong);
     }
 
     .discover-toolbar {
@@ -371,6 +390,11 @@
         font-size: 0.9rem;
         white-space: nowrap;
         text-align: center;
+        background: var(--wl-green);
+    }
+
+    .standard-action:hover {
+        background: var(--wl-green-strong);
     }
 
     .discover-empty {
@@ -397,8 +421,13 @@
 
     .discover-empty .button {
         margin-top: 0.9rem;
-        border-radius: 8px;
+        border-radius: 999px;
         box-shadow: none;
+        background: var(--wl-green);
+    }
+
+    .discover-empty .button:hover {
+        background: var(--wl-green-strong);
     }
 
     @media (max-width: 860px) {
@@ -427,7 +456,7 @@
 
     @media (max-width: 520px) {
         .discover-hero {
-            padding: 2.5rem 0 3rem;
+            padding: calc(82px + 1rem) 0 2.8rem;
         }
 
         .discover-title {
@@ -471,10 +500,17 @@
 </style>
 {% endblock %}
 
+{% block breadcrumbs %}{% endblock %}
+
 {% block content %}
 <section class="discover-hero" data-nav-hero>
     <div class="discover-shell">
-        <p class="cb-eyebrow" style="color: rgba(175, 235, 243, 0.9);">Marketplace</p>
+        <nav class="cb-breadcrumbs discover-crumb" aria-label="Breadcrumb">
+            <a href="{% url 'catalog:home' %}">Home</a>
+            <span aria-hidden="true">/</span>
+            <span class="cb-breadcrumb-current">Discover</span>
+        </nav>
+        <p class="cb-eyebrow" style="color: rgba(212, 237, 240, 0.9);">Marketplace</p>
         <h1 class="discover-title">Discover practitioners</h1>
         <p class="discover-subtitle">Browse approved professionals across wellness, spirituality, beauty, and coaching.
         </p>

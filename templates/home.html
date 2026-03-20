@@ -6,18 +6,18 @@
 
 {% block extra_head %}
 <meta name="description"
-    content="Discover vetted wellness, spiritual, beauty, and coaching practitioners on Clairbook. Explore detailed profiles, modalities, and session formats to find the right fit.">
+    content="Discover wellness, spiritual, beauty, and coaching practitioners on Clairbook, with room for both intuitive and practical approaches.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="{{ site_base_url }}/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Clairbook | Discover wellness, spiritual, beauty, and coaching practitioners">
 <meta property="og:description"
-    content="Explore trusted practitioner profiles and find aligned support in wellness, spirituality, beauty, and coaching.">
+    content="Explore trusted practitioner profiles across spiritual and practical modalities in wellness, beauty, and coaching.">
 <meta property="og:url" content="{{ site_base_url }}/">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Clairbook | Discover wellness, spiritual, beauty, and coaching practitioners">
 <meta name="twitter:description"
-    content="Explore trusted practitioner profiles and find aligned support in wellness, spirituality, beauty, and coaching.">
+    content="Discover practitioners across spiritual and practical modalities in one trust-forward marketplace.">
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -70,10 +70,20 @@
     }
 
     .home-hero {
-        min-height: 100svh;
+        height: 100vh;
+        min-height: 100vh;
         display: flex;
         align-items: center;
-        padding: clamp(1.9rem, 4vw, 4.7rem) 0 clamp(3rem, 7vw, 8rem);
+        box-sizing: border-box;
+        padding: calc(82px + 1.4rem) 0 clamp(2.6rem, 7vh, 6rem);
+    }
+
+    .home-hero .home-shell {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
     }
 
     .hero-title {
@@ -88,16 +98,31 @@
         margin-inline: auto;
     }
 
+    .hero-copy {
+        margin-top: clamp(2.2rem, 8vh, 7rem);
+        display: grid;
+        justify-items: center;
+        gap: 0.8rem;
+    }
+
     .hero-lead {
-        margin: 1.35rem auto 0;
+        margin: 0;
         max-width: 56ch;
         text-align: center;
         color: rgba(175, 235, 243, 0.92);
-        font: 400 clamp(0.96rem, 1.35vw, 1.2rem)/1.6 "Instrument Sans", sans-serif;
+        font: 400 clamp(1rem, 1.25vw, 1.15rem)/1.6 "Instrument Sans", sans-serif;
+    }
+
+    .hero-subnote {
+        margin: 0;
+        max-width: 54ch;
+        text-align: center;
+        color: rgba(175, 235, 243, 0.82);
+        font: 400 clamp(1rem, 1.25vw, 1.15rem)/1.6 "Instrument Sans", sans-serif;
     }
 
     .hero-actions {
-        margin: 1.4rem auto 0;
+        margin: 0.7rem auto 0;
         display: flex;
         flex-wrap: wrap;
         justify-content: center;
@@ -108,11 +133,12 @@
     .hero-action-secondary {
         text-decoration: none;
         border-radius: 999px;
-        padding: 0.66rem 1rem;
-        font: 600 0.9rem/1.2 "Instrument Sans", sans-serif;
+        padding: 0.72rem 1.1rem;
+        font: 600 0.95rem/1.2 "Instrument Sans", sans-serif;
         display: inline-flex;
         align-items: center;
         gap: 0.34rem;
+        transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
     }
 
     .hero-action-primary {
@@ -131,6 +157,17 @@
     .hero-action-secondary:hover {
         transform: none;
         box-shadow: none;
+        opacity: 0.94;
+    }
+
+    .hero-action-primary:hover {
+        background: #bdeff5;
+        border-color: rgba(175, 235, 243, 0.8);
+    }
+
+    .hero-action-secondary:hover {
+        background: rgba(175, 235, 243, 0.16);
+        border-color: rgba(175, 235, 243, 0.6);
     }
 
     .home-search {
@@ -140,6 +177,7 @@
 
     .search-form {
         max-width: 52rem;
+        margin-inline: auto;
         border-bottom: 2px solid rgba(31, 32, 34, 0.55);
         padding: 0.5rem 0;
         display: grid;
@@ -200,10 +238,16 @@
         color: #1a1e1f;
         text-decoration: none;
         font: 400 clamp(0.76rem, 1vw, 1.15rem)/1.32 "Instrument Sans", sans-serif;
+        display: block;
+        border-radius: 8px;
+        padding: 0.35rem 0.45rem;
+        transition: background 0.16s ease, color 0.16s ease;
     }
 
     .search-suggestions a:hover {
-        text-decoration: underline;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.44);
+        color: #0f172a;
     }
 
     .search-note {
@@ -376,6 +420,10 @@
 
     .services-list {
         min-width: 0;
+        padding: 0.9rem 0.95rem;
+        border: 1px solid rgba(72, 76, 91, 0.16);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.34);
     }
 
     .services-band {
@@ -396,7 +444,7 @@
 
     .foot-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1.25fr) repeat(4, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1.25fr) repeat(5, minmax(0, 1fr));
         gap: 1.4rem;
         align-items: start;
     }
@@ -413,6 +461,11 @@
         color: #1a1e1f;
         text-decoration: none;
         font: 400 clamp(0.8rem, 1.15vw, 1.1rem)/1.3 "Instrument Sans", sans-serif;
+    }
+
+    .foot-link:hover {
+        text-decoration: underline;
+        text-underline-offset: 0.14rem;
     }
 
     .foot-news {
@@ -500,9 +553,9 @@
         }
 
         .home-hero {
-            min-height: 38.375rem;
-            align-items: center;
-            padding: 2.0625rem 0 6.8125rem;
+            height: 100vh;
+            min-height: 100vh;
+            padding: calc(82px + 1rem) 0 clamp(2.3rem, 7vh, 5rem);
         }
 
         .hero-title {
@@ -600,29 +653,43 @@
         }
 
         .home-hero {
-            min-height: 31.5rem;
-            padding: 1.8125rem 0 3.5rem;
+            height: 100vh;
+            min-height: 100vh;
+            padding: calc(82px + 0.6rem) 0 2.2rem;
         }
 
         .hero-title {
             font-size: 3.5rem;
-            max-width: 6ch;
+            max-width: 8ch;
             line-height: 1.04;
         }
 
+        .hero-copy {
+            margin-top: 1.6rem;
+            gap: 0.65rem;
+        }
+
         .hero-lead {
-            text-align: left;
-            margin-left: 0;
-            margin-right: 0;
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
             max-width: 34ch;
         }
 
+        .hero-subnote {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 32ch;
+        }
+
         .hero-actions {
-            justify-content: flex-start;
+            margin-top: 1rem;
+            justify-content: center;
         }
 
         .home-search {
-            padding: 3.5rem 0;
+            padding: 2.8rem 0;
         }
 
         .search-form {
@@ -631,8 +698,8 @@
         }
 
         .search-suggestions {
-            margin-top: 3.5rem;
-            gap: 3.5rem 1.5rem;
+            margin-top: 2.2rem;
+            gap: 2rem 1rem;
         }
 
         .home-featured {
@@ -731,7 +798,7 @@
         }
 
         .hero-title {
-            font-size: 3.5rem;
+            font-size: 3.1rem;
             line-height: 1.02;
         }
 
@@ -741,7 +808,7 @@
 
         .search-suggestions {
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 3.5rem 1.5rem;
+            gap: 1.4rem 0.85rem;
         }
 
         .search-suggestions a {
@@ -781,12 +848,13 @@
     <div class="home-hero">
         <div class="home-shell" data-reveal="1">
             <h1 class="hero-title">This was meant to find you.</h1>
-            <p class="hero-lead">Discover trusted practitioners in wellness, spirituality, beauty, and coaching with
-                profiles that feel human, specific, and easy to book.</p>
-            <div class="hero-actions" aria-label="Primary actions">
-                <a class="hero-action-primary" href="{% url 'catalog:marketplace' %}">Discover practitioners <span
-                        aria-hidden="true">&#8594;</span></a>
-                <a class="hero-action-secondary" href="{% url 'waitlist:landing' %}">Join practitioner waitlist</a>
+            <div class="hero-copy">
+                <p class="hero-lead">Discover trusted practitioners in wellness, spirituality, beauty, coaching, and
+                    practical care with profiles that feel human, specific, and easy to book.</p>
+                <p class="hero-subnote">Clairbook welcomes intuitive and non-spiritual practitioners alike.</p>
+                <div class="hero-actions" aria-label="Primary actions">
+                    <a class="hero-action-primary" href="{% url 'waitlist:landing' %}">Join practitioner waitlist</a>
+                </div>
             </div>
         </div>
     </div>
@@ -873,7 +941,8 @@
             <div class="services-panel">
                 <h3>Find practitioners who match your needs, values, and pace</h3>
                 <p>We pair thoughtful search with rich practitioner profiles so you can move from "just browsing" to
-                    "this feels right" without second-guessing the fit.</p>
+                    "this feels right" without second-guessing the fit, whether your language is spiritual, practical,
+                    or both.</p>
                 <a class="services-button" href="{% url 'catalog:marketplace' %}">Browse practitioners</a>
             </div>
         </div>
@@ -896,7 +965,7 @@
             <article class="services-list">
                 <h3>Practitioner-first publishing</h3>
                 <p>Professionals build public profiles with services, outcomes, and credentials that help clients book
-                    confidently.
+                    confidently, from sacred and intuitive offerings to practical modalities.
                 </p>
                 <a href="{% url 'waitlist:landing' %}">Join as a practitioner</a>
             </article>
@@ -915,6 +984,7 @@
         <footer class="home-foot">
             <div class="foot-grid">
                 <p class="foot-brand">Clairbook</p>
+                <a class="foot-link" href="{% url 'pages:about' %}">About Clairbook</a>
                 <a class="foot-link" href="{% url 'pages:terms' %}">Terms of Service</a>
                 <a class="foot-link" href="{% url 'waitlist:landing' %}">Join practitioner waitlist</a>
                 <p class="foot-link">Contact<br>hello@clairbook.com</p>

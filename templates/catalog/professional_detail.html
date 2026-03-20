@@ -1561,11 +1561,7 @@
                         </div>
                         {% endif %}
                         {% endwith %}
-                        {% if user.is_authenticated and user.role == 'client' %}
                         <a class="pd-cta-btn" href="{% url 'booking:create' service.pk %}">Check availability</a>
-                        {% else %}
-                        <a class="pd-cta-btn" href="{% url 'waitlist:landing' %}">Check availability</a>
-                        {% endif %}
                     </div>
                 </div>
                 {% empty %}

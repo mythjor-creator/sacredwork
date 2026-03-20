@@ -92,7 +92,7 @@
             width: 100%;
             transition: background 0.22s ease;
             background: var(--site-nav-top-bg, rgba(244, 241, 237, 0.28));
-            border-bottom: 0;
+            border-bottom: 1px solid transparent;
             backdrop-filter: blur(8px);
         }
 
@@ -108,7 +108,7 @@
 
         .site-nav.is-solid {
             background: var(--site-nav-solid-bg, rgba(255, 255, 255, 0.94));
-            border-bottom-color: transparent;
+            border-bottom-color: rgba(15, 30, 35, 0.09);
             box-shadow: none;
         }
 
@@ -263,6 +263,50 @@
             border-color: rgba(15, 67, 78, 0.45);
         }
 
+        .cb-action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            align-items: center;
+        }
+
+        .cb-editorial-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            margin-top: 0;
+            border-radius: 999px;
+            padding: 0.66rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+        }
+
+        .cb-editorial-action--primary {
+            background: rgba(15, 67, 78, 0.92);
+            color: #ffffff;
+            border: 1px solid rgba(15, 67, 78, 0.92);
+        }
+
+        .cb-editorial-action--primary:hover {
+            background: #0b3038;
+            border-color: #0b3038;
+        }
+
+        .cb-editorial-action--secondary {
+            background: rgba(255, 255, 255, 0.72);
+            color: var(--brand-strong);
+            border: 1px solid rgba(15, 67, 78, 0.22);
+        }
+
+        .cb-editorial-action--secondary:hover {
+            background: #ffffff;
+            border-color: rgba(15, 67, 78, 0.42);
+            color: var(--brand-strong);
+        }
+
         .links {
             display: flex;
             flex-wrap: wrap;
@@ -278,13 +322,14 @@
             border: 1px solid transparent;
             border-radius: var(--radius);
             padding: 0.35rem 0.7rem;
-            transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
+            transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, opacity 0.16s ease;
         }
 
         .links a:hover {
             border-color: var(--site-nav-link-top-border, var(--border));
             background: var(--site-nav-link-top-hover-bg, #fff);
             color: var(--site-nav-link-top-hover, #0f172a);
+            opacity: 1;
         }
 
         .site-nav.is-solid .links a {
@@ -302,12 +347,15 @@
         }
 
         .cb-breadcrumb-shell {
-            margin-top: 0.9rem;
-            margin-bottom: 1.25rem;
+            margin-top: 0.65rem;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 2;
         }
 
         .page-nav-overlay .cb-breadcrumb-shell {
-            margin-top: calc(82px + 0.9rem);
+            margin-top: calc(82px + 0.55rem);
+            margin-bottom: -1.05rem;
         }
 
         .cb-breadcrumbs {
@@ -426,6 +474,21 @@
             border-color: var(--border);
             background: #f8fafc;
             color: #111827;
+        }
+
+        @media (max-width: 520px) {
+            .cb-action-row {
+                align-items: stretch;
+            }
+
+            .cb-editorial-action {
+                width: 100%;
+            }
+
+            .page-nav-overlay .cb-breadcrumb-shell {
+                margin-top: calc(82px + 0.45rem);
+                margin-bottom: -0.7rem;
+            }
         }
 
         ul.errorlist {
@@ -595,6 +658,7 @@
                         {% if user.is_authenticated %}
                         {% include 'professionals/_portal_top_nav.html' with profile=profile %}
                         {% else %}
+                        <a href="{% url 'pages:about' %}">About</a>
                         <a href="{% url 'catalog:marketplace' %}">Discover</a>
                         <a href="{% url 'waitlist:landing' %}">Join Waitlist</a>
                         {% endif %}
@@ -650,6 +714,8 @@
                     New Booking
                     {% elif current_route == 'terms' %}
                     Help
+                    {% elif current_route == 'about' %}
+                    About
                     {% elif current_route == 'privacy' %}
                     Privacy
                     {% elif current_route == 'gdpr_export' %}

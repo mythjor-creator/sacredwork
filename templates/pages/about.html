@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}About Clairbook{% endblock %}
+
+{% block body_class %}page-nav-overlay{% endblock %}
+
+{% block extra_head %}
+<meta name="description"
+    content="About Clairbook: a marketplace for intuitive, holistic, and practical practitioners across sacred beauty, wellness, coaching, and spiritual modalities.">
+<style>
+    body {
+        --wl-green: #374442;
+        --wl-green-strong: #2c3735;
+        --site-nav-top-bg: rgba(55, 68, 66, 0.96);
+        --site-nav-top-border: rgba(175, 235, 243, 0.28);
+        --site-nav-link-top: #D4EDF0;
+        --site-nav-link-top-border: rgba(175, 235, 243, 0.4);
+        --site-nav-link-top-hover-bg: rgba(175, 235, 243, 0.12);
+        --site-nav-link-top-hover: #ffffff;
+        --site-nav-solid-bg: rgba(55, 68, 66, 0.96);
+        --site-nav-solid-border: rgba(175, 235, 243, 0.2);
+        --site-nav-link-solid: #D4EDF0;
+        --site-nav-link-solid-border: rgba(175, 235, 243, 0.35);
+        --site-nav-link-solid-hover-bg: rgba(175, 235, 243, 0.14);
+        --site-nav-link-solid-hover: #ffffff;
+        --site-nav-brand-color: #D4EDF0;
+        --site-nav-solid-brand-color: #D4EDF0;
+        background: #ebe4da;
+    }
+
+    .about-hero {
+        background: var(--wl-green);
+        color: #D4EDF0;
+        border-bottom: 1px solid rgba(175, 235, 243, 0.26);
+        padding: calc(82px + 1.5rem) 0 clamp(2.3rem, 5vw, 4rem);
+    }
+
+    .about-hero-crumb {
+        margin: 0 0 1.3rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(175, 235, 243, 0.28);
+        color: rgba(212, 237, 240, 0.85);
+    }
+
+    .about-hero-crumb a {
+        color: rgba(212, 237, 240, 0.82);
+    }
+
+    .about-hero-crumb a:hover {
+        color: #ffffff;
+    }
+
+    .about-shell {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 var(--page-gutter);
+    }
+
+    .about-hero h1 {
+        margin: 0.5rem 0 0;
+        max-width: 22ch;
+        font: 400 clamp(2.5rem, 7vw, 5.8rem)/0.95 var(--font-serif);
+    }
+
+    .about-hero p {
+        margin: 1rem 0 0;
+        max-width: 60ch;
+        color: rgba(212, 237, 240, 0.9);
+        line-height: 1.7;
+    }
+
+    .about-main {
+        padding: clamp(2.2rem, 4vw, 4.5rem) 0 4.5rem;
+    }
+
+    .about-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .about-card {
+        border-radius: 20px;
+        border: 1px solid rgba(31, 32, 34, 0.08);
+        background: rgba(255, 255, 255, 0.78);
+        box-shadow: 0 16px 34px rgba(18, 24, 32, 0.07);
+        padding: 1.15rem 1.2rem;
+    }
+
+    .about-card h2 {
+        margin: 0;
+        color: var(--headline);
+        font: 400 clamp(1.4rem, 2.4vw, 2rem)/1.05 var(--font-serif);
+    }
+
+    .about-card p {
+        margin: 0.75rem 0 0;
+        color: #41505c;
+        line-height: 1.65;
+    }
+
+    .about-list {
+        margin: 0.8rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.55rem;
+    }
+
+    .about-list li {
+        color: #334452;
+        line-height: 1.5;
+        padding-left: 1.15rem;
+        position: relative;
+    }
+
+    .about-list li::before {
+        content: "\2726";
+        position: absolute;
+        left: 0;
+        color: #4b628b;
+    }
+
+    .about-chip-list {
+        margin: 0.9rem 0 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .about-chip-list li {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        border: 1px solid rgba(47, 72, 174, 0.12);
+        background: rgba(255, 255, 255, 0.86);
+        padding: 0.34rem 0.64rem;
+        color: #344a59;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .about-cta {
+        margin-top: 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+
+    .about-cta a {
+        margin-top: 0;
+    }
+
+    .about-cta .button {
+        background: #afebf3;
+        color: #2f3610;
+        border-color: transparent;
+        border-radius: 999px;
+        padding: 0.75rem 1.3rem;
+    }
+
+    .about-cta .button:hover {
+        background: #d2f4f9;
+        color: #1e2808;
+    }
+
+    .about-cta .cb-chip-button {
+        background: transparent;
+        border-color: rgba(71, 76, 22, 0.35);
+        color: #2f3610;
+        border-radius: 999px;
+        padding: 0.68rem 1.15rem;
+    }
+
+    .about-cta .cb-chip-button:hover {
+        background: rgba(71, 76, 22, 0.08);
+        border-color: rgba(71, 76, 22, 0.55);
+        color: #1e2808;
+    }
+
+    @media (max-width: 860px) {
+        .about-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+    <div class="about-shell">
+        <nav class="cb-breadcrumbs about-hero-crumb" aria-label="Breadcrumb">
+            <a href="{% url 'catalog:home' %}">Home</a>
+            <span aria-hidden="true">/</span>
+            <span class="cb-breadcrumb-current">About</span>
+        </nav>
+        <p class="cb-eyebrow" style="color: rgba(212, 237, 240, 0.82);">About Clairbook</p>
+        <h1>A marketplace for practitioners who work in many languages.</h1>
+        <p>"Clair" comes from the clairs: clairvoyant, clairaudient, clairsentient, and beyond. Clairbook honors
+            intuitive traditions while welcoming grounded, practical approaches. We believe people should be able to
+            find support that fits their worldview without being forced into someone else's categories.</p>
+    </div>
+</section>
+
+<section class="about-main">
+    <div class="about-shell about-grid">
+        <article class="about-card">
+            <h2>Who belongs here</h2>
+            <p>Practitioners across sacred, holistic, and practical disciplines are welcome. If your work helps people
+                heal, grow, regulate, process, integrate, or reconnect, Clairbook is built for you.</p>
+            <ul class="about-chip-list" aria-label="Examples of practitioner modalities">
+                <li>Sacred beauty</li>
+                <li>Holistic wellness</li>
+                <li>Tarot readers</li>
+                <li>Astrologers</li>
+                <li>Lightworkers</li>
+                <li>Somatic practitioners</li>
+                <li>Integrative coaches</li>
+                <li>Practical mindset support</li>
+            </ul>
+            <p>No one needs to frame their practice as overtly spiritual to be included. Clairbook is intentionally
+                plural: mystical, practical, evidence-informed, and intuitive work can coexist here with clarity and
+                respect.</p>
+        </article>
+
+        <article class="about-card">
+            <h2>What makes Clairbook different</h2>
+            <ul class="about-list">
+                <li>Profiles are designed for nuance, not just labels.</li>
+                <li>Service pages communicate delivery format, context, and pricing clearly.</li>
+                <li>Clients can discover fit through values and approach, not only by category.</li>
+                <li>Practitioners can publish in their own voice.</li>
+            </ul>
+            <div class="about-cta">
+                <a class="button" href="{% url 'waitlist:landing' %}">Join practitioner waitlist</a>
+                <a class="cb-chip-button" href="{% url 'catalog:marketplace' %}">Explore marketplace</a>
+            </div>
+        </article>
+    </div>
+</section>
+{% endblock %}

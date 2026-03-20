@@ -3,12 +3,25 @@
 {% block content %}
 <section class="card">
     <h1>Create your account</h1>
-    <p class="hint">Choose Professional if you want to offer services on clairbook.</p>
+    {% if not is_booking_flow %}<p class="hint">Choose Professional if you want to offer services on clairbook.</p>{%
+    endif %}
     <form method="post">
         {% csrf_token %}
+        {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+        {% if is_booking_flow %}
+        {# For booking flow, hide role field and pre-fill as client #}
+        {{ form.username }}
+        {{ form.display_name }}
+        {{ form.email }}
+        {{ form.password1 }}
+        {{ form.password2 }}
+        <input type="hidden" name="role" value="client">
+        {% else %}
         {{ form.as_p }}
+        {% endif %}
         <button type="submit">Create account</button>
     </form>
-    <p class="hint">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>.</p>
+    <p class="hint">Already have an account? <a
+            href="{% url 'accounts:login' %}{% if next %}?next={{ next|urlencode }}{% endif %}">Log in</a>.</p>
 </section>
 {% endblock %}

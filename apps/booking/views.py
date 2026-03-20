@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 from django.utils import timezone
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -21,6 +22,10 @@ from .payments import (
 	process_stripe_webhook,
 )
 from .services import create_booking, generate_service_slots, transition_booking
+from .holds import acquire_hold, release_hold, cleanup_expired_holds
+
+
+GUEST_BOOKING_SESSION_KEY = 'pending_guest_booking'
 
 
 @login_required
@@ -54,7 +59,6 @@ def availability_list_view(request):
 	)
 
 
-@login_required
 def booking_create_view(request, service_id):
 	service = get_object_or_404(
 		Service.objects.select_related('professional', 'category'),
@@ -64,33 +68,55 @@ def booking_create_view(request, service_id):
 		professional__is_visible=True,
 	)
 
-	if request.user.role != User.Role.CLIENT:
+	if request.user.is_authenticated and request.user.role != User.Role.CLIENT:
 		return redirect('accounts:dashboard')
 
 	slots = generate_service_slots(service)
 	if request.method == 'POST':
 		form = BookingRequestForm(request.POST, slots=slots)
 		if form.is_valid():
+			start_at = form.cleaned_data['start_at']
+			intake_notes = form.cleaned_data['intake_notes']
+			
+			if not request.user.is_authenticated:
+				request.session[GUEST_BOOKING_SESSION_KEY] = {
+					'service_id': service.pk,
+					'start_at': start_at.isoformat(),
+					'intake_notes': intake_notes,
+				}
+				signup_url = f"{reverse('accounts:signup')}?next={reverse('booking:guest_resume')}"
+				return redirect(signup_url)
+
 			try:
+				# Acquire hold on slot (prevents concurrent bookings)
+				hold = acquire_hold(
+					client=request.user,
+					professional=service.professional,
+					service=service,
+					start_at=start_at,
+				)
+				
 				if payment_gateway_enabled():
 					checkout_url = create_booking_checkout_session(
 						request,
 						client=request.user,
 						service=service,
-						start_at=form.cleaned_data['start_at'],
-						intake_notes=form.cleaned_data['intake_notes'],
+						start_at=start_at,
+						intake_notes=intake_notes,
 					)
 					return redirect(checkout_url)
 
 				if settings.BOOKING_REQUIRE_PAYMENT:
+					release_hold(service.professional, start_at)
 					form.add_error(None, 'Payments are temporarily unavailable. Please try again shortly.')
 				else:
 					create_booking(
 						client=request.user,
 						service=service,
-						start_at=form.cleaned_data['start_at'],
-						intake_notes=form.cleaned_data['intake_notes'],
+						start_at=start_at,
+						intake_notes=intake_notes,
 					)
+					release_hold(service.professional, start_at)
 					messages.warning(
 						request,
 						'Payment gateway is not configured; booking request was created without payment.',
@@ -99,7 +125,14 @@ def booking_create_view(request, service_id):
 			except ValueError as exc:
 				form.add_error('slot', str(exc))
 			except stripe.error.StripeError:
+				release_hold(service.professional, start_at)
 				form.add_error(None, 'We could not start checkout. Please try again.')
+			except Exception as exc:
+				# Slot already held or other error
+				if 'unique_professional_hold_slot' in str(exc):
+					form.add_error('slot', 'This slot was just booked. Please choose another time.')
+				else:
+					form.add_error('slot', str(exc))
 	else:
 		form = BookingRequestForm(slots=slots)
 
@@ -114,6 +147,105 @@ def booking_create_view(request, service_id):
 			'payments_enabled': payment_gateway_enabled(),
 		},
 	)
+
+
+@login_required
+def booking_guest_resume_view(request):
+	pending = request.session.get(GUEST_BOOKING_SESSION_KEY)
+	if not pending:
+		messages.info(request, 'No pending booking was found. Please choose a time and try again.')
+		return redirect('catalog:marketplace')
+
+	if request.user.role != User.Role.CLIENT:
+		messages.error(request, 'Please use a client account to complete booking.')
+		return redirect('accounts:dashboard')
+
+	service = get_object_or_404(
+		Service.objects.select_related('professional', 'category'),
+		pk=pending.get('service_id'),
+		is_active=True,
+		professional__approval_status='approved',
+		professional__is_visible=True,
+	)
+
+	start_at_raw = pending.get('start_at', '')
+	intake_notes = pending.get('intake_notes', '')
+	if not start_at_raw:
+		messages.error(request, 'Your selected time is missing. Please pick a slot again.')
+		return redirect('booking:create', service_id=service.pk)
+
+	try:
+		start_at = timezone.datetime.fromisoformat(start_at_raw)
+		if timezone.is_naive(start_at):
+			start_at = timezone.make_aware(start_at, timezone.get_current_timezone())
+	except ValueError:
+		messages.error(request, 'Your selected time could not be read. Please pick a slot again.')
+		return redirect('booking:create', service_id=service.pk)
+
+	try:
+		# Acquire hold on slot (prevents concurrent bookings)
+		hold = acquire_hold(
+			client=request.user,
+			professional=service.professional,
+			service=service,
+			start_at=start_at,
+		)
+		
+		if payment_gateway_enabled():
+			checkout_url = create_booking_checkout_session(
+				request,
+				client=request.user,
+				service=service,
+				start_at=start_at,
+				intake_notes=intake_notes,
+			)
+			request.session.pop(GUEST_BOOKING_SESSION_KEY, None)
+			return redirect(checkout_url)
+
+		if settings.BOOKING_REQUIRE_PAYMENT:
+			release_hold(service.professional, start_at)
+			messages.error(request, 'Payments are temporarily unavailable. Please try again shortly.')
+			return redirect('booking:create', service_id=service.pk)
+
+		create_booking(
+			client=request.user,
+			service=service,
+			start_at=start_at,
+			intake_notes=intake_notes,
+		)
+		request.session.pop(GUEST_BOOKING_SESSION_KEY, None)
+		release_hold(service.professional, start_at)
+		messages.warning(
+			request,
+			'Payment gateway is not configured; booking request was created without payment.',
+		)
+		return redirect('booking:list')
+	except ValueError as exc:
+		messages.error(request, str(exc))
+		return redirect('booking:create', service_id=service.pk)
+	except stripe.error.StripeError:
+		release_hold(service.professional, start_at)
+		messages.error(request, 'We could not start checkout. Please try again.')
+		return redirect('booking:create', service_id=service.pk)
+
+		create_booking(
+			client=request.user,
+			service=service,
+			start_at=start_at,
+			intake_notes=intake_notes,
+		)
+		request.session.pop(GUEST_BOOKING_SESSION_KEY, None)
+		messages.warning(
+			request,
+			'Payment gateway is not configured; booking request was created without payment.',
+		)
+		return redirect('booking:list')
+	except ValueError as exc:
+		messages.error(request, str(exc))
+		return redirect('booking:create', service_id=service.pk)
+	except stripe.error.StripeError:
+		messages.error(request, 'We could not start checkout. Please try again.')
+		return redirect('booking:create', service_id=service.pk)
 
 
 @login_required

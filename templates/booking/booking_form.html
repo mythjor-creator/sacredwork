@@ -118,10 +118,25 @@
             submitted.</p>
         {% endif %}
 
+        {% if user.is_authenticated %}
+        <p class="hint"
+            style="background: #e8f4f8; padding: 0.7rem 0.85rem; border-radius: 8px; border-left: 3px solid #2f48ae; margin: 0.95rem 0;">
+            Logged in as <strong>{{ user.display_name }}</strong>. <a href="{% url 'accounts:login' %}"
+                style="color: #2f48ae;">Switch account</a>?
+        </p>
+        {% else %}
+        <p class="hint"
+            style="background: #f0f5f9; padding: 0.7rem 0.85rem; border-radius: 8px; border-left: 3px solid #2f48ae; margin: 0.95rem 0;">
+            Already have an account? <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}"
+                style="color: #2f48ae; font-weight: 600;">Log in here</a> to proceed.
+        </p>
+        {% endif %}
+
         <form class="booking-form" method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <button class="booking-submit" type="submit">{% if payments_enabled %}Continue to secure checkout{% else
+            <button class="booking-submit" type="submit">{% if requires_account_to_submit %}Continue to final step{%
+                elif payments_enabled %}Continue to secure checkout{% else
                 %}Request booking{% endif %}</button>
         </form>
     </article>
