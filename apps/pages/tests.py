@@ -5,6 +5,7 @@ from django.contrib.auth import get_user_model
 from datetime import timedelta
 
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
+from apps.professionals.models import ProfessionalProfile
 from apps.pages.models import EmailVerificationToken, GDPRDataExportLog, GDPRAccountDeletionLog
 
 User = get_user_model()
@@ -58,6 +59,30 @@ class PrivacyTermsPages(TestCase):
         self.assertContains(response, 'href="/waitlist/?tier=basic#waitlist-profile"', html=False)
         self.assertContains(response, 'href="/waitlist/?tier=featured#waitlist-profile"', html=False)
         self.assertContains(response, 'href="/waitlist/?tier=founding#waitlist-profile"', html=False)
+
+    @override_settings(PRACTITIONER_BILLING_ENABLED=True)
+    def test_pricing_routes_professional_with_profile_to_billing(self):
+        professional_user = User.objects.create_user(
+            username='pricing-pro',
+            email='pricing-pro@example.com',
+            password='TestPass123!!',
+            role=User.Role.PROFESSIONAL,
+        )
+        ProfessionalProfile.objects.create(
+            user=professional_user,
+            business_name='Pricing Pro Studio',
+            headline='Pricing profile',
+            bio='Professional profile for pricing route test.',
+            modalities='coaching',
+        )
+        self.client.force_login(professional_user)
+
+        response = self.client.get(reverse('pages:pricing'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="/billing/?plan=basic-monthly"', html=False)
+        self.assertContains(response, 'href="/billing/?plan=featured-monthly"', html=False)
+        self.assertContains(response, 'href="/billing/?plan=founding-annual"', html=False)
 
     def test_privacy_policy_renders(self):
         response = self.client.get(reverse('pages:privacy'))

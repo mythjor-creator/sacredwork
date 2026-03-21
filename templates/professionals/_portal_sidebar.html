@@ -28,6 +28,10 @@
             <span class="portal-nav-emoji" aria-hidden="true">HR</span>
             <span class="portal-nav-label">Hours</span>
         </a>
+        <a href="{% url 'billing:overview' %}" class="{% if active_portal_nav == 'billing' %}is-active{% endif %}">
+            <span class="portal-nav-emoji" aria-hidden="true">BL</span>
+            <span class="portal-nav-label">Billing</span>
+        </a>
         <a href="{% url 'accounts:settings' %}" class="{% if active_portal_nav == 'account' %}is-active{% endif %}">
             <span class="portal-nav-emoji" aria-hidden="true">AC</span>
             <span class="portal-nav-label">Account settings</span>

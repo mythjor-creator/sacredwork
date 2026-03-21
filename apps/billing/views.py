@@ -11,10 +11,13 @@ import stripe
 from apps.accounts.models import User
 
 from .payments import (
+    available_practitioner_plans,
     create_billing_portal_session,
     create_practitioner_checkout_session,
+    default_plan_code_for_profile,
     practitioner_billing_enabled,
     process_billing_webhook,
+    resolve_subscription_plan,
 )
 
 
@@ -31,6 +34,13 @@ def billing_overview_view(request):
         return redirect('professionals:onboarding')
 
     subscription = getattr(profile, 'subscription', None)
+    selected_plan_code = (request.GET.get('plan') or '').strip() or default_plan_code_for_profile(profile)
+    available_plans = available_practitioner_plans()
+    try:
+        selected_plan = resolve_subscription_plan(selected_plan_code)
+    except ValueError:
+        selected_plan = available_plans.first()
+        selected_plan_code = selected_plan.code if selected_plan else ''
 
     can_start_checkout = (
         practitioner_billing_enabled()
@@ -54,6 +64,9 @@ def billing_overview_view(request):
             'billing_enabled': practitioner_billing_enabled(),
             'can_start_checkout': can_start_checkout,
             'can_manage_portal': can_manage_portal,
+            'available_plans': available_plans,
+            'selected_plan': selected_plan,
+            'selected_plan_code': selected_plan_code,
         },
     )
 
@@ -70,8 +83,10 @@ def billing_checkout_start_view(request):
     if profile is None:
         return redirect('professionals:onboarding')
 
+    selected_plan_code = (request.POST.get('plan_code') or '').strip() or None
+
     try:
-        checkout_url = create_practitioner_checkout_session(request, profile)
+        checkout_url = create_practitioner_checkout_session(request, profile, plan_code=selected_plan_code)
     except ValueError as exc:
         messages.error(request, str(exc))
         return redirect('billing:overview')

@@ -7,6 +7,7 @@ from django.urls import reverse
 
 from apps.accounts.models import User
 from apps.professionals.models import ProfessionalProfile
+from apps.waitlist.models import PractitionerWaitlistProfile
 
 from .models import BillingWebhookEvent, ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 from .payments import sync_subscription_from_stripe
@@ -46,6 +47,9 @@ class BillingOverviewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, profile.display_name)
         self.assertContains(response, 'Prelaunch Access')
+        self.assertContains(response, 'Basic Practitioner Monthly')
+        self.assertContains(response, 'Featured Practitioner Monthly')
+        self.assertContains(response, 'Founding Practitioner Annual')
 
 
 class BillingCheckoutTests(TestCase):
@@ -64,10 +68,18 @@ class BillingCheckoutTests(TestCase):
             modalities='coaching',
             subscription_status=ProfessionalProfile.SubscriptionStatus.PRELAUNCH,
         )
-        self.plan = SubscriptionPlan.objects.get(code='founding-annual')
-        self.plan.stripe_price_id = 'price_founding_123'
-        self.plan.is_active = True
-        self.plan.save(update_fields=['stripe_price_id', 'is_active', 'updated_at'])
+        self.basic_plan = SubscriptionPlan.objects.get(code='basic-monthly')
+        self.featured_plan = SubscriptionPlan.objects.get(code='featured-monthly')
+        self.founding_plan = SubscriptionPlan.objects.get(code='founding-annual')
+        self.basic_plan.stripe_price_id = 'price_basic_123'
+        self.featured_plan.stripe_price_id = 'price_featured_123'
+        self.founding_plan.stripe_price_id = 'price_founding_123'
+        self.basic_plan.is_active = True
+        self.featured_plan.is_active = True
+        self.founding_plan.is_active = True
+        self.basic_plan.save(update_fields=['stripe_price_id', 'is_active', 'updated_at'])
+        self.featured_plan.save(update_fields=['stripe_price_id', 'is_active', 'updated_at'])
+        self.founding_plan.save(update_fields=['stripe_price_id', 'is_active', 'updated_at'])
 
     @override_settings(PRACTITIONER_BILLING_ENABLED=False)
     def test_checkout_start_requires_billing_enabled(self):
@@ -87,12 +99,40 @@ class BillingCheckoutTests(TestCase):
         )
         self.client.force_login(self.user)
 
-        response = self.client.post(reverse('billing:checkout_start'))
+        response = self.client.post(reverse('billing:checkout_start'), {'plan_code': 'basic-monthly'})
 
         self.assertRedirects(response, 'https://checkout.stripe.com/c/pay/cs_test_prof_123', fetch_redirect_response=False)
         subscription = ProfessionalSubscription.objects.get(professional=self.profile)
         self.assertEqual(subscription.status, ProfessionalSubscription.Status.PENDING_LAUNCH)
-        self.assertEqual(subscription.plan.code, 'founding-annual')
+        self.assertEqual(subscription.plan.code, 'basic-monthly')
+        self.assertFalse(subscription.founding_member_rate_locked)
+        self.assertEqual(mock_checkout_create.call_args.kwargs['line_items'], [{'price': 'price_basic_123', 'quantity': 1}])
+        self.assertEqual(mock_checkout_create.call_args.kwargs['subscription_data'], {'trial_period_days': 60})
+
+    @override_settings(PRACTITIONER_BILLING_ENABLED=True, STRIPE_SECRET_KEY='sk_test_123')
+    @patch('apps.billing.payments.stripe.checkout.Session.create')
+    def test_checkout_start_defaults_from_waitlist_signup_tier(self, mock_checkout_create):
+        mock_checkout_create.return_value = SimpleNamespace(
+            id='cs_test_prof_456',
+            url='https://checkout.stripe.com/c/pay/cs_test_prof_456',
+        )
+        PractitionerWaitlistProfile.objects.create(
+            full_name='Checkout Pro',
+            email=self.user.email,
+            headline='Featured practitioner',
+            modalities='coaching',
+            practice_type=PractitionerWaitlistProfile.PracticeType.COACHING,
+            signup_tier=PractitionerWaitlistProfile.SignupTier.FEATURED,
+        )
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse('billing:checkout_start'))
+
+        self.assertRedirects(response, 'https://checkout.stripe.com/c/pay/cs_test_prof_456', fetch_redirect_response=False)
+        subscription = ProfessionalSubscription.objects.get(professional=self.profile)
+        self.assertEqual(subscription.plan.code, 'featured-monthly')
+        self.assertEqual(mock_checkout_create.call_args.kwargs['line_items'], [{'price': 'price_featured_123', 'quantity': 1}])
+        self.assertEqual(mock_checkout_create.call_args.kwargs['subscription_data'], {'trial_period_days': 60})
 
     @override_settings(PRACTITIONER_BILLING_ENABLED=True, STRIPE_SECRET_KEY='sk_test_123')
     @patch('apps.billing.payments.stripe.billing_portal.Session.create')
@@ -103,7 +143,7 @@ class BillingCheckoutTests(TestCase):
         )
         ProfessionalSubscription.objects.create(
             professional=self.profile,
-            plan=self.plan,
+            plan=self.founding_plan,
             status=ProfessionalSubscription.Status.ACTIVE,
             stripe_customer_id='cus_portal_123',
             stripe_subscription_id='sub_portal_123',

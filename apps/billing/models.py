@@ -3,6 +3,7 @@ from django.db import models
 
 class SubscriptionPlan(models.Model):
     class BillingInterval(models.TextChoices):
+        MONTH = 'month', 'Monthly'
         YEAR = 'year', 'Yearly'
 
     code = models.SlugField(max_length=50, unique=True)
@@ -25,6 +26,10 @@ class SubscriptionPlan(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def amount_display(self) -> str:
+        return f'{self.amount_cents / 100:.2f}'
 
 
 class ProfessionalSubscription(models.Model):

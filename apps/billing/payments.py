@@ -8,6 +8,7 @@ from django.utils import timezone
 import stripe
 
 from apps.professionals.models import ProfessionalProfile
+from apps.waitlist.models import PractitionerWaitlistProfile
 
 from .models import BillingWebhookEvent, ProfessionalSubscription, SubscriptionInvoice, SubscriptionPlan
 
@@ -15,8 +16,61 @@ from .models import BillingWebhookEvent, ProfessionalSubscription, SubscriptionI
 logger = logging.getLogger(__name__)
 
 
+PLAN_PRICE_SETTING_BY_CODE = {
+    'basic-monthly': 'STRIPE_PRO_BASIC_PRICE_ID',
+    'featured-monthly': 'STRIPE_PRO_FEATURED_PRICE_ID',
+    'founding-annual': 'STRIPE_PRO_FOUNDING_PRICE_ID',
+}
+
+DEFAULT_PLAN_CODE_BY_TIER = {
+    PractitionerWaitlistProfile.SignupTier.FREE: 'basic-monthly',
+    PractitionerWaitlistProfile.SignupTier.BASIC: 'basic-monthly',
+    PractitionerWaitlistProfile.SignupTier.FEATURED: 'featured-monthly',
+    PractitionerWaitlistProfile.SignupTier.FOUNDING: 'founding-annual',
+}
+
+
 def practitioner_billing_enabled() -> bool:
     return bool(getattr(settings, 'PRACTITIONER_BILLING_ENABLED', False))
+
+
+def available_practitioner_plans():
+    return SubscriptionPlan.objects.filter(is_active=True).order_by('display_order', 'amount_cents', 'name')
+
+
+def default_plan_code_for_profile(profile: ProfessionalProfile) -> str:
+    subscription = getattr(profile, 'subscription', None)
+    if subscription and subscription.plan_id and subscription.plan and subscription.plan.is_active:
+        return subscription.plan.code
+
+    email = (profile.user.email or '').strip()
+    if email:
+        waitlist_profile = (
+            PractitionerWaitlistProfile.objects.filter(email__iexact=email)
+            .order_by('-created_at')
+            .first()
+        )
+        if waitlist_profile is not None:
+            return DEFAULT_PLAN_CODE_BY_TIER.get(waitlist_profile.signup_tier, 'basic-monthly')
+
+    return 'basic-monthly'
+
+
+def resolve_subscription_plan(plan_code: str | None) -> SubscriptionPlan:
+    normalized_code = (plan_code or '').strip() or 'basic-monthly'
+    plan = SubscriptionPlan.objects.filter(code=normalized_code, is_active=True).first()
+    if plan is None:
+        raise ValueError('Selected billing plan is not configured.')
+    return plan
+
+
+def stripe_price_id_for_plan(plan: SubscriptionPlan) -> str:
+    setting_name = PLAN_PRICE_SETTING_BY_CODE.get(plan.code, '')
+    if setting_name:
+        configured = getattr(settings, setting_name, '').strip()
+        if configured:
+            return configured
+    return (plan.stripe_price_id or '').strip()
 
 
 def sync_subscription_from_stripe(subscription: ProfessionalSubscription) -> bool:
@@ -73,33 +127,36 @@ def sync_subscription_from_stripe(subscription: ProfessionalSubscription) -> boo
     return True
 
 
-def create_practitioner_checkout_session(request, profile: ProfessionalProfile) -> str:
+def create_practitioner_checkout_session(request, profile: ProfessionalProfile, *, plan_code: str | None = None) -> str:
     if not practitioner_billing_enabled():
         raise ValueError('Practitioner billing is not enabled.')
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
-    plan = SubscriptionPlan.objects.filter(code='founding-annual', is_active=True).first()
-    if plan is None:
-        raise ValueError('Founding annual plan is not configured.')
-
-    price_id = getattr(settings, 'STRIPE_PRO_FOUNDING_PRICE_ID', '').strip() or plan.stripe_price_id
+    plan = resolve_subscription_plan(plan_code or default_plan_code_for_profile(profile))
+    price_id = stripe_price_id_for_plan(plan)
     if not price_id:
-        raise ValueError('No Stripe price is configured for founding practitioner billing.')
+        raise ValueError(f'No Stripe price is configured for the {plan.name} plan.')
 
     subscription, _ = ProfessionalSubscription.objects.get_or_create(
         professional=profile,
         defaults={
             'plan': plan,
             'status': ProfessionalSubscription.Status.PENDING_LAUNCH,
+            'founding_member_rate_locked': plan.founding_only,
         },
     )
-    if subscription.plan_id != plan.id:
+    if subscription.plan_id != plan.id or subscription.founding_member_rate_locked != plan.founding_only:
         subscription.plan = plan
-        subscription.save(update_fields=['plan', 'updated_at'])
+        subscription.founding_member_rate_locked = plan.founding_only
+        subscription.save(update_fields=['plan', 'founding_member_rate_locked', 'updated_at'])
 
     success_url = request.build_absolute_uri('/billing/checkout/success/')
     cancel_url = request.build_absolute_uri('/billing/checkout/cancel/')
+
+    subscription_data = {}
+    if plan.billing_interval == SubscriptionPlan.BillingInterval.MONTH and not plan.founding_only:
+        subscription_data['trial_period_days'] = 60
 
     session = stripe.checkout.Session.create(
         mode='subscription',
@@ -108,9 +165,11 @@ def create_practitioner_checkout_session(request, profile: ProfessionalProfile) 
         metadata={
             'professional_profile_id': str(profile.pk),
             'professional_subscription_id': str(subscription.pk),
+            'subscription_plan_code': plan.code,
         },
         success_url=f'{success_url}?session_id={{CHECKOUT_SESSION_ID}}',
         cancel_url=cancel_url,
+        subscription_data=subscription_data or None,
     )
 
     return session.url
@@ -229,6 +288,7 @@ def _handle_checkout_completed(session):
     metadata = session.get('metadata') or {}
     subscription_id = metadata.get('professional_subscription_id')
     profile_id = metadata.get('professional_profile_id')
+    plan_code = (metadata.get('subscription_plan_code') or '').strip()
     stripe_subscription_id = session.get('subscription') or ''
     stripe_customer_id = session.get('customer') or ''
 
@@ -241,9 +301,14 @@ def _handle_checkout_completed(session):
         if subscription is None or profile is None:
             return
 
+        selected_plan = SubscriptionPlan.objects.filter(code=plan_code).first() if plan_code else None
+
         subscription.status = ProfessionalSubscription.Status.ACTIVE
         subscription.stripe_subscription_id = stripe_subscription_id or subscription.stripe_subscription_id
         subscription.stripe_customer_id = stripe_customer_id or subscription.stripe_customer_id
+        if selected_plan is not None:
+            subscription.plan = selected_plan
+            subscription.founding_member_rate_locked = selected_plan.founding_only
         if subscription.activated_at is None:
             subscription.activated_at = timezone.now()
         subscription.save(
@@ -251,6 +316,8 @@ def _handle_checkout_completed(session):
                 'status',
                 'stripe_subscription_id',
                 'stripe_customer_id',
+                'plan',
+                'founding_member_rate_locked',
                 'activated_at',
                 'updated_at',
             ]

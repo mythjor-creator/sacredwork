@@ -10,6 +10,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
 from apps.accounts.models import User
+from apps.billing.payments import practitioner_billing_enabled
 from .forms import ReportProblemForm
 from .models import EmailVerificationToken, GDPRDataExportLog, GDPRAccountDeletionLog
 
@@ -57,6 +58,12 @@ def pricing_view(request):
     """Render public pricing page for practitioner tiers."""
     site_base_url = request.build_absolute_uri('/').rstrip('/')
     current_absolute_url = request.build_absolute_uri()
+    professional_checkout_enabled = (
+        request.user.is_authenticated
+        and request.user.role == User.Role.PROFESSIONAL
+        and hasattr(request.user, 'professional_profile')
+        and practitioner_billing_enabled()
+    )
     pricing_tiers = [
         {
             'eyebrow': 'Basic practitioner',
@@ -70,7 +77,7 @@ def pricing_view(request):
                 'Access to account tools and profile editing',
             ],
             'cta_label': 'Start basic signup',
-            'cta_href': '/waitlist/?tier=basic#waitlist-profile',
+            'cta_href': '/billing/?plan=basic-monthly' if professional_checkout_enabled else '/waitlist/?tier=basic#waitlist-profile',
             'is_featured': False,
         },
         {
@@ -85,7 +92,7 @@ def pricing_view(request):
                 'More prominent positioning for clients browsing your category',
             ],
             'cta_label': 'Start featured signup',
-            'cta_href': '/waitlist/?tier=featured#waitlist-profile',
+            'cta_href': '/billing/?plan=featured-monthly' if professional_checkout_enabled else '/waitlist/?tier=featured#waitlist-profile',
             'is_featured': True,
         },
         {
@@ -100,7 +107,7 @@ def pricing_view(request):
                 'Reserved access for the first 100 founding practitioners',
             ],
             'cta_label': 'Claim founding access',
-            'cta_href': '/waitlist/?tier=founding#waitlist-profile',
+            'cta_href': '/billing/?plan=founding-annual' if professional_checkout_enabled else '/waitlist/?tier=founding#waitlist-profile',
             'is_featured': False,
         },
     ]

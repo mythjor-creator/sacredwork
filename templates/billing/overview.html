@@ -2,33 +2,153 @@
 
 {% block title %}Billing | Clairbook{% endblock %}
 
+{% block top_nav_links %}
+{% if profile %}
+{% include 'professionals/_portal_top_nav.html' with profile=profile %}
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    body {
+        background: var(--figma-beige);
+    }
+
+    .billing-shell {
+        padding-top: 1.5rem;
+        padding-bottom: 4rem;
+    }
+
+    .billing-main {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .billing-plan-grid {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .billing-plan-option {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.8rem;
+        align-items: start;
+        padding: 1rem;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.82);
+    }
+
+    .billing-plan-option input {
+        width: auto;
+        margin-top: 0.15rem;
+    }
+
+    .billing-plan-copy strong,
+    .billing-current-plan strong {
+        display: block;
+        color: var(--headline);
+        font-size: 1.05rem;
+    }
+
+    .billing-plan-copy p,
+    .billing-current-plan p {
+        margin: 0.3rem 0 0;
+        color: #53606c;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<section class="section">
-    <div class="container" style="max-width: 52rem;">
-        <h1>Billing</h1>
-        <p>{{ profile.display_name }}</p>
-        <p>Subscription status: {{ profile.get_subscription_status_display }}</p>
-        {% if not billing_enabled %}
-        <p><strong>Billing checkout is disabled right now.</strong> We are still in prelaunch mode.</p>
-        {% endif %}
-        {% if subscription %}
-        <p>Plan: {{ subscription.plan|default:'Founding plan pending assignment' }}</p>
-        <p>Subscription record status: {{ subscription.get_status_display }}</p>
-        {% else %}
-        <p>No Stripe subscription has been created yet.</p>
-        {% endif %}
-        {% if can_start_checkout %}
-        <form method="post" action="{% url 'billing:checkout_start' %}" style="margin-top: 1rem;">
-            {% csrf_token %}
-            <button type="submit" class="button">Start subscription checkout</button>
-        </form>
-        {% endif %}
-        {% if can_manage_portal %}
-        <form method="post" action="{% url 'billing:portal_start' %}" style="margin-top: 0.75rem;">
-            {% csrf_token %}
-            <button type="submit" class="button">Manage billing</button>
-        </form>
-        {% endif %}
+<div class="shell billing-shell">
+    <div id="practitioner-billing-portal" class="portal-shell" data-portal-shell>
+        {% include 'professionals/_portal_sidebar.html' with active_portal_nav='billing' %}
+        <div class="portal-main billing-main">
+            <section class="card">
+                <p class="cb-eyebrow">Billing</p>
+                <h1 class="cb-section-title">Practitioner billing</h1>
+                <p class="hint">{{ profile.display_name }}</p>
+                <p class="hint">Subscription status: {{ profile.get_subscription_status_display }}</p>
+                {% if not billing_enabled %}
+                <p><strong>Billing checkout is disabled right now.</strong> We are still in prelaunch mode.</p>
+                {% endif %}
+            </section>
+
+            <section class="card">
+                <h2>Current subscription</h2>
+                {% if subscription %}
+                <div class="billing-current-plan">
+                    <strong>{{ subscription.plan|default:'Plan pending assignment' }}</strong>
+                    <p>Subscription record status: {{ subscription.get_status_display }}</p>
+                    {% if subscription.current_period_end %}
+                    <p>Current period ends: {{ subscription.current_period_end|date:'M j, Y' }}</p>
+                    {% endif %}
+                </div>
+                {% else %}
+                <p>No Stripe subscription has been created yet.</p>
+                {% endif %}
+            </section>
+
+            <section class="card">
+                <h2>Select a plan</h2>
+                <p class="hint">Basic and Featured start with a 60-day free trial. Founding keeps the locked annual
+                    rate.</p>
+                <form method="post" action="{% url 'billing:checkout_start' %}">
+                    {% csrf_token %}
+                    <div class="billing-plan-grid">
+                        {% for plan in available_plans %}
+                        <label class="billing-plan-option">
+                            {% if can_start_checkout %}
+                            {% if plan.code == selected_plan_code %}
+                            <input type="radio" name="plan_code" value="{{ plan.code }}" checked>
+                            {% else %}
+                            <input type="radio" name="plan_code" value="{{ plan.code }}">
+                            {% endif %}
+                            {% else %}
+                            {% if plan.code == selected_plan_code %}
+                            <input type="radio" name="plan_code" value="{{ plan.code }}" checked disabled>
+                            {% else %}
+                            <input type="radio" name="plan_code" value="{{ plan.code }}" disabled>
+                            {% endif %}
+                            {% endif %}
+                            <span class="billing-plan-copy">
+                                <strong>{{ plan.name }}</strong>
+                                <p>
+                                    ${{ plan.amount_display }}{% if plan.billing_interval == 'month' %}/month{% else
+                                    %}/year{% endif %}
+                                    {% if plan.code == 'basic-monthly' or plan.code == 'featured-monthly' %}
+                                    · 60-day free trial
+                                    {% endif %}
+                                </p>
+                            </span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% if can_start_checkout %}
+                    <button type="submit" class="button">Continue to Stripe checkout</button>
+                    {% endif %}
+                </form>
+                {% if not can_start_checkout %}
+                <p class="hint">You can start checkout when billing is enabled and your account is eligible for
+                    subscription checkout.</p>
+                {% endif %}
+            </section>
+
+            {% if can_manage_portal %}
+            <section class="card">
+                <h2>Manage billing</h2>
+                <p class="hint">Open the Stripe billing portal to update payment details or manage your subscription.
+                </p>
+                <form method="post" action="{% url 'billing:portal_start' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="button">Manage billing</button>
+                </form>
+            </section>
+            {% endif %}
+        </div>
     </div>
-</section>
+</div>
 {% endblock %}
