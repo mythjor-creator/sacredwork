@@ -91,9 +91,28 @@ class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
             'founding_count': all_profiles.filter(is_founding_member=True).count(),
             'filtered_founding_count': filtered_profiles.filter(is_founding_member=True).count(),
             'latest_signup_at': all_profiles.aggregate(latest=Max('created_at'))['latest'],
+            'tier_cards': self._build_tier_cards(all_profiles, filtered_profiles),
             'status_cards': self._build_status_cards(all_profiles, filtered_profiles),
         }
         return response
+
+    def _build_tier_cards(self, all_profiles, filtered_profiles):
+        totals_by_tier = {
+            row['signup_tier']: row['count']
+            for row in all_profiles.values('signup_tier').annotate(count=Count('id'))
+        }
+        filtered_by_tier = {
+            row['signup_tier']: row['count']
+            for row in filtered_profiles.values('signup_tier').annotate(count=Count('id'))
+        }
+        return [
+            {
+                'label': label,
+                'value': totals_by_tier.get(value, 0),
+                'filtered_value': filtered_by_tier.get(value, 0),
+            }
+            for value, label in PractitionerWaitlistProfile.SignupTier.choices
+        ]
 
     def _build_status_cards(self, all_profiles, filtered_profiles):
         totals_by_status = {

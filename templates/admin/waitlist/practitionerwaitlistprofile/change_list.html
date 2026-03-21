@@ -44,6 +44,16 @@
     </div>
 
     <div class="waitlist-summary__grid waitlist-summary__grid--status">
+        {% for card in waitlist_summary.tier_cards %}
+        <section class="waitlist-summary__card waitlist-summary__card--status">
+            <span class="waitlist-summary__label">{{ card.label }}</span>
+            <strong class="waitlist-summary__value">{{ card.value }}</strong>
+            <p class="waitlist-summary__meta">Filtered view: {{ card.filtered_value }}</p>
+        </section>
+        {% endfor %}
+    </div>
+
+    <div class="waitlist-summary__grid waitlist-summary__grid--status">
         {% for card in waitlist_summary.status_cards %}
         <section class="waitlist-summary__card waitlist-summary__card--status">
             <span class="waitlist-summary__label">{{ card.label }}</span>

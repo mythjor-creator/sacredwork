@@ -430,6 +430,66 @@ class WaitlistLandingTests(TestCase):
         model_admin = PractitionerWaitlistProfileAdmin(PractitionerWaitlistProfile, admin_site)
         self.assertIn('signup_tier', model_admin.list_filter)
 
+    def test_admin_builds_signup_tier_summary_cards(self):
+        from .admin import PractitionerWaitlistProfileAdmin
+        from django.contrib.admin.sites import AdminSite
+
+        PractitionerWaitlistProfile.objects.create(
+            full_name='Free Tier',
+            email='free-tier@example.com',
+            headline='Coach',
+            modalities='coaching',
+            practice_type=PractitionerWaitlistProfile.PracticeType.COACHING,
+            signup_tier=PractitionerWaitlistProfile.SignupTier.FREE,
+        )
+        PractitionerWaitlistProfile.objects.create(
+            full_name='Basic Tier',
+            email='basic-tier@example.com',
+            headline='Coach',
+            modalities='coaching',
+            practice_type=PractitionerWaitlistProfile.PracticeType.COACHING,
+            signup_tier=PractitionerWaitlistProfile.SignupTier.BASIC,
+        )
+        PractitionerWaitlistProfile.objects.create(
+            full_name='Featured Tier',
+            email='featured-tier@example.com',
+            headline='Coach',
+            modalities='coaching',
+            practice_type=PractitionerWaitlistProfile.PracticeType.COACHING,
+            signup_tier=PractitionerWaitlistProfile.SignupTier.FEATURED,
+        )
+        PractitionerWaitlistProfile.objects.create(
+            full_name='Founding Tier',
+            email='founding-tier@example.com',
+            headline='Coach',
+            modalities='coaching',
+            practice_type=PractitionerWaitlistProfile.PracticeType.COACHING,
+            signup_tier=PractitionerWaitlistProfile.SignupTier.FOUNDING,
+            is_founding_member=True,
+        )
+
+        admin_site = AdminSite()
+        model_admin = PractitionerWaitlistProfileAdmin(PractitionerWaitlistProfile, admin_site)
+        cards = model_admin._build_tier_cards(
+            PractitionerWaitlistProfile.objects.all(),
+            PractitionerWaitlistProfile.objects.filter(
+                signup_tier__in=[
+                    PractitionerWaitlistProfile.SignupTier.BASIC,
+                    PractitionerWaitlistProfile.SignupTier.FEATURED,
+                ]
+            ),
+        )
+
+        cards_by_label = {card['label']: card for card in cards}
+        self.assertEqual(cards_by_label['Free Waitlist']['value'], 1)
+        self.assertEqual(cards_by_label['Free Waitlist']['filtered_value'], 0)
+        self.assertEqual(cards_by_label['Basic Practitioner']['value'], 1)
+        self.assertEqual(cards_by_label['Basic Practitioner']['filtered_value'], 1)
+        self.assertEqual(cards_by_label['Featured']['value'], 1)
+        self.assertEqual(cards_by_label['Featured']['filtered_value'], 1)
+        self.assertEqual(cards_by_label['Founding']['value'], 1)
+        self.assertEqual(cards_by_label['Founding']['filtered_value'], 0)
+
     def test_status_change_sends_notification_email(self):
         """Verify that status transitions trigger notification emails."""
         from apps.waitlist.emails import send_status_change_notification
