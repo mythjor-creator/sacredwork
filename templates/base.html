@@ -486,7 +486,7 @@
             }
 
             .page-nav-overlay .cb-breadcrumb-shell {
-                margin-top: calc(82px + 0.45rem);
+                margin-top: calc(68px + 0.45rem);
                 margin-bottom: -0.7rem;
             }
         }
@@ -610,20 +610,63 @@
             min-width: 0;
         }
 
+        .nav-toggle {
+            display: none;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 0.4rem 0.52rem;
+            margin: 0;
+            color: var(--site-nav-link-top, #334155);
+            cursor: pointer;
+            font-size: 1.3rem;
+            line-height: 1;
+            box-shadow: none;
+            transition: border-color 0.16s ease, background 0.16s ease;
+        }
+
+        .nav-toggle:hover {
+            box-shadow: none;
+            transform: none;
+            background: var(--site-nav-link-top-hover-bg, rgba(0, 0, 0, 0.06));
+            border-color: var(--site-nav-link-top-border, transparent);
+        }
+
         @media (max-width: 700px) {
             .wrap {
                 padding-top: 0;
             }
 
             .nav {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.6rem;
-                padding: 0.8rem 0;
+                flex-wrap: wrap;
+                align-items: center;
+                min-height: 68px;
+                gap: 0;
+                padding: 0;
+            }
+
+            .nav .brand {
+                flex: 1;
+            }
+
+            .nav-toggle {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.2rem;
+                padding: 0.25rem 0 0.8rem;
                 justify-content: flex-start;
+            }
+
+            .site-nav.is-open .links {
+                display: flex;
             }
 
             .portal-shell,
@@ -653,7 +696,8 @@
             <div class="shell">
                 <div class="nav">
                     <a class="brand" href="{% url 'catalog:home' %}">clairbook</a>
-                    <div class="links">
+                    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav-links" data-nav-toggle>&#9776;</button>
+                    <div class="links" id="site-nav-links">
                         {% block top_nav_links %}
                         {% if user.is_authenticated %}
                         {% include 'professionals/_portal_top_nav.html' with profile=profile %}
@@ -888,6 +932,25 @@
                 );
 
                 observer.observe(hero);
+            }
+
+            const navToggle = document.querySelector('[data-nav-toggle]');
+            if (navToggle) {
+                navToggle.addEventListener('click', function () {
+                    const isOpen = nav.classList.toggle('is-open');
+                    navToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                    navToggle.innerHTML = isOpen ? '&#10005;' : '&#9776;';
+                });
+                const navLinks = document.getElementById('site-nav-links');
+                if (navLinks) {
+                    navLinks.querySelectorAll('a').forEach(function (link) {
+                        link.addEventListener('click', function () {
+                            nav.classList.remove('is-open');
+                            navToggle.setAttribute('aria-expanded', 'false');
+                            navToggle.innerHTML = '&#9776;';
+                        });
+                    });
+                }
             }
 
             document.querySelectorAll('[data-portal-toggle]').forEach(function (button) {
