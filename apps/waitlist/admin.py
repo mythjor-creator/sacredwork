@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.contrib import messages as django_messages
+from django.db.models import Count, Max
+from django.utils.html import format_html
 from django.utils import timezone
 
 from .models import PractitionerWaitlistProfile, StatusTransition
@@ -36,11 +38,25 @@ def mark_as_invited(modeladmin, request, queryset):
     modeladmin.message_user(request, f'{updated} profile(s) marked as Invited and notified via email.', django_messages.SUCCESS)
 
 
+@admin.action(description='Mark selected as Test data')
+def mark_as_test_data(modeladmin, request, queryset):
+    updated = queryset.update(is_test_data=True)
+    modeladmin.message_user(request, f'{updated} profile(s) marked as test data.', django_messages.SUCCESS)
+
+
+@admin.action(description='Mark selected as Real data')
+def mark_as_real_data(modeladmin, request, queryset):
+    updated = queryset.update(is_test_data=False)
+    modeladmin.message_user(request, f'{updated} profile(s) marked as real data.', django_messages.SUCCESS)
+
+
 @admin.register(PractitionerWaitlistProfile)
 class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/waitlist/practitionerwaitlistprofile/change_list.html'
     list_display = (
         'full_name',
         'email',
+        'is_test_data',
         'practice_type',
         'is_founding_member',
         'status',
@@ -49,10 +65,52 @@ class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
         'status_changed_at',
         'created_at',
     )
-    list_filter = ('is_founding_member', 'practice_type', 'status', 'is_virtual', 'offers_in_person')
+    list_filter = ('is_test_data', 'is_founding_member', 'practice_type', 'status', 'is_virtual', 'offers_in_person')
     search_fields = ('business_name', 'full_name', 'email', 'headline', 'modalities', 'location')
     readonly_fields = ('status_changed_at', 'created_at', 'transition_history')
-    actions = [mark_as_invited]
+    actions = [mark_as_invited, mark_as_test_data, mark_as_real_data]
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context=extra_context)
+        if not hasattr(response, 'context_data'):
+            return response
+
+        changelist = response.context_data.get('cl')
+        if changelist is None:
+            return response
+
+        all_profiles = self.model.objects.all()
+        filtered_profiles = changelist.queryset
+
+        response.context_data['waitlist_summary'] = {
+            'total_count': all_profiles.count(),
+            'filtered_count': filtered_profiles.count(),
+            'real_count': all_profiles.filter(is_test_data=False).count(),
+            'test_count': all_profiles.filter(is_test_data=True).count(),
+            'founding_count': all_profiles.filter(is_founding_member=True).count(),
+            'filtered_founding_count': filtered_profiles.filter(is_founding_member=True).count(),
+            'latest_signup_at': all_profiles.aggregate(latest=Max('created_at'))['latest'],
+            'status_cards': self._build_status_cards(all_profiles, filtered_profiles),
+        }
+        return response
+
+    def _build_status_cards(self, all_profiles, filtered_profiles):
+        totals_by_status = {
+            row['status']: row['count']
+            for row in all_profiles.values('status').annotate(count=Count('id'))
+        }
+        filtered_by_status = {
+            row['status']: row['count']
+            for row in filtered_profiles.values('status').annotate(count=Count('id'))
+        }
+        return [
+            {
+                'label': label,
+                'value': totals_by_status.get(value, 0),
+                'filtered_value': filtered_by_status.get(value, 0),
+            }
+            for value, label in PractitionerWaitlistProfile.Status.choices
+        ]
     
     def transition_history(self, obj: PractitionerWaitlistProfile) -> str:
         """Display transition history for a profile."""
@@ -68,10 +126,9 @@ class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
             by_user = t.changed_by.username if t.changed_by else 'system'
             lines.append(f'<tr><td style="border: 1px solid #ddd; padding: 8px;">{t.get_from_status_display()}</td><td style="border: 1px solid #ddd; padding: 8px;">{t.get_to_status_display()}</td><td style="border: 1px solid #ddd; padding: 8px;">{t.changed_at.strftime("%Y-%m-%d %H:%M")}</td><td style="border: 1px solid #ddd; padding: 8px;">{by_user}</td></tr>')
         lines.append('</table>')
-        return '\n'.join(lines)
+        return format_html('{}'.format(''.join(lines)))
     
     transition_history.short_description = 'Status Transition History'
-    transition_history.allow_tags = True
 
 
 @admin.register(StatusTransition)

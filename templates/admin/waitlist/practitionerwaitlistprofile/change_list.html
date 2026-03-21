@@ -1,0 +1,121 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+{% if waitlist_summary %}
+<div class="waitlist-summary">
+    <div class="waitlist-summary__grid waitlist-summary__grid--primary">
+        <section class="waitlist-summary__card">
+            <span class="waitlist-summary__label">Total signups</span>
+            <strong class="waitlist-summary__value">{{ waitlist_summary.total_count }}</strong>
+            <p class="waitlist-summary__meta">Filtered view: {{ waitlist_summary.filtered_count }}</p>
+        </section>
+        <section class="waitlist-summary__card">
+            <span class="waitlist-summary__label">Real signups</span>
+            <strong class="waitlist-summary__value">{{ waitlist_summary.real_count }}</strong>
+            <p class="waitlist-summary__meta">Excluded from test-only review</p>
+        </section>
+        <section class="waitlist-summary__card">
+            <span class="waitlist-summary__label">Test signups</span>
+            <strong class="waitlist-summary__value">{{ waitlist_summary.test_count }}</strong>
+            <p class="waitlist-summary__meta">Seeded, QA, or demo submissions</p>
+        </section>
+        <section class="waitlist-summary__card">
+            <span class="waitlist-summary__label">Founding members</span>
+            <strong class="waitlist-summary__value">{{ waitlist_summary.founding_count }}</strong>
+            <p class="waitlist-summary__meta">Filtered view: {{ waitlist_summary.filtered_founding_count }}</p>
+        </section>
+        <section class="waitlist-summary__card">
+            <span class="waitlist-summary__label">Latest signup</span>
+            <strong class="waitlist-summary__value waitlist-summary__value--small">
+                {% if waitlist_summary.latest_signup_at %}
+                {{ waitlist_summary.latest_signup_at|date:"M j, Y" }}
+                {% else %}
+                No signups yet
+                {% endif %}
+            </strong>
+            <p class="waitlist-summary__meta">
+                {% if waitlist_summary.latest_signup_at %}
+                {{ waitlist_summary.latest_signup_at|date:"g:i A" }}
+                {% else %}
+                Waiting for first submission
+                {% endif %}
+            </p>
+        </section>
+    </div>
+
+    <div class="waitlist-summary__grid waitlist-summary__grid--status">
+        {% for card in waitlist_summary.status_cards %}
+        <section class="waitlist-summary__card waitlist-summary__card--status">
+            <span class="waitlist-summary__label">{{ card.label }}</span>
+            <strong class="waitlist-summary__value">{{ card.value }}</strong>
+            <p class="waitlist-summary__meta">Filtered view: {{ card.filtered_value }}</p>
+        </section>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .waitlist-summary {
+        margin: 0 0 24px;
+        display: grid;
+        gap: 16px;
+    }
+
+    .waitlist-summary__grid {
+        display: grid;
+        gap: 16px;
+    }
+
+    .waitlist-summary__grid--primary {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .waitlist-summary__grid--status {
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+
+    .waitlist-summary__card {
+        background: var(--darkened-bg, #fff);
+        border: 1px solid var(--hairline-color, #d9d9d9);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .waitlist-summary__label {
+        display: block;
+        margin-bottom: 10px;
+        color: var(--body-quiet-color, #666);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .waitlist-summary__value {
+        display: block;
+        color: var(--body-fg, #111);
+        font-size: 30px;
+        line-height: 1;
+    }
+
+    .waitlist-summary__value--small {
+        font-size: 22px;
+        line-height: 1.2;
+    }
+
+    .waitlist-summary__meta {
+        margin: 10px 0 0;
+        color: var(--body-quiet-color, #666);
+        font-size: 13px;
+    }
+
+    @media (max-width: 767px) {
+        .waitlist-summary__value {
+            font-size: 26px;
+        }
+    }
+</style>
+{% endif %}
+
+{{ block.super }}
+{% endblock %}

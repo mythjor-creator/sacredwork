@@ -1,5 +1,7 @@
 from django import forms
 
+from config.test_data import email_is_test_data
+
 from .models import PractitionerWaitlistProfile
 
 
@@ -56,3 +58,10 @@ class PractitionerWaitlistForm(forms.ModelForm):
         if not is_virtual and not offers_in_person:
             raise forms.ValidationError('Select at least one session format: virtual or in-person.')
         return cleaned_data
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        profile.is_test_data = email_is_test_data(profile.email)
+        if commit:
+            profile.save()
+        return profile

@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
+from config.test_data import email_is_test_data
+
 from .models import User
 
 
@@ -16,6 +18,7 @@ class SignUpForm(UserCreationForm):
         user.email = self.cleaned_data['email']
         user.display_name = self.cleaned_data['display_name']
         user.role = self.cleaned_data['role']
+        user.is_test_account = email_is_test_data(user.email)
         if commit:
             user.save()
         return user

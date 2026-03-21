@@ -35,6 +35,11 @@ class PractitionerWaitlistProfile(models.Model):
         default=False,
         help_text='Opted in for the founding practitioner rate at sign-up.',
     )
+    is_test_data = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text='Marks internal, demo, seeded, or QA signups so they can be separated from real submissions.',
+    )
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
