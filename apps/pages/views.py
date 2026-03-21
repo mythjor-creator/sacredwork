@@ -53,6 +53,68 @@ def about_view(request):
     )
 
 
+def pricing_view(request):
+    """Render public pricing page for practitioner tiers."""
+    site_base_url = request.build_absolute_uri('/').rstrip('/')
+    current_absolute_url = request.build_absolute_uri()
+    pricing_tiers = [
+        {
+            'eyebrow': 'Basic practitioner',
+            'title': 'A clear home for your profile and bookings.',
+            'price': '60-day free trial',
+            'subhead': 'Then standard practitioner pricing before any billing begins.',
+            'features': [
+                'Public practitioner profile',
+                'Service listings with pricing and session format details',
+                'Availability and booking management',
+                'Access to account tools and profile editing',
+            ],
+            'cta_label': 'Start with practitioner access',
+            'cta_href': '/waitlist/',
+            'is_featured': False,
+        },
+        {
+            'eyebrow': 'Featured',
+            'title': 'For practitioners who want more visibility from day one.',
+            'price': '60-day free trial',
+            'subhead': 'Then featured placement pricing before any billing begins.',
+            'features': [
+                'Everything in Basic Practitioner',
+                'Priority placement in featured rotations',
+                'Additional discovery visibility across launch surfaces',
+                'More prominent positioning for clients browsing your category',
+            ],
+            'cta_label': 'Join for featured consideration',
+            'cta_href': '/waitlist/',
+            'is_featured': True,
+        },
+        {
+            'eyebrow': 'Founding',
+            'title': 'A locked early rate for the first launch cohort.',
+            'price': '$79/year',
+            'subhead': 'Limited founding rate with priority onboarding and a founding badge.',
+            'features': [
+                'Founding member badge on your profile',
+                'Rate locked at $79/year while your founding status remains active',
+                'Priority onboarding into the launch cohort',
+                'Reserved access for the first 100 founding practitioners',
+            ],
+            'cta_label': 'Claim founding access',
+            'cta_href': '/waitlist/?founding=1#waitlist-profile',
+            'is_featured': False,
+        },
+    ]
+    return render(
+        request,
+        'pages/pricing.html',
+        {
+            'site_base_url': site_base_url,
+            'current_absolute_url': current_absolute_url,
+            'pricing_tiers': pricing_tiers,
+        },
+    )
+
+
 def terms_view(request):
     """Render Help page with terms accordion and issue reporting form."""
     profile = getattr(request.user, 'professional_profile', None) if request.user.is_authenticated else None

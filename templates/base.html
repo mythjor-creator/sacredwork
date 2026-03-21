@@ -705,6 +705,7 @@
                         {% else %}
                         <a href="{% url 'pages:about' %}">About</a>
                         <a href="{% url 'catalog:marketplace' %}">Discover</a>
+                        <a href="{% url 'pages:pricing' %}">Pricing</a>
                         <a href="{% url 'waitlist:landing' %}">Join Waitlist</a>
                         {% endif %}
                         {% endblock %}
@@ -761,6 +762,8 @@
                     Help
                     {% elif current_route == 'about' %}
                     About
+                    {% elif current_route == 'pricing' %}
+                    Pricing
                     {% elif current_route == 'privacy' %}
                     Privacy
                     {% elif current_route == 'gdpr_export' %}

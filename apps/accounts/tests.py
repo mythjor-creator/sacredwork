@@ -158,3 +158,15 @@ class AccountsFlowTests(TestCase):
 		self.assertContains(response, 'practitioner-account-portal')
 		self.assertContains(response, 'Danger zone')
 		self.assertContains(response, 'Export my data')
+
+	def test_authenticated_top_nav_includes_pricing_link(self):
+		user = User.objects.create_user(
+			username='nav_user',
+			password='StrongPass123!!',
+			email='nav-user@clairbook.com',
+			role=User.Role.CLIENT,
+		)
+		self.client.force_login(user)
+
+		response = self.client.get(reverse('accounts:settings'))
+		self.assertContains(response, reverse('pages:pricing'))

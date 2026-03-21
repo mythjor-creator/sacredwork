@@ -32,6 +32,13 @@ class PrivacyTermsPages(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'About Clairbook')
 
+    def test_pricing_renders(self):
+        response = self.client.get(reverse('pages:pricing'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Pricing for practitioners who want room to grow.')
+        self.assertContains(response, '60-day free trial')
+        self.assertContains(response, '$79/year')
+
     def test_privacy_policy_renders(self):
         response = self.client.get(reverse('pages:privacy'))
         self.assertEqual(response.status_code, 200)

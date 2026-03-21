@@ -7,6 +7,7 @@ urlpatterns = [
     path('health/', views.healthcheck_view, name='healthcheck'),
     path('style-sheet/', views.style_sheet_view, name='style_sheet'),
     path('about/', views.about_view, name='about'),
+    path('pricing/', views.pricing_view, name='pricing'),
     path('privacy/', views.privacy_view, name='privacy'),
     path('terms/', views.terms_view, name='terms'),
     path('verify-email/<str:token>/', views.verify_email_view, name='verify_email'),

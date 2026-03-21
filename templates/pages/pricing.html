@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+
+{% block title %}Pricing | clairbook{% endblock %}
+
+{% block body_class %}page-nav-overlay{% endblock %}
+
+{% block extra_head %}
+<meta name="description"
+    content="Clairbook pricing for practitioners: compare Basic Practitioner, Featured, and Founding options, including 60-day free trials for practitioner and featured access.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="{{ current_absolute_url }}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pricing | clairbook">
+<meta property="og:description"
+    content="Compare Basic Practitioner, Featured, and Founding options on Clairbook, with 60-day free trials for practitioner and featured tiers.">
+<meta property="og:url" content="{{ current_absolute_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Pricing | clairbook">
+<meta name="twitter:description"
+    content="See how Basic Practitioner, Featured, and Founding plans differ on Clairbook.">
+<style>
+    body {
+        --wl-green: #374442;
+        --wl-green-strong: #2c3735;
+        --pricing-ink-soft: #53606c;
+        --pricing-sky: #d4edf0;
+        --pricing-gold: #8b6a36;
+        --site-nav-top-bg: rgba(55, 68, 66, 0.96);
+        --site-nav-top-border: rgba(175, 235, 243, 0.28);
+        --site-nav-link-top: #D4EDF0;
+        --site-nav-link-top-border: rgba(175, 235, 243, 0.4);
+        --site-nav-link-top-hover-bg: rgba(175, 235, 243, 0.12);
+        --site-nav-link-top-hover: #ffffff;
+        --site-nav-solid-bg: rgba(55, 68, 66, 0.96);
+        --site-nav-solid-border: rgba(175, 235, 243, 0.2);
+        --site-nav-link-solid: #D4EDF0;
+        --site-nav-link-solid-border: rgba(175, 235, 243, 0.35);
+        --site-nav-link-solid-hover-bg: rgba(175, 235, 243, 0.14);
+        --site-nav-link-solid-hover: #ffffff;
+        --site-nav-brand-color: #D4EDF0;
+        --site-nav-solid-brand-color: #D4EDF0;
+        background: #ebe4da;
+    }
+
+    .pricing-shell {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 0 var(--page-gutter);
+    }
+
+    .pricing-hero {
+        background: var(--wl-green);
+        color: var(--pricing-sky);
+        border-bottom: 1px solid rgba(175, 235, 243, 0.26);
+        padding: calc(82px + 1.5rem) 0 clamp(2.3rem, 5vw, 4rem);
+    }
+
+    .pricing-crumb {
+        margin: 0 0 1.3rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(175, 235, 243, 0.28);
+        color: rgba(212, 237, 240, 0.85);
+    }
+
+    .pricing-crumb a {
+        color: rgba(212, 237, 240, 0.82);
+    }
+
+    .pricing-crumb a:hover {
+        color: #ffffff;
+    }
+
+    .pricing-hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+        gap: 1rem;
+        align-items: start;
+    }
+
+    .pricing-hero h1 {
+        margin: 0.5rem 0 0;
+        max-width: 11ch;
+        font: 400 clamp(2.5rem, 7vw, 5.8rem)/0.95 var(--font-serif);
+    }
+
+    .pricing-hero-copy {
+        margin: 1rem 0 0;
+        max-width: 60ch;
+        color: rgba(212, 237, 240, 0.9);
+        line-height: 1.7;
+        font-size: 1rem;
+    }
+
+    .pricing-highlight {
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(175, 235, 243, 0.18);
+        box-shadow: 0 16px 34px rgba(18, 24, 32, 0.07);
+        padding: 1.15rem 1.2rem;
+    }
+
+    .pricing-highlight p {
+        margin: 0;
+        color: rgba(212, 237, 240, 0.88);
+        line-height: 1.65;
+    }
+
+    .pricing-highlight strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #ffffff;
+        font-size: 0.98rem;
+    }
+
+    .pricing-main {
+        padding: clamp(2.2rem, 4vw, 4.5rem) 0 4.5rem;
+    }
+
+    .pricing-intro {
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+        gap: 1rem;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+
+    .pricing-intro h2 {
+        margin: 0;
+        color: var(--headline);
+        font: 400 clamp(1.7rem, 3vw, 2.5rem)/1.05 var(--font-serif);
+    }
+
+    .pricing-intro p {
+        margin: 0;
+        color: var(--pricing-ink-soft);
+        line-height: 1.7;
+    }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .pricing-card {
+        display: grid;
+        gap: 0.95rem;
+        border-radius: 20px;
+        padding: 1.15rem 1.2rem;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(31, 32, 34, 0.08);
+        box-shadow: 0 16px 34px rgba(18, 24, 32, 0.07);
+    }
+
+    .pricing-card--featured {
+        background: rgba(255, 255, 255, 0.88);
+        border-color: rgba(55, 68, 66, 0.18);
+        position: relative;
+    }
+
+    .pricing-card--featured::before {
+        content: "Most visible";
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        padding: 0.34rem 0.64rem;
+        border-radius: 999px;
+        background: rgba(55, 68, 66, 0.1);
+        border: 1px solid rgba(55, 68, 66, 0.16);
+        color: var(--wl-green);
+        font-size: 0.76rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .pricing-card--featured .pricing-card-eyebrow,
+    .pricing-card--featured .pricing-card-subhead,
+    .pricing-card--featured .pricing-list li,
+    .pricing-card--featured .pricing-card-note {
+        color: #41505c;
+    }
+
+    .pricing-card--featured .pricing-card-title,
+    .pricing-card--featured .pricing-card-price {
+        color: var(--headline);
+    }
+
+    .pricing-card--featured .pricing-card-button {
+        background: var(--wl-green);
+        color: #d4edf0;
+        border-color: transparent;
+    }
+
+    .pricing-card--founding {
+        background: linear-gradient(180deg, rgba(181, 131, 59, 0.08) 0%, rgba(255, 255, 255, 0.86) 100%);
+        border-color: rgba(139, 106, 54, 0.24);
+    }
+
+    .pricing-card-eyebrow {
+        margin: 0;
+        color: var(--wl-green);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .pricing-card-title {
+        margin: 0;
+        color: var(--headline);
+        font: 400 clamp(1.5rem, 2.6vw, 2.2rem)/1.04 var(--font-serif);
+    }
+
+    .pricing-card-price {
+        margin: 0;
+        color: var(--headline);
+        font: 400 clamp(2rem, 4vw, 3rem)/0.95 var(--font-serif);
+    }
+
+    .pricing-card-subhead,
+    .pricing-card-note {
+        margin: 0;
+        color: #53606c;
+        line-height: 1.65;
+    }
+
+    .pricing-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .pricing-list li {
+        color: #334452;
+        line-height: 1.5;
+        padding-left: 1.15rem;
+        position: relative;
+    }
+
+    .pricing-list li::before {
+        content: "\2726";
+        position: absolute;
+        left: 0;
+        color: #4b628b;
+    }
+
+    .pricing-card-button {
+        justify-content: center;
+        width: 100%;
+        margin-top: auto;
+        border-radius: 999px;
+        padding: 0.75rem 1.3rem;
+        text-align: center;
+        background: #afebf3;
+        color: #2f3610;
+        border: 1px solid transparent;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .pricing-card-button:hover {
+        background: #d2f4f9;
+        color: #1e2808;
+    }
+
+    .pricing-notes {
+        margin-top: 1rem;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .pricing-note-card {
+        border-radius: 20px;
+        padding: 1.15rem 1.2rem;
+        background: rgba(255, 255, 255, 0.78);
+        border: 1px solid rgba(31, 32, 34, 0.08);
+        box-shadow: 0 16px 34px rgba(18, 24, 32, 0.07);
+    }
+
+    .pricing-note-card h3 {
+        margin: 0 0 0.45rem;
+        color: var(--headline);
+        font: 400 1.5rem/1.08 var(--font-serif);
+    }
+
+    .pricing-note-card p {
+        margin: 0;
+        color: var(--pricing-ink-soft);
+        line-height: 1.65;
+    }
+
+    @media (max-width: 860px) {
+
+        .pricing-hero-grid,
+        .pricing-intro,
+        .pricing-grid,
+        .pricing-notes {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 520px) {
+        .pricing-shell {
+            padding: 0 2.25rem;
+        }
+
+        .pricing-hero {
+            padding: calc(68px + 0.6rem) 0 2.4rem;
+        }
+
+        .pricing-card {
+            padding: 1.2rem;
+        }
+
+        .pricing-card-price {
+            font-size: 2.3rem;
+        }
+
+        .pricing-highlight {
+            padding: 1rem 1.05rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<section class="pricing-hero">
+    <div class="pricing-shell pricing-hero-grid">
+        <div>
+            <nav class="cb-breadcrumbs pricing-crumb" aria-label="Breadcrumb">
+                <a href="{% url 'catalog:home' %}">Home</a>
+                <span aria-hidden="true">/</span>
+                <span class="cb-breadcrumb-current">Pricing</span>
+            </nav>
+            <p class="cb-eyebrow" style="color: rgba(212, 237, 240, 0.82);">Pricing</p>
+            <h1>Pricing for practitioners who want room to grow.</h1>
+            <p class="pricing-hero-copy">Choose the visibility level that fits your stage. Basic Practitioner and
+                Featured both start with a 60-day free trial. Founding is the limited early rate for the first launch
+                cohort.</p>
+        </div>
+        <aside class="pricing-highlight">
+            <strong>Simple launch rule</strong>
+            <p>Basic Practitioner and Featured both include a 60-day free trial before any paid pricing begins. Founding
+                keeps the current early rate of $79/year and is reserved for a limited cohort.</p>
+        </aside>
+    </div>
+</section>
+
+<section class="pricing-main">
+    <div class="pricing-shell">
+        <div class="pricing-intro">
+            <h2>Three ways to join Clairbook.</h2>
+            <p>The page below is designed to make the choice legible: a clean practitioner tier, a higher-visibility
+                featured tier, and a founding option for early supporters who want a locked annual rate.</p>
+        </div>
+
+        <div class="pricing-grid">
+            {% for tier in pricing_tiers %}
+            <article
+                class="pricing-card{% if tier.is_featured %} pricing-card--featured{% endif %}{% if tier.eyebrow == 'Founding' %} pricing-card--founding{% endif %}">
+                <div>
+                    <p class="pricing-card-eyebrow">{{ tier.eyebrow }}</p>
+                    <h2 class="pricing-card-title">{{ tier.title }}</h2>
+                </div>
+                <p class="pricing-card-price">{{ tier.price }}</p>
+                <p class="pricing-card-subhead">{{ tier.subhead }}</p>
+                <ul class="pricing-list">
+                    {% for feature in tier.features %}
+                    <li>{{ feature }}</li>
+                    {% endfor %}
+                </ul>
+                {% if tier.eyebrow != 'Founding' %}
+                <p class="pricing-card-note">You will see the paid rate before your 60-day free trial ends.</p>
+                {% else %}
+                <p class="pricing-card-note">Founding is the only tier with a published rate in the current launch
+                    setup.</p>
+                {% endif %}
+                <a class="pricing-card-button" href="{{ tier.cta_href }}">{{ tier.cta_label }}</a>
+            </article>
+            {% endfor %}
+        </div>
+
+        <div class="pricing-notes">
+            <article class="pricing-note-card">
+                <h3>What Featured means</h3>
+                <p>Featured is for practitioners who want stronger discovery placement across launch surfaces and
+                    featured rotations. It is differentiated by visibility, not just by access to the core product.</p>
+            </article>
+            <article class="pricing-note-card">
+                <h3>What Founding means</h3>
+                <p>Founding is a limited cohort. It carries the current locked annual rate, a founding badge, and early
+                    onboarding priority while Clairbook is still forming its first practitioner base.</p>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}
