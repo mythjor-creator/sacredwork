@@ -696,7 +696,8 @@
             <div class="shell">
                 <div class="nav">
                     <a class="brand" href="{% url 'catalog:home' %}">clairbook</a>
-                    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav-links" data-nav-toggle>&#9776;</button>
+                    <button class="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="site-nav-links"
+                        data-nav-toggle>&#9776;</button>
                     <div class="links" id="site-nav-links">
                         {% block top_nav_links %}
                         {% if user.is_authenticated %}
