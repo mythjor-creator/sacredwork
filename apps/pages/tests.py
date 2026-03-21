@@ -11,6 +11,15 @@ User = get_user_model()
 
 
 class PrivacyTermsPages(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='navuser',
+            email='navuser@example.com',
+            password='TestPass123!!',
+            display_name='Nav User',
+            role=User.Role.CLIENT,
+        )
+
     def test_healthcheck_renders(self):
         response = self.client.get(reverse('pages:healthcheck'))
         self.assertEqual(response.status_code, 200)
@@ -31,6 +40,12 @@ class PrivacyTermsPages(TestCase):
         response = self.client.get(reverse('pages:about'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'About Clairbook')
+
+    def test_about_link_shows_for_authenticated_users(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('pages:pricing'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="/about/"', html=False)
 
     def test_pricing_renders(self):
         response = self.client.get(reverse('pages:pricing'))
