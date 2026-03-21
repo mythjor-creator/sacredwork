@@ -650,7 +650,7 @@
 
     @media (max-width: 520px) {
         .home-shell {
-            padding: 0 2rem;
+            padding: 0 2.25rem;
         }
 
         .home-hero {
@@ -690,7 +690,7 @@
         }
 
         .home-search {
-            padding: 2.8rem 0;
+            padding: 3.5rem 0;
         }
 
         .search-form {
@@ -699,8 +699,8 @@
         }
 
         .search-suggestions {
-            margin-top: 2.2rem;
-            gap: 2rem 1rem;
+            margin-top: 0;
+            gap: 3.5rem 1.5rem;
         }
 
         .home-featured {
@@ -709,7 +709,7 @@
 
         .featured-grid {
             grid-template-columns: 1fr;
-            gap: 0.625rem;
+            gap: 0;
         }
 
         .featured-head {
@@ -717,9 +717,9 @@
         }
 
         .featured-item {
-            grid-template-columns: 88px minmax(0, 1fr);
+            grid-template-columns: 1fr 1fr;
             align-items: start;
-            gap: 1rem;
+            gap: 1.5rem;
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.28);
         }
@@ -730,13 +730,15 @@
         }
 
         .placeholder-image {
-            width: 88px;
-            height: 88px;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
         }
 
         .featured-image {
-            width: 152px;
-            height: 204px;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1 / 1;
         }
 
         .featured-more {
@@ -750,6 +752,10 @@
         .services-hero,
         .services-grid {
             grid-template-columns: 1fr;
+        }
+
+        .services-title {
+            text-align: center;
         }
 
         .home-services {
@@ -766,7 +772,7 @@
         }
 
         .services-grid {
-            gap: 2.75rem;
+            gap: 0;
         }
 
         .services-list:not(:first-child) {
@@ -774,22 +780,50 @@
             padding-top: 2.75rem;
         }
 
+        .services-list {
+            border: none;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+        }
+
+        .services-list h3 {
+            font-size: 1.25rem;
+        }
+
+        .services-list:not(:last-child) {
+            padding-bottom: 2.75rem;
+        }
+
         .foot-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            row-gap: 2.8rem;
+            row-gap: 3.5rem;
+            column-gap: 2rem;
         }
 
         .foot-brand {
-            grid-column: 1 / -1;
+            grid-column: auto;
+            font-size: 2rem;
         }
 
         .foot-news {
             grid-template-columns: 1fr;
-            gap: 1.1rem;
+            gap: 1.5rem;
         }
 
         .foot-news form {
             width: 100%;
+            height: 3.75rem;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .foot-link,
+        .foot-copy {
+            font-size: 1.125rem;
+        }
+
+        .foot-news p {
+            font-size: 1.125rem;
         }
     }
 
@@ -817,9 +851,6 @@
         }
 
         .featured-item {
-            grid-template-columns: 80px minmax(0, 1fr);
-        }
-
         .featured-head h2 {
             font-size: 1.5rem;
         }
