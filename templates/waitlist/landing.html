@@ -568,7 +568,7 @@
                 coaching practitioners. Most booking platforms treat all services the same. We're not building that.
                 We're building a space that actually knows what your work requires.</p>
             <div class="wl-hero-actions">
-                <a class="button" href="?founding=1#waitlist-profile">Claim your founding spot&nbsp;—&nbsp;$79/year</a>
+                <a class="button" href="?tier=founding#waitlist-profile">Claim your founding spot&nbsp;—&nbsp;$79/year</a>
                 <a class="cb-chip-button" href="#waitlist-profile">Join the free waitlist</a>
             </div>
         </div>
@@ -602,7 +602,7 @@
                     <p class="wl-price-note">Locked in permanently. Won't increase.</p>
                     <hr class="wl-price-divider">
                     <div class="wl-offer-cta-group">
-                        <a class="button" href="?founding=1#waitlist-profile">Claim your founding
+                        <a class="button" href="?tier=founding#waitlist-profile">Claim your founding
                             spot&nbsp;—&nbsp;$79/year</a>
                     </div>
                     <p class="wl-price-guarantee">No charge until launch. Full refund if you change your mind.</p>
@@ -684,7 +684,17 @@
 <section id="waitlist-profile" class="wl-form-band">
     <div class="shell">
         <div class="wl-form-inner">
-            <h2 style="margin: 0 0 0.35rem;" data-form-heading>Apply for a founding spot</h2>
+            <h2 style="margin: 0 0 0.35rem;" data-form-heading>
+                {% if requested_tier == 'founding' %}
+                Apply for a founding spot
+                {% elif requested_tier == 'featured' %}
+                Start featured signup
+                {% elif requested_tier == 'basic' %}
+                Start basic practitioner signup
+                {% else %}
+                Join the free waitlist
+                {% endif %}
+            </h2>
             <p class="hint" style="margin: 0 0 1.5rem;">Tell us a little about your practice. This goes directly to our
                 team — it's not client-facing yet.</p>
 
@@ -696,9 +706,20 @@
             {% endfor %}
             {% endif %}
 
-            <div class="wl-form-context" data-form-context>
+            <div class="wl-form-context{% if requested_tier != 'founding' %} is-free{% endif %}" data-form-context>
+                {% if requested_tier == 'founding' %}
                 <p><strong data-context-label>Founding member application</strong>&nbsp;— Your rate of $79/year will be
                     locked in permanently. No charge until launch.</p>
+                {% elif requested_tier == 'featured' %}
+                <p><strong data-context-label>Featured signup</strong>&nbsp;— 60-day free trial, then $24.99/month for
+                    featured visibility.</p>
+                {% elif requested_tier == 'basic' %}
+                <p><strong data-context-label>Basic practitioner signup</strong>&nbsp;— 60-day free trial, then
+                    $9.99/month.</p>
+                {% else %}
+                <p><strong data-context-label>Free waitlist</strong>&nbsp;— We'll reach out before we open to the
+                    public.</p>
+                {% endif %}
             </div>
 
             <p class="hint" style="margin: 1.2rem 0 0.5rem;"><span class="waitlist-required">*</span> Required fields
@@ -708,6 +729,7 @@
                 data-track-source="waitlist">
                 {% csrf_token %}
                 {{ form.is_founding_member }}
+                {{ form.signup_tier }}
                 <div data-non-field-errors class="waitlist-errors">
                     {{ form.non_field_errors }}
                 </div>
@@ -851,7 +873,9 @@
 
         /* ── founding member context ── */
         const params = new URLSearchParams(window.location.search);
-        const isFounding = params.get('founding') === '1';
+        const requestedTier = (params.get('tier') || '').toLowerCase();
+        const isFounding = requestedTier === 'founding' || params.get('founding') === '1';
+        const signupTierInput = form.querySelector('[name="signup_tier"]');
         const foundingInput = form.querySelector('[name="is_founding_member"]');
         const formHeading = document.querySelector('[data-form-heading]');
         const formContext = document.querySelector('[data-form-context]');
@@ -859,11 +883,32 @@
 
         if (isFounding) {
             if (foundingInput) foundingInput.value = 'True';
+            if (signupTierInput) signupTierInput.value = 'founding';
             if (formHeading) formHeading.textContent = 'Apply for a founding spot';
             if (formContext) formContext.classList.remove('is-free');
             if (contextLabel) contextLabel.textContent = 'Founding member application';
+            if (formContext) {
+                formContext.querySelector('p').innerHTML = '<strong data-context-label>Founding member application</strong>&nbsp;— Your rate of $79/year will be locked in permanently. No charge until launch.';
+            }
+        } else if (requestedTier === 'featured') {
+            if (foundingInput) foundingInput.value = 'False';
+            if (signupTierInput) signupTierInput.value = 'featured';
+            if (formHeading) formHeading.textContent = 'Start featured signup';
+            if (formContext) {
+                formContext.classList.add('is-free');
+                formContext.querySelector('p').innerHTML = '<strong data-context-label>Featured signup</strong>&nbsp;— 60-day free trial, then $24.99/month for featured visibility.';
+            }
+        } else if (requestedTier === 'basic') {
+            if (foundingInput) foundingInput.value = 'False';
+            if (signupTierInput) signupTierInput.value = 'basic';
+            if (formHeading) formHeading.textContent = 'Start basic practitioner signup';
+            if (formContext) {
+                formContext.classList.add('is-free');
+                formContext.querySelector('p').innerHTML = '<strong data-context-label>Basic practitioner signup</strong>&nbsp;— 60-day free trial, then $9.99/month.';
+            }
         } else {
             if (foundingInput) foundingInput.value = 'False';
+            if (signupTierInput) signupTierInput.value = 'free';
             if (formHeading) formHeading.textContent = 'Join the free waitlist';
             if (formContext) {
                 formContext.classList.add('is-free');

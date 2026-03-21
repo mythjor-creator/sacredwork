@@ -52,7 +52,12 @@ class PrivacyTermsPages(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Pricing for practitioners who want room to grow.')
         self.assertContains(response, '60-day free trial')
+        self.assertContains(response, '$9.99/month')
+        self.assertContains(response, '$24.99/month')
         self.assertContains(response, '$79/year')
+        self.assertContains(response, 'href="/waitlist/?tier=basic#waitlist-profile"', html=False)
+        self.assertContains(response, 'href="/waitlist/?tier=featured#waitlist-profile"', html=False)
+        self.assertContains(response, 'href="/waitlist/?tier=founding#waitlist-profile"', html=False)
 
     def test_privacy_policy_renders(self):
         response = self.client.get(reverse('pages:privacy'))

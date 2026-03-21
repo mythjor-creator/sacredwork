@@ -11,7 +11,7 @@ class WaitlistLandingTests(TestCase):
         response = self.client.get(reverse('waitlist:landing'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Be here before we open the doors')
+        self.assertContains(response, 'Get in before we launch.')
         self.assertContains(response, 'Founding practitioner rate')
         self.assertContains(response, '$79')
 
@@ -31,6 +31,7 @@ class WaitlistLandingTests(TestCase):
                 'years_experience': 6,
                 'website_url': 'https://example.com',
                 'notes': 'Interested in early beta access.',
+                'signup_tier': PractitionerWaitlistProfile.SignupTier.FREE,
             },
             follow=False,
         )
@@ -147,7 +148,7 @@ class WaitlistLandingTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertIn('mira@example.com', msg.to)
-        self.assertIn('waitlist', msg.subject.lower())
+        self.assertIn("you're on the list.", msg.subject.lower())
         self.assertIn('Mira', msg.body)
 
     def test_founding_signup_sends_founding_confirmation_email(self):
@@ -167,15 +168,70 @@ class WaitlistLandingTests(TestCase):
                 'website_url': '',
                 'notes': '',
                 'is_founding_member': 'True',
+                'signup_tier': PractitionerWaitlistProfile.SignupTier.FOUNDING,
             },
         )
 
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
         self.assertIn('nia@example.com', msg.to)
-        self.assertIn('welcome to clairbook', msg.subject.lower())
-        self.assertIn('founding rate of $79/year', msg.body.lower())
+        self.assertIn("you're in.", msg.subject.lower())
+        self.assertIn('your $79/year rate is locked in permanently', msg.body.lower())
         self.assertIn('verify your email', msg.body.lower())
+
+    def test_tier_query_sets_waitlist_flow_context(self):
+        response = self.client.get(f"{reverse('waitlist:landing')}?tier=featured")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Start featured signup')
+        self.assertContains(response, '$24.99/month')
+
+    def test_selected_signup_tier_is_saved(self):
+        self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Tier Test',
+                'email': 'tier-test@example.com',
+                'business_name': '',
+                'headline': 'Visibility-focused practitioner',
+                'modalities': 'coaching',
+                'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
+                'location': 'Remote',
+                'is_virtual': True,
+                'offers_in_person': False,
+                'years_experience': 2,
+                'website_url': '',
+                'notes': '',
+                'signup_tier': PractitionerWaitlistProfile.SignupTier.FEATURED,
+            },
+        )
+
+        profile = PractitionerWaitlistProfile.objects.get(email='tier-test@example.com')
+        self.assertEqual(profile.signup_tier, PractitionerWaitlistProfile.SignupTier.FEATURED)
+
+    def test_founding_signup_tier_forces_founding_member_flag(self):
+        self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Founding Tier Test',
+                'email': 'founding-tier-test@example.com',
+                'business_name': '',
+                'headline': 'Founding applicant',
+                'modalities': 'energy work',
+                'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
+                'location': 'Remote',
+                'is_virtual': True,
+                'offers_in_person': False,
+                'years_experience': 4,
+                'website_url': '',
+                'notes': '',
+                'is_founding_member': 'False',
+                'signup_tier': PractitionerWaitlistProfile.SignupTier.FOUNDING,
+            },
+        )
+
+        profile = PractitionerWaitlistProfile.objects.get(email='founding-tier-test@example.com')
+        self.assertEqual(profile.signup_tier, PractitionerWaitlistProfile.SignupTier.FOUNDING)
+        self.assertTrue(profile.is_founding_member)
 
     def test_new_signup_status_defaults_to_new(self):
         PractitionerWaitlistProfile.objects.create(
@@ -365,6 +421,14 @@ class WaitlistLandingTests(TestCase):
         admin_site = AdminSite()
         model_admin = PractitionerWaitlistProfileAdmin(PractitionerWaitlistProfile, admin_site)
         self.assertIn('is_founding_member', model_admin.list_filter)
+
+    def test_admin_list_filter_includes_signup_tier(self):
+        from .admin import PractitionerWaitlistProfileAdmin
+        from django.contrib.admin.sites import AdminSite
+
+        admin_site = AdminSite()
+        model_admin = PractitionerWaitlistProfileAdmin(PractitionerWaitlistProfile, admin_site)
+        self.assertIn('signup_tier', model_admin.list_filter)
 
     def test_status_change_sends_notification_email(self):
         """Verify that status transitions trigger notification emails."""

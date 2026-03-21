@@ -8,6 +8,20 @@ from .models import PractitionerWaitlistProfile
 
 
 def waitlist_landing_view(request):
+    valid_tiers = {
+        PractitionerWaitlistProfile.SignupTier.FREE,
+        PractitionerWaitlistProfile.SignupTier.BASIC,
+        PractitionerWaitlistProfile.SignupTier.FEATURED,
+        PractitionerWaitlistProfile.SignupTier.FOUNDING,
+    }
+
+    requested_tier = request.GET.get('tier', '').strip().lower()
+    if requested_tier not in valid_tiers:
+        requested_tier = PractitionerWaitlistProfile.SignupTier.FREE
+
+    if request.GET.get('founding') == '1':
+        requested_tier = PractitionerWaitlistProfile.SignupTier.FOUNDING
+
     if request.method == 'POST':
         form = PractitionerWaitlistForm(request.POST)
         if form.is_valid():
@@ -16,8 +30,13 @@ def waitlist_landing_view(request):
             messages.success(request, 'You are on the waitlist. We will reach out soon.')
             return redirect(f"{reverse('waitlist:landing')}?submitted=1")
     else:
-        is_founding = request.GET.get('founding') == '1'
-        form = PractitionerWaitlistForm(initial={'is_founding_member': is_founding})
+        is_founding = requested_tier == PractitionerWaitlistProfile.SignupTier.FOUNDING
+        form = PractitionerWaitlistForm(
+            initial={
+                'is_founding_member': is_founding,
+                'signup_tier': requested_tier,
+            }
+        )
 
     service_tracks = [
         {
@@ -83,5 +102,6 @@ def waitlist_landing_view(request):
         'approval_flow': approval_flow,
         'site_base_url': request.build_absolute_uri('/').rstrip('/'),
         'current_absolute_url': request.build_absolute_uri(),
+        'requested_tier': requested_tier,
     }
     return render(request, 'waitlist/landing.html', context)

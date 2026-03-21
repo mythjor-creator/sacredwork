@@ -57,6 +57,7 @@ class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
         'full_name',
         'email',
         'is_test_data',
+        'signup_tier',
         'practice_type',
         'is_founding_member',
         'status',
@@ -65,7 +66,7 @@ class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
         'status_changed_at',
         'created_at',
     )
-    list_filter = ('is_test_data', 'is_founding_member', 'practice_type', 'status', 'is_virtual', 'offers_in_person')
+    list_filter = ('is_test_data', 'signup_tier', 'is_founding_member', 'practice_type', 'status', 'is_virtual', 'offers_in_person')
     search_fields = ('business_name', 'full_name', 'email', 'headline', 'modalities', 'location')
     readonly_fields = ('status_changed_at', 'created_at', 'transition_history')
     actions = [mark_as_invited, mark_as_test_data, mark_as_real_data]

@@ -22,9 +22,11 @@ class PractitionerWaitlistForm(forms.ModelForm):
             'website_url',
             'notes',
             'is_founding_member',
+            'signup_tier',
         )
         widgets = {
             'is_founding_member': forms.HiddenInput(),
+            'signup_tier': forms.HiddenInput(),
         }
         labels = {
             'full_name': 'Practitioner name',
@@ -44,6 +46,7 @@ class PractitionerWaitlistForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['business_name'].required = False
+        self.fields['signup_tier'].required = False
 
     def clean_email(self):
         email = self.cleaned_data['email'].strip().lower()
@@ -55,8 +58,23 @@ class PractitionerWaitlistForm(forms.ModelForm):
         cleaned_data = super().clean()
         is_virtual = cleaned_data.get('is_virtual')
         offers_in_person = cleaned_data.get('offers_in_person')
+        signup_tier = cleaned_data.get('signup_tier') or PractitionerWaitlistProfile.SignupTier.FREE
+        is_founding_member = cleaned_data.get('is_founding_member')
+
         if not is_virtual and not offers_in_person:
             raise forms.ValidationError('Select at least one session format: virtual or in-person.')
+
+        if signup_tier == PractitionerWaitlistProfile.SignupTier.FOUNDING:
+            cleaned_data['is_founding_member'] = True
+        elif is_founding_member:
+            cleaned_data['signup_tier'] = PractitionerWaitlistProfile.SignupTier.FOUNDING
+        elif signup_tier not in {
+            PractitionerWaitlistProfile.SignupTier.FREE,
+            PractitionerWaitlistProfile.SignupTier.BASIC,
+            PractitionerWaitlistProfile.SignupTier.FEATURED,
+        }:
+            cleaned_data['signup_tier'] = PractitionerWaitlistProfile.SignupTier.FREE
+
         return cleaned_data
 
     def save(self, commit=True):

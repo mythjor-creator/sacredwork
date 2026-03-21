@@ -6,6 +6,12 @@ User = get_user_model()
 
 
 class PractitionerWaitlistProfile(models.Model):
+    class SignupTier(models.TextChoices):
+        FREE = 'free', 'Free Waitlist'
+        BASIC = 'basic', 'Basic Practitioner'
+        FEATURED = 'featured', 'Featured'
+        FOUNDING = 'founding', 'Founding'
+
     class PracticeType(models.TextChoices):
         WELLNESS = 'wellness', 'Wellness'
         SPIRITUAL = 'spiritual', 'Spiritual'
@@ -34,6 +40,13 @@ class PractitionerWaitlistProfile(models.Model):
     is_founding_member = models.BooleanField(
         default=False,
         help_text='Opted in for the founding practitioner rate at sign-up.',
+    )
+    signup_tier = models.CharField(
+        max_length=20,
+        choices=SignupTier.choices,
+        default=SignupTier.FREE,
+        db_index=True,
+        help_text='Selected signup flow from pricing and waitlist entry points.',
     )
     is_test_data = models.BooleanField(
         default=False,
