@@ -56,9 +56,9 @@ heroku buildpacks:add heroku/nodejs  # If using Tailwind CSS or JS build
 heroku config:set DJANGO_SECRET_KEY=<your-generated-key>
 heroku config:set DEBUG=False
 heroku config:set ALLOWED_HOSTS=clairbook-mvp.herokuapp.com,clairbook.app
-heroku config:set EMAIL_HOST=smtp.resend.com
-heroku config:set EMAIL_HOST_USER=resend
-heroku config:set EMAIL_HOST_PASSWORD=<resend-api-key>
+heroku config:set EMAIL_HOST=smtp.mailgun.org
+heroku config:set EMAIL_HOST_USER=postmaster@mg.your-domain.com
+heroku config:set EMAIL_HOST_PASSWORD=<mailgun-smtp-password>
 heroku config:set DEFAULT_FROM_EMAIL="clairbook <hello@clairbook.com>"
 heroku config:set SITE_URL=https://clairbook.app
 ```
@@ -333,7 +333,7 @@ heroku logs --tail
 
 - **Server Issues**: [Your hosting provider support]
 - **Database Issues**: Database admin contact
-- **Email Delivery**: Resend support or email provider
+- **Email Delivery**: Mailgun support or email provider
 - **Security Incidents**: security@clairbook.app → immediate patch & notify users
 - **On-call Rotation**: [Define your on-call schedule]
 

@@ -167,14 +167,24 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:dashboard'
 LOGOUT_REDIRECT_URL = 'accounts:login'
 
-# Email — uses SMTP when EMAIL_HOST is set, falls back to console in development
+# Email — uses SMTP when configured, falls back to console in development.
+# Set EMAIL_PROVIDER=mailgun to use MAILGUN_* defaults without custom SMTP host wiring.
+_email_provider = os.environ.get('EMAIL_PROVIDER', '').strip().lower()
 _email_host = os.environ.get('EMAIL_HOST', '').strip()
+if _email_provider == 'mailgun' and not _email_host:
+    _email_host = os.environ.get('MAILGUN_SMTP_HOST', 'smtp.mailgun.org').strip()
+
 if _email_host:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = _email_host
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+    if _email_provider == 'mailgun':
+        EMAIL_PORT = int(os.environ.get('EMAIL_PORT', os.environ.get('MAILGUN_SMTP_PORT', '587')))
+        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', os.environ.get('MAILGUN_SMTP_LOGIN', ''))
+        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', os.environ.get('MAILGUN_SMTP_PASSWORD', ''))
+    else:
+        EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
     EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
     EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
 else:
