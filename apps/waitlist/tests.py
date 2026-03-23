@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.core import mail
 from django.test import TestCase
 from django.urls import reverse
@@ -178,6 +180,35 @@ class WaitlistLandingTests(TestCase):
         self.assertIn("you're in.", msg.subject.lower())
         self.assertIn('your $79/year rate is locked in permanently', msg.body.lower())
         self.assertIn('verify your email', msg.body.lower())
+
+    @patch('apps.waitlist.views.send_waitlist_confirmation')
+    def test_waitlist_submission_shows_warning_when_confirmation_email_fails(self, mock_send_confirmation):
+        mock_send_confirmation.side_effect = RuntimeError('smtp unavailable')
+
+        response = self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Email Failure',
+                'email': 'email-failure@example.com',
+                'business_name': '',
+                'headline': 'Coach',
+                'modalities': 'coaching',
+                'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
+                'location': 'Remote',
+                'is_virtual': True,
+                'offers_in_person': False,
+                'years_experience': 5,
+                'website_url': '',
+                'notes': '',
+                'signup_tier': PractitionerWaitlistProfile.SignupTier.FREE,
+            },
+            follow=True,
+        )
+
+        self.assertContains(response, 'You are on the waitlist, but we could not send your confirmation email right now.')
+        self.assertTrue(
+            PractitionerWaitlistProfile.objects.filter(email='email-failure@example.com').exists()
+        )
 
     def test_tier_query_sets_waitlist_flow_context(self):
         response = self.client.get(f"{reverse('waitlist:landing')}?tier=featured")

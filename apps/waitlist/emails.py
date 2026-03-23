@@ -56,7 +56,7 @@ def send_waitlist_confirmation(profile):
         message=message,
         from_email=FROM_EMAIL,
         recipient_list=[profile.email],
-        fail_silently=True,
+        fail_silently=False,
     )
 
 

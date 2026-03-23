@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.urls import reverse
 from django.shortcuts import redirect, render
@@ -5,6 +7,9 @@ from django.shortcuts import redirect, render
 from .emails import send_waitlist_confirmation
 from .forms import PractitionerWaitlistForm
 from .models import PractitionerWaitlistProfile
+
+
+logger = logging.getLogger(__name__)
 
 
 def waitlist_landing_view(request):
@@ -26,8 +31,17 @@ def waitlist_landing_view(request):
         form = PractitionerWaitlistForm(request.POST)
         if form.is_valid():
             profile = form.save()
-            send_waitlist_confirmation(profile)
-            messages.success(request, 'You are on the waitlist. We will reach out soon.')
+            try:
+                send_waitlist_confirmation(profile)
+            except Exception:
+                logger.exception('Waitlist confirmation email failed for profile_id=%s', profile.id)
+                messages.warning(
+                    request,
+                    'You are on the waitlist, but we could not send your confirmation email right now. '
+                    'Please check your address and try again shortly.',
+                )
+            else:
+                messages.success(request, 'You are on the waitlist. We will reach out soon.')
             return redirect(f"{reverse('waitlist:landing')}?submitted=1")
     else:
         is_founding = requested_tier == PractitionerWaitlistProfile.SignupTier.FOUNDING
