@@ -2,7 +2,7 @@
 builder = "nixpacks"
 
 [deploy]
-startCommand = "python manage.py createsuperuser"
+startCommand = "python manage.py create_superuser_from_env && python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn config.wsgi --workers 2 --timeout 120 --bind 0.0.0.0:$PORT"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
