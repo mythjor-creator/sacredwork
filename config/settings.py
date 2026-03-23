@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'apps.moderation',
     'apps.waitlist',
     'apps.pages',
+    'apps.management',
 ]
 
 MIDDLEWARE = [
