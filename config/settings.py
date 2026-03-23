@@ -240,6 +240,10 @@ STRIPE_BILLING_WEBHOOK_SECRET = os.environ.get('STRIPE_BILLING_WEBHOOK_SECRET', 
 # Site URL for email links and GDPR exports
 SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 
+# Waitlist confirmation delivery strategy.
+# In production, default to async so slow SMTP does not block form submissions.
+WAITLIST_CONFIRMATION_EMAIL_ASYNC = _bool_env('WAITLIST_CONFIRMATION_EMAIL_ASYNC', not DEBUG)
+
 CSRF_TRUSTED_ORIGINS = [SITE_URL]
 railway_public_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
 if railway_public_domain:
