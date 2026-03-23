@@ -23,6 +23,13 @@ def _csv_env(name, default=''):
     raw_value = os.environ.get(name, default)
     return [item.strip() for item in raw_value.split(',') if item.strip()]
 
+
+def _bool_env(name, default=False):
+    raw_value = os.environ.get(name)
+    if raw_value is None:
+        return default
+    return raw_value.strip().lower() in {'1', 'true', 't', 'yes', 'y', 'on'}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -34,7 +41,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = _bool_env('DEBUG', True)
 
 ALLOWED_HOSTS = _csv_env('ALLOWED_HOSTS', '127.0.0.1,localhost')
 
@@ -185,8 +192,8 @@ if _email_host:
         EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
         EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
         EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
-    EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-    EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', 'False') == 'True'
+    EMAIL_USE_TLS = _bool_env('EMAIL_USE_TLS', True)
+    EMAIL_USE_SSL = _bool_env('EMAIL_USE_SSL', False)
     EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -220,11 +227,11 @@ STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY', '').strip()
 STRIPE_PUBLISHABLE_KEY = os.environ.get('STRIPE_PUBLISHABLE_KEY', '').strip()
 STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET', '').strip()
 STRIPE_CURRENCY = os.environ.get('STRIPE_CURRENCY', 'usd').strip().lower()
-BOOKING_REQUIRE_PAYMENT = os.environ.get('BOOKING_REQUIRE_PAYMENT', 'False') == 'True'
+BOOKING_REQUIRE_PAYMENT = _bool_env('BOOKING_REQUIRE_PAYMENT', False)
 
 # Practitioner subscriptions (Stripe Billing)
-PRACTITIONER_BILLING_ENABLED = os.environ.get('PRACTITIONER_BILLING_ENABLED', 'False') == 'True'
-ENFORCE_PRACTITIONER_BILLING_ACCESS = os.environ.get('ENFORCE_PRACTITIONER_BILLING_ACCESS', 'False') == 'True'
+PRACTITIONER_BILLING_ENABLED = _bool_env('PRACTITIONER_BILLING_ENABLED', False)
+ENFORCE_PRACTITIONER_BILLING_ACCESS = _bool_env('ENFORCE_PRACTITIONER_BILLING_ACCESS', False)
 STRIPE_PRO_BASIC_PRICE_ID = os.environ.get('STRIPE_PRO_BASIC_PRICE_ID', '').strip()
 STRIPE_PRO_FEATURED_PRICE_ID = os.environ.get('STRIPE_PRO_FEATURED_PRICE_ID', '').strip()
 STRIPE_PRO_FOUNDING_PRICE_ID = os.environ.get('STRIPE_PRO_FOUNDING_PRICE_ID', '').strip()
