@@ -12,6 +12,8 @@ class SimpleWaitlistForm(forms.ModelForm):
         self.fields['notes'].required = False
 from django import forms
 
+
+from django import forms
 from config.test_data import email_is_test_data
 
 from .models import PractitionerWaitlistProfile
