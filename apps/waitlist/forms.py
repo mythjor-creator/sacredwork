@@ -1,3 +1,15 @@
+class SimpleWaitlistForm(forms.ModelForm):
+    class Meta:
+        model = PractitionerWaitlistProfile
+        fields = ('full_name', 'email', 'notes')
+        labels = {
+            'full_name': 'Name',
+            'email': 'Email',
+            'notes': 'How did you hear about us? (optional)',
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['notes'].required = False
 from django import forms
 
 from config.test_data import email_is_test_data

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Join the Waitlist | clairbook{% endblock %}
+{% block body_class %}waitlist-signup-page{% endblock %}
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: center; min-height: 80vh;">
+    <div
+        style="background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); padding: 2.5rem 2rem; max-width: 400px; width: 100%; text-align: center;">
+        <h1 style="margin-bottom: 1.5rem; font-size: 2rem;">Join the Waitlist</h1>
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <div style="margin-bottom: 1.2rem;">
+                {{ form.full_name.label_tag }}<br>
+                {{ form.full_name }}
+                {% for error in form.full_name.errors %}<div class="error">{{ error }}</div>{% endfor %}
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                {{ form.email.label_tag }}<br>
+                {{ form.email }}
+                {% for error in form.email.errors %}<div class="error">{{ error }}</div>{% endfor %}
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                {{ form.notes.label_tag }}<br>
+                {{ form.notes }}
+                {% for error in form.notes.errors %}<div class="error">{{ error }}</div>{% endfor %}
+            </div>
+            <button type="submit"
+                style="width: 100%; padding: 0.8rem; background: #374442; color: #fff; border: none; border-radius: 8px; font-size: 1.1rem;">Join
+                Now</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,3 +1,19 @@
+from .forms import SimpleWaitlistForm
+# --- Minimal public waitlist signup ---
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def simple_waitlist_signup(request):
+    if request.method == 'POST':
+        form = SimpleWaitlistForm(request.POST)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.status = PractitionerWaitlistProfile.Status.NEW
+            profile.save()
+            return render(request, 'waitlist/success.html', {'profile': profile})
+    else:
+        form = SimpleWaitlistForm()
+    return render(request, 'waitlist/simple_signup.html', {'form': form})
 import logging
 from threading import Thread
 
