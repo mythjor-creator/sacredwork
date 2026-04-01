@@ -57,6 +57,13 @@ def _send_waitlist_confirmation_background(profile):
         logger.exception('Waitlist confirmation email failed for profile_id=%s', profile.id)
 
 
+def _send_lead_confirmation_background(lead, generated_invite_code):
+    try:
+        send_waitlist_lead_confirmation(lead, generated_invite_code=generated_invite_code)
+    except Exception:
+        logger.exception('Waitlist lead confirmation email failed for lead_id=%s', lead.id)
+
+
 def waitlist_landing_view(request):
     """Render and process the TailGrid waitlist signup form as a single-page public form."""
     from .models import WaitlistLead, InviteCode
@@ -109,11 +116,13 @@ def waitlist_landing_view(request):
                                 break
                         new_invite_code = InviteCode.objects.create(code=code, is_active=True, owner=lead)
 
-                    # Send confirmation + confirmation code email for all waitlist signups.
-                    send_waitlist_lead_confirmation(
-                        lead,
-                        generated_invite_code=new_invite_code.code if new_invite_code else None,
-                    )
+                    # Send confirmation email in a background thread so slow
+                    # SMTP does not block the form response in production.
+                    Thread(
+                        target=_send_lead_confirmation_background,
+                        args=(lead, new_invite_code.code if new_invite_code else None),
+                        daemon=True,
+                    ).start()
                     context["success"] = True
             except Exception as e:
                 context["error"] = str(e)
