@@ -1,10 +1,63 @@
 from django.conf import settings
+from django.core.mail import EmailMessage
 from django.core.mail import send_mail
 from django.urls import reverse
 
 SITE_NAME = 'clairbook'
 FROM_EMAIL = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@sacredwork.app')
 SITE_URL = getattr(settings, 'SITE_URL', 'http://localhost:8000')
+
+
+def _waitlist_confirmation_code(lead):
+    return f"SW-{lead.id:06d}"
+
+
+def _waitlist_reply_to_email():
+    return getattr(settings, 'WAITLIST_REPLY_TO_EMAIL', FROM_EMAIL)
+
+
+def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
+    """Send signup confirmation to a WaitlistLead.
+
+    Every signup receives a confirmation code. Referred signups also receive
+    their newly generated invite code in the same email.
+    """
+    first_name = (lead.name or '').split()[0] if lead.name else 'there'
+    confirmation_code = _waitlist_confirmation_code(lead)
+    used_referral = lead.invite_code_id is not None
+
+    if used_referral:
+        subject = "You're confirmed. Your invite code is inside."
+        invite_line = generated_invite_code or 'Pending'
+        message = (
+            f"Hi {first_name},\n\n"
+            f"You're officially on the {SITE_NAME} waitlist.\n\n"
+            f"Confirmation code: {confirmation_code}\n"
+            f"Your invite code: {invite_line}\n\n"
+            f"You can share your invite code with trusted peers.\n"
+            f"We'll email you as we roll out onboarding.\n\n"
+            f"— The {SITE_NAME} team\n\n"
+            f"Questions? Reply to this email."
+        )
+    else:
+        subject = "You're confirmed on the waitlist"
+        message = (
+            f"Hi {first_name},\n\n"
+            f"You're officially on the {SITE_NAME} waitlist.\n\n"
+            f"Confirmation code: {confirmation_code}\n\n"
+            f"Thanks for sharing your info with us. We'll follow up with next steps\n"
+            f"as soon as your cohort is ready.\n\n"
+            f"— The {SITE_NAME} team\n\n"
+            f"Questions? Reply to this email."
+        )
+
+    EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=FROM_EMAIL,
+        to=[lead.email],
+        reply_to=[_waitlist_reply_to_email()],
+    ).send(fail_silently=False)
 
 
 def send_waitlist_confirmation(profile):

@@ -25,7 +25,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.shortcuts import redirect, render
 
-from .emails import send_waitlist_confirmation
+from .emails import send_waitlist_confirmation, send_waitlist_lead_confirmation
 from .forms import PractitionerWaitlistForm
 from .models import PractitionerWaitlistProfile
 
@@ -108,6 +108,12 @@ def waitlist_landing_view(request):
                             if not InviteCode.objects.filter(code__iexact=code).exists():
                                 break
                         new_invite_code = InviteCode.objects.create(code=code, is_active=True, owner=lead)
+
+                    # Send confirmation + confirmation code email for all waitlist signups.
+                    send_waitlist_lead_confirmation(
+                        lead,
+                        generated_invite_code=new_invite_code.code if new_invite_code else None,
+                    )
                     context["success"] = True
             except Exception as e:
                 context["error"] = str(e)

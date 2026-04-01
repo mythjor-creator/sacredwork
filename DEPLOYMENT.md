@@ -9,6 +9,19 @@
 - [ ] Set `ALLOWED_HOSTS` to your domain(s)
 - [ ] Configure `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` for SMTP
 - [ ] Set `DEFAULT_FROM_EMAIL` to official support email
+- [ ] Set `SUPPORT_INBOX_EMAIL` (mailbox where replies and questions should land)
+- [ ] Set `WAITLIST_REPLY_TO_EMAIL` (optional override; defaults to SUPPORT_INBOX_EMAIL)
+
+### Mailgun Reply / Inbound Setup
+
+To receive user questions in your own inbox while still sending from your app domain:
+
+1. In Mailgun, configure an inbound route for your domain (for example `questions@mg.your-domain.com`).
+2. Forward inbound messages to your real working inbox (for example `you@yourcompany.com`).
+3. Set `SUPPORT_INBOX_EMAIL` (and optionally `WAITLIST_REPLY_TO_EMAIL`) to that inbound Mailgun address.
+
+With this setup, outgoing waitlist confirmations still come from `DEFAULT_FROM_EMAIL`,
+and replies land in the mailbox you actually use to answer questions.
 - [ ] Set `SITE_URL` to your production domain (e.g., https://clairbook.app)
 - [ ] Configure `ANALYTICS_GA4_MEASUREMENT_ID` or `ANALYTICS_PLAUSIBLE_DOMAIN` if needed
 

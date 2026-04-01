@@ -198,6 +198,8 @@ if _email_host:
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'clairbook <noreply@sacredwork.app>')
+SUPPORT_INBOX_EMAIL = os.environ.get('SUPPORT_INBOX_EMAIL', 'support@sacredwork.app')
+WAITLIST_REPLY_TO_EMAIL = os.environ.get('WAITLIST_REPLY_TO_EMAIL', SUPPORT_INBOX_EMAIL)
 
 # ── Production security ──────────────────────────────────────────────────────
 # These are enforced only when DEBUG=False (i.e. in production).
