@@ -109,6 +109,22 @@
         const submitLabel = document.getElementById('submit-label');
         const referralCodeInput = document.getElementById('referral_code');
 
+        function setReferralMode(value) {
+            const selected = Array.from(referralRadio).find(radio => radio.value === value);
+            if (selected) {
+                selected.checked = true;
+            }
+            if (value === 'yes') {
+                referralGroup.classList.remove('hidden');
+                aboutGroup.classList.add('hidden');
+                submitLabel.textContent = 'Join Waitlist';
+            } else {
+                referralGroup.classList.add('hidden');
+                aboutGroup.classList.remove('hidden');
+                submitLabel.textContent = 'Request Invitation';
+            }
+        }
+
         function formatReferralCode(value) {
             const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
             if (cleaned.length <= 3) {
@@ -126,17 +142,17 @@
 
         referralRadio.forEach(radio => {
             radio.addEventListener('change', function () {
-                if (this.value === 'yes') {
-                    referralGroup.classList.remove('hidden');
-                    aboutGroup.classList.add('hidden');
-                    submitLabel.textContent = 'Join Waitlist';
-                } else {
-                    referralGroup.classList.add('hidden');
-                    aboutGroup.classList.remove('hidden');
-                    submitLabel.textContent = 'Request Invitation';
-                }
+                setReferralMode(this.value);
             });
         });
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('referral') === 'no') {
+            setReferralMode('no');
+        } else {
+            const checked = Array.from(referralRadio).find(radio => radio.checked);
+            setReferralMode(checked ? checked.value : 'yes');
+        }
     </script>
 </body>
 
