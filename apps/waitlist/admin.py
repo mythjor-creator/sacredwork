@@ -47,6 +47,20 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
 
 @admin.register(InviteCode)
 class InviteCodeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'owner', 'is_active', 'uses_remaining', 'created_at')
-    search_fields = ('code', 'owner__name', 'owner__email')
+    list_display = (
+        'code',
+        'admin_owner',
+        'owner',
+        'is_active',
+        'uses_remaining',
+        'created_at',
+    )
+    search_fields = (
+        'code',
+        'owner__name',
+        'owner__email',
+        'admin_owner__username',
+        'admin_owner__email',
+    )
+    list_filter = ('is_active', 'admin_owner', 'created_at')
     readonly_fields = ('created_at',)

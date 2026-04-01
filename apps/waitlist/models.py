@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 # Minimal InviteCode and WaitlistLead models for invite-only waitlist
 
@@ -11,6 +12,14 @@ class InviteCode(models.Model):
         blank=True,
         on_delete=models.SET_NULL,
         related_name='owned_invite_codes',
+    )
+    admin_owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='admin_owned_invite_codes',
+        help_text='Admin user responsible for this invite code.',
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
