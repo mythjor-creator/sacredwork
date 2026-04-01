@@ -8,12 +8,17 @@ from django.utils import timezone
 from django.db.models import Prefetch
 from django.core.serializers.json import DjangoJSONEncoder
 
+from datetime import datetime
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
 from apps.accounts.models import User
 from apps.billing.payments import practitioner_billing_enabled
 from .forms import ReportProblemForm
 from .models import EmailVerificationToken, GDPRDataExportLog, GDPRAccountDeletionLog
 
+
+def landing_view(request):
+    """Render the public Clairbook landing page."""
+    return render(request, "pages/landing.html", {"year": datetime.now().year})
 
 def privacy_view(request):
     """Render privacy policy page."""
