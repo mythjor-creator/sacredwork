@@ -247,6 +247,11 @@ SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
 WAITLIST_CONFIRMATION_EMAIL_ASYNC = _bool_env('WAITLIST_CONFIRMATION_EMAIL_ASYNC', not DEBUG)
 
 CSRF_TRUSTED_ORIGINS = [SITE_URL]
+if DEBUG:
+    # Allow both localhost variants when running the dev server locally.
+    for _local_origin in ('http://localhost:8000', 'http://127.0.0.1:8000'):
+        if _local_origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(_local_origin)
 railway_public_domain = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '').strip()
 if railway_public_domain:
     CSRF_TRUSTED_ORIGINS.append(f'https://{railway_public_domain}')
