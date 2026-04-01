@@ -26,6 +26,11 @@ class PrivacyTermsPages(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {'status': 'ok'})
 
+    def test_root_landing_renders(self):
+        response = self.client.get(reverse('pages:landing'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'pages/landing.html')
+
     @override_settings(DEBUG=False, SECURE_SSL_REDIRECT=True, SECURE_REDIRECT_EXEMPT=[r'^health/$'])
     def test_healthcheck_bypasses_ssl_redirect_in_production(self):
         response = self.client.get(reverse('pages:healthcheck'))

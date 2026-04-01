@@ -5,7 +5,55 @@ from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import PractitionerWaitlistProfile, StatusTransition
+from .models import InviteCode, PractitionerWaitlistProfile, StatusTransition, WaitlistLead
+
+
+class WaitlistSmokeTests(TestCase):
+    def test_waitlist_landing_get_renders(self):
+        response = self.client.get(reverse('waitlist:landing'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_waitlist_landing_post_without_referral_creates_lead(self):
+        response = self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Smoke User',
+                'email': 'smoke-user@example.com',
+                'specialization': 'Wellness',
+                'has_referral': 'no',
+                'about': 'Testing waitlist submission',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'waitlist/success.html')
+        self.assertTrue(WaitlistLead.objects.filter(email='smoke-user@example.com').exists())
+
+    def test_waitlist_landing_post_with_referral_creates_lead_and_new_code(self):
+        inviter_code = InviteCode.objects.create(code='ABC-123', is_active=True, uses_remaining=2)
+
+        response = self.client.post(
+            reverse('waitlist:landing'),
+            {
+                'full_name': 'Referred User',
+                'email': 'referred-user@example.com',
+                'specialization': 'Spiritual',
+                'has_referral': 'yes',
+                'referral_code': 'ABC-123',
+                'about': '',
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'waitlist/success.html')
+
+        lead = WaitlistLead.objects.get(email='referred-user@example.com')
+        self.assertEqual(lead.invite_code_id, inviter_code.id)
+
+        inviter_code.refresh_from_db()
+        self.assertEqual(inviter_code.uses_remaining, 1)
+
+        self.assertTrue(InviteCode.objects.filter(owner=lead).exclude(id=inviter_code.id).exists())
 
 
 class WaitlistLandingTests(TestCase):
