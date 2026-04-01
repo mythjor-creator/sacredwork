@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
@@ -25,7 +26,7 @@
         <section
             class="mx-auto grid w-full max-w-6xl gap-10 px-6 sm:px-6 md:gap-12 md:px-10 lg:grid-cols-2 lg:items-center lg:gap-12 xl:gap-16">
             <div class="mx-auto w-full max-w-md overflow-hidden rounded-lg lg:mx-0 lg:max-w-sm">
-                <img src="/media/landing_page_media/ca23b519038d4743e9fcaa56db2c86716efdd3ba.jpg"
+                <img src="{% static 'pages/landing_media/ca23b519038d4743e9fcaa56db2c86716efdd3ba.jpg' %}"
                     alt="Hand holding a mallet over a singing bowl" class="w-full rounded-lg object-cover" />
             </div>
             <div
@@ -68,7 +69,7 @@
                 </ul>
             </div>
             <div class="mx-auto w-full max-w-md overflow-hidden rounded-lg lg:mx-0 lg:max-w-sm">
-                <img src="/media/landing_page_media/ecede7d24797108b6306c881770a716a25f738ec.jpg"
+                <img src="{% static 'pages/landing_media/ecede7d24797108b6306c881770a716a25f738ec.jpg' %}"
                     alt="Practitioner in a movement pose" class="w-full rounded-lg object-cover" />
             </div>
         </section>
@@ -136,13 +137,13 @@
         </section>
 
         <section class="relative mt-0 overflow-hidden px-6 py-20 sm:px-6 md:px-10 md:py-28">
-            <img src="/media/landing_page_media/79a3d53f692a0672468e27506366111c923e77f6.png"
+            <img src="{% static 'pages/landing_media/79a3d53f692a0672468e27506366111c923e77f6.png' %}"
                 alt="Abstract colorful background" class="absolute inset-0 h-full w-full object-cover" />
             <div class="absolute inset-0 bg-white bg-opacity-5"></div>
             <div
                 class="relative mx-auto w-full max-w-xl rounded-2xl border border-gray-300 bg-white px-8 py-10 text-center shadow-2xl md:px-16 md:py-16">
                 <div class="mx-auto mb-8 flex h-8 w-8 items-center justify-center">
-                    <img src="/media/landing_page_media/lock.svg" alt="Lock icon" class="h-8 w-6" />
+                    <img src="{% static 'pages/landing_media/lock.svg' %}" alt="Lock icon" class="h-8 w-6" />
                 </div>
                 <h2 class="text-3xl font-normal leading-tight text-black md:text-4xl">Clairbook is invite-only (for now)
                 </h2>
