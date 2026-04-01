@@ -32,3 +32,9 @@ build/
 # macOS
 .DS_Store
 staticfiles/
+
+# Local deployment notes / one-off exports
+BOOTSTRAP_ADMIN_ENV.txt
+apps/pages/PRACTITIONER_BILLING_ENABLED=True
+ecommerce-v4/
+marketing-v4/
