@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clairbook – Join Waitlist</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="bg-gray-50 min-h-screen flex flex-col justify-center items-center">
+    <main class="flex flex-col items-center justify-center min-h-screen w-full px-4 py-12">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-8">
+            <h1 class="text-2xl font-bold mb-6">Sign up early</h1>
+            {% if error %}
+            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {{ error }}
+            </div>
+            {% endif %}
+            <form id="waitlist-form" method="post" class="space-y-4">
+                {% csrf_token %}
+                <div class="flex flex-col space-y-4 mb-6">
+                    <label class="flex items-center space-x-3">
+                        <input type="radio" name="has_referral" value="yes" checked
+                            class="form-radio h-5 w-5 text-purple-600 border-2 border-gray-300 focus:ring-purple-500">
+                        <span class="text-lg text-gray-700 font-medium">I have a referral code</span>
+                    </label>
+                    <label class="flex items-center space-x-3">
+                        <input type="radio" name="has_referral" value="no"
+                            class="form-radio h-5 w-5 text-purple-600 border-2 border-gray-300 focus:ring-purple-500">
+                        <span class="text-lg text-gray-700 font-medium">I do not have a referral code</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="full_name">Full name</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-3 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.655 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </span>
+                        <input id="full_name" name="full_name" type="text" required
+                            class="pl-10 pr-3 py-3 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="First Last">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" for="email">Email</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-3 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 12H8m8 0a4 4 0 11-8 0 4 4 0 018 0zm0 0v1a4 4 0 01-8 0v-1" />
+                            </svg>
+                        </span>
+                        <input id="email" name="email" type="email" required
+                            class="pl-10 pr-3 py-3 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="name@example.com">
+                    </div>
+                </div>
+                <div id="referral-group">
+                    <label class="block text-sm font-medium mb-1" for="referral_code">Referral code</label>
+                    <input id="referral_code" name="referral_code" type="text"
+                        class="py-3 px-3 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="XXX-XXX">
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium mb-1" for="specialization">Specialization
+                            (optional)</label>
+                        <input id="specialization" name="specialization" type="text"
+                            class="py-3 px-3 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="E.g. Energy worker, reiki healer, aesthetician...">
+                    </div>
+                </div>
+                <div id="about-group" class="hidden">
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium mb-1" for="specialization">Specialization
+                            (optional)</label>
+                        <input id="specialization_about" name="specialization" type="text"
+                            class="py-3 px-3 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="E.g. Energy worker, reiki healer, aesthetician...">
+                    </div>
+                    <hr class="my-8">
+                    <div class="mb-6"></div>
+                    <label class="block text-lg font-bold mb-2" for="about">Tell us about yourself</label>
+                    <p class="text-sm text-gray-600 mb-2">No referral code? No problem! Describe your reason for joining
+                        and any relevant details about your work.</p>
+                    <textarea id="about" name="about" rows="4"
+                        class="py-3 px-3 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Start typing..."></textarea>
+                </div>
+                <button type="submit"
+                    class="w-full bg-black text-white font-semibold py-3 rounded-lg shadow hover:bg-gray-900 transition flex items-center justify-center">
+                    <span id="submit-label">Join Waitlist</span>
+                    <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </main>
+    <script>
+        // Toggle referral/about fields
+        const referralRadio = document.querySelectorAll('input[name="has_referral"]');
+        const referralGroup = document.getElementById('referral-group');
+        const aboutGroup = document.getElementById('about-group');
+        const submitLabel = document.getElementById('submit-label');
+        const referralCodeInput = document.getElementById('referral_code');
+
+        function formatReferralCode(value) {
+            const cleaned = value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+            if (cleaned.length <= 3) {
+                return cleaned;
+            }
+            return `${cleaned.slice(0, 3)}-${cleaned.slice(3)}`;
+        }
+
+        if (referralCodeInput) {
+            referralCodeInput.addEventListener('input', function () {
+                const formatted = formatReferralCode(this.value);
+                this.value = formatted;
+            });
+        }
+
+        referralRadio.forEach(radio => {
+            radio.addEventListener('change', function () {
+                if (this.value === 'yes') {
+                    referralGroup.classList.remove('hidden');
+                    aboutGroup.classList.add('hidden');
+                    submitLabel.textContent = 'Join Waitlist';
+                } else {
+                    referralGroup.classList.add('hidden');
+                    aboutGroup.classList.remove('hidden');
+                    submitLabel.textContent = 'Request Invitation';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

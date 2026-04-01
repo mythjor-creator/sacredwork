@@ -1,4 +1,34 @@
 from django.db import models
+# Minimal InviteCode and WaitlistLead models for invite-only waitlist
+
+class InviteCode(models.Model):
+    code = models.CharField(max_length=32, unique=True)
+    is_active = models.BooleanField(default=True)
+    uses_remaining = models.PositiveIntegerField(default=1000)
+    owner = models.ForeignKey(
+        'WaitlistLead',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='owned_invite_codes',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.code
+
+
+class WaitlistLead(models.Model):
+    name = models.CharField(max_length=120)
+    email = models.EmailField(unique=True)
+    role = models.CharField(max_length=64, blank=True)
+    invite_code = models.ForeignKey(InviteCode, null=True, blank=True, on_delete=models.PROTECT)
+    notes = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.email})"
+from django.db import models
 from django.utils import timezone
 from django.contrib.auth import get_user_model
 
