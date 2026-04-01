@@ -1,6 +1,23 @@
+import re as _re
+
 from django.conf import settings
 from django.db import models
 # Minimal InviteCode and WaitlistLead models for invite-only waitlist
+
+def _normalize_code(raw):
+    """Uppercase and reformat any 6-character alphanumeric string to XXX-XXX.
+    Codes that are already hyphenated (e.g. ABC-123) or bare (ABCDEF) are both
+    accepted and stored in canonical XXX-XXX form.  Codes that don't resolve to
+    exactly 6 alphanumeric characters are stored as-is so validation errors
+    surface at the form/view layer rather than silently mangling the value.
+    """
+    if not raw:
+        return raw
+    cleaned = _re.sub(r"[^A-Za-z0-9]", "", raw).upper()
+    if len(cleaned) == 6:
+        return f"{cleaned[:3]}-{cleaned[3:]}"
+    return raw.upper()
+
 
 class InviteCode(models.Model):
     code = models.CharField(max_length=32, unique=True)
@@ -22,6 +39,10 @@ class InviteCode(models.Model):
         help_text='Admin user responsible for this invite code.',
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.code = _normalize_code(self.code)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.code

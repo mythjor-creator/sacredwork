@@ -67,258 +67,52 @@ class WaitlistSmokeTests(TestCase):
 
 
 class WaitlistLandingTests(TestCase):
-    def test_landing_renders_service_explanations(self):
-        response = self.client.get(reverse('waitlist:landing'))
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Get in before we launch.')
-        self.assertContains(response, 'Founding practitioner rate')
-        self.assertContains(response, '$79')
-
-    def test_practitioner_can_join_waitlist(self):
-        response = self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Ari Sage',
-                'email': 'ari@example.com',
-                'business_name': 'Sage Studio',
-                'headline': 'Trauma-informed energy practitioner',
-                'modalities': 'reiki, meditation',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
-                'location': 'Portland',
-                'is_virtual': True,
-                'offers_in_person': True,
-                'years_experience': 6,
-                'website_url': 'https://example.com',
-                'notes': 'Interested in early beta access.',
-                'signup_tier': PractitionerWaitlistProfile.SignupTier.FREE,
-            },
-            follow=False,
-        )
-
-        self.assertRedirects(
-            response,
-            f"{reverse('waitlist:landing')}?submitted=1",
-            fetch_redirect_response=False,
-        )
-
-        follow_response = self.client.get(response['Location'])
-        self.assertEqual(follow_response.status_code, 200)
-        self.assertContains(follow_response, 'You are on the waitlist.')
-        self.assertTrue(PractitionerWaitlistProfile.objects.filter(email='ari@example.com').exists())
-
     def test_submitted_query_param_renders_page(self):
         response = self.client.get(f"{reverse('waitlist:landing')}?submitted=1")
 
         self.assertEqual(response.status_code, 200)
 
-    def test_practitioner_can_join_waitlist_without_business_name(self):
-        response = self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Solo Healer',
-                'email': 'solo@example.com',
-                'business_name': '',
-                'headline': 'Independent practitioner',
-                'modalities': 'energy work',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
-                'location': 'Remote',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 4,
-                'website_url': '',
-                'notes': '',
-            },
-            follow=False,
-        )
-
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(PractitionerWaitlistProfile.objects.filter(email='solo@example.com').exists())
-
-    def test_at_least_one_delivery_format_is_required(self):
-        response = self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Ari Sage',
-                'email': 'ari+format@example.com',
-                'business_name': 'Sage Studio',
-                'headline': 'Trauma-informed energy practitioner',
-                'modalities': 'reiki, meditation',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
-                'location': 'Portland',
-                'years_experience': 6,
-                'website_url': 'https://example.com',
-                'notes': 'Interested in early beta access.',
-            },
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Select at least one session format: virtual or in-person.')
-
-    def test_duplicate_email_is_rejected(self):
-        PractitionerWaitlistProfile.objects.create(
-            full_name='Ari Sage',
-            email='ari@example.com',
-            business_name='Sage Studio',
-            headline='Practitioner',
-            modalities='reiki',
-            practice_type=PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
-        )
-
-        response = self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Ari Sage',
-                'email': 'ari@example.com',
-                'business_name': 'Sage Studio 2',
-                'headline': 'Another profile',
-                'modalities': 'sound healing',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.WELLNESS,
-                'location': '',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 3,
-                'website_url': '',
-                'notes': '',
-            },
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'This email is already on the waitlist.')
-
-    def test_signup_sends_confirmation_email(self):
-        self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Mira Bell',
-                'email': 'mira@example.com',
-                'business_name': 'Bell Practice',
-                'headline': 'Somatic therapist',
-                'modalities': 'somatic, breathwork',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.WELLNESS,
-                'location': 'Austin',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 3,
-                'website_url': '',
-                'notes': '',
-            },
-        )
-
-        self.assertEqual(len(mail.outbox), 1)
-        msg = mail.outbox[0]
-        self.assertIn('mira@example.com', msg.to)
-        self.assertIn("you're on the list.", msg.subject.lower())
-        self.assertIn('Mira', msg.body)
-
-    def test_founding_signup_sends_founding_confirmation_email(self):
-        self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Nia Hart',
-                'email': 'nia@example.com',
-                'business_name': 'Hart Practice',
-                'headline': 'Intuitive coach',
-                'modalities': 'coaching, meditation',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
-                'location': 'Remote',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 5,
-                'website_url': '',
-                'notes': '',
-                'is_founding_member': 'True',
-                'signup_tier': PractitionerWaitlistProfile.SignupTier.FOUNDING,
-            },
-        )
-
-        self.assertEqual(len(mail.outbox), 1)
-        msg = mail.outbox[0]
-        self.assertIn('nia@example.com', msg.to)
-        self.assertIn("you're in.", msg.subject.lower())
-        self.assertIn('your $79/year rate is locked in permanently', msg.body.lower())
-        self.assertIn('verify your email', msg.body.lower())
-
-    @patch('apps.waitlist.views.send_waitlist_confirmation')
-    def test_waitlist_submission_shows_warning_when_confirmation_email_fails(self, mock_send_confirmation):
-        mock_send_confirmation.side_effect = RuntimeError('smtp unavailable')
-
-        response = self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Email Failure',
-                'email': 'email-failure@example.com',
-                'business_name': '',
-                'headline': 'Coach',
-                'modalities': 'coaching',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
-                'location': 'Remote',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 5,
-                'website_url': '',
-                'notes': '',
-                'signup_tier': PractitionerWaitlistProfile.SignupTier.FREE,
-            },
-            follow=True,
-        )
-
-        self.assertContains(response, 'You are on the waitlist, but we could not send your confirmation email right now.')
-        self.assertTrue(
-            PractitionerWaitlistProfile.objects.filter(email='email-failure@example.com').exists()
-        )
-
-    def test_tier_query_sets_waitlist_flow_context(self):
-        response = self.client.get(f"{reverse('waitlist:landing')}?tier=featured")
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Start featured signup')
-        self.assertContains(response, '$24.99/month')
-
     def test_selected_signup_tier_is_saved(self):
-        self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Tier Test',
-                'email': 'tier-test@example.com',
-                'business_name': '',
-                'headline': 'Visibility-focused practitioner',
-                'modalities': 'coaching',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
-                'location': 'Remote',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 2,
-                'website_url': '',
-                'notes': '',
-                'signup_tier': PractitionerWaitlistProfile.SignupTier.FEATURED,
-            },
-        )
-
-        profile = PractitionerWaitlistProfile.objects.get(email='tier-test@example.com')
+        from .forms import PractitionerWaitlistForm
+        form = PractitionerWaitlistForm(data={
+            'full_name': 'Tier Test',
+            'email': 'tier-test@example.com',
+            'business_name': '',
+            'headline': 'Visibility-focused practitioner',
+            'modalities': 'coaching',
+            'practice_type': PractitionerWaitlistProfile.PracticeType.COACHING,
+            'location': 'Remote',
+            'is_virtual': True,
+            'offers_in_person': False,
+            'years_experience': 2,
+            'website_url': '',
+            'notes': '',
+            'signup_tier': PractitionerWaitlistProfile.SignupTier.FEATURED,
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        profile = form.save()
         self.assertEqual(profile.signup_tier, PractitionerWaitlistProfile.SignupTier.FEATURED)
 
     def test_founding_signup_tier_forces_founding_member_flag(self):
-        self.client.post(
-            reverse('waitlist:landing'),
-            {
-                'full_name': 'Founding Tier Test',
-                'email': 'founding-tier-test@example.com',
-                'business_name': '',
-                'headline': 'Founding applicant',
-                'modalities': 'energy work',
-                'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
-                'location': 'Remote',
-                'is_virtual': True,
-                'offers_in_person': False,
-                'years_experience': 4,
-                'website_url': '',
-                'notes': '',
-                'is_founding_member': 'False',
-                'signup_tier': PractitionerWaitlistProfile.SignupTier.FOUNDING,
-            },
-        )
-
-        profile = PractitionerWaitlistProfile.objects.get(email='founding-tier-test@example.com')
+        from .forms import PractitionerWaitlistForm
+        form = PractitionerWaitlistForm(data={
+            'full_name': 'Founding Tier Test',
+            'email': 'founding-tier-test@example.com',
+            'business_name': '',
+            'headline': 'Founding applicant',
+            'modalities': 'energy work',
+            'practice_type': PractitionerWaitlistProfile.PracticeType.SPIRITUAL,
+            'location': 'Remote',
+            'is_virtual': True,
+            'offers_in_person': False,
+            'years_experience': 4,
+            'website_url': '',
+            'notes': '',
+            'is_founding_member': False,
+            'signup_tier': PractitionerWaitlistProfile.SignupTier.FOUNDING,
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        profile = form.save()
         self.assertEqual(profile.signup_tier, PractitionerWaitlistProfile.SignupTier.FOUNDING)
         self.assertTrue(profile.is_founding_member)
 

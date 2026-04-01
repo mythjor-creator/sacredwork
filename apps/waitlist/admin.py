@@ -1,5 +1,28 @@
 from django.contrib import admin
-from .models import WaitlistLead, InviteCode
+from django.db.models import Count
+from .models import InviteCode, PractitionerWaitlistProfile, StatusTransition, WaitlistLead
+
+
+def mark_as_invited(modeladmin, request, queryset):
+    """Admin action: move selected profiles to INVITED status and record who made the change."""
+    count = 0
+    for profile in queryset.exclude(status=PractitionerWaitlistProfile.Status.INVITED):
+        profile.status = PractitionerWaitlistProfile.Status.INVITED
+        profile.save()
+        transition = (
+            StatusTransition.objects
+            .filter(profile=profile, to_status=PractitionerWaitlistProfile.Status.INVITED)
+            .order_by('-changed_at')
+            .first()
+        )
+        if transition and transition.changed_by is None:
+            transition.changed_by = request.user
+            transition.save(update_fields=['changed_by'])
+        count += 1
+    modeladmin.message_user(request, f'{count} profile(s) marked as Invited.')
+
+
+mark_as_invited.short_description = 'Mark selected as Invited'
 
 @admin.register(WaitlistLead)
 class WaitlistLeadAdmin(admin.ModelAdmin):
@@ -44,6 +67,33 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
         if not code:
             return '-'
         return WaitlistLead.objects.filter(invite_code=code).count()
+
+@admin.register(PractitionerWaitlistProfile)
+class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'email', 'status', 'signup_tier', 'is_founding_member', 'practice_type', 'created_at')
+    list_filter = ('status', 'signup_tier', 'is_founding_member', 'practice_type', 'created_at')
+    search_fields = ('full_name', 'email', 'business_name')
+    readonly_fields = ('created_at', 'status_changed_at')
+    actions = [mark_as_invited]
+
+    def _build_tier_cards(self, base_qs, filtered_qs):
+        tier_counts = {
+            item['signup_tier']: item['count']
+            for item in base_qs.values('signup_tier').annotate(count=Count('id'))
+        }
+        filtered_counts = {
+            item['signup_tier']: item['count']
+            for item in filtered_qs.values('signup_tier').annotate(count=Count('id'))
+        }
+        return [
+            {
+                'label': label,
+                'value': tier_counts.get(value, 0),
+                'filtered_value': filtered_counts.get(value, 0),
+            }
+            for value, label in PractitionerWaitlistProfile.SignupTier.choices
+        ]
+
 
 @admin.register(InviteCode)
 class InviteCodeAdmin(admin.ModelAdmin):
