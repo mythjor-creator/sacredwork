@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import Count
+from .emails import send_waitlist_lead_confirmation
 from .models import InviteCode, PractitionerWaitlistProfile, StatusTransition, WaitlistLead
 
 
@@ -24,6 +25,37 @@ def mark_as_invited(modeladmin, request, queryset):
 
 mark_as_invited.short_description = 'Mark selected as Invited'
 
+
+def send_waitlist_confirmation_now(modeladmin, request, queryset):
+    sent_count = 0
+    failed_count = 0
+    for lead in queryset:
+        generated_invite_code = None
+        owned_code = lead.owned_invite_codes.order_by('-created_at').first()
+        if owned_code:
+            generated_invite_code = owned_code.code
+        try:
+            send_waitlist_lead_confirmation(
+                lead,
+                generated_invite_code=generated_invite_code,
+            )
+            lead.confirmation_email_sent = True
+            lead.confirmation_email_error = ''
+            lead.save(update_fields=['confirmation_email_sent', 'confirmation_email_error'])
+            sent_count += 1
+        except Exception as exc:
+            lead.confirmation_email_error = str(exc)
+            lead.save(update_fields=['confirmation_email_error'])
+            failed_count += 1
+
+    if sent_count:
+        modeladmin.message_user(request, f'{sent_count} confirmation email(s) sent successfully.')
+    if failed_count:
+        modeladmin.message_user(request, f'{failed_count} confirmation email(s) failed. Open the lead record to inspect the error.', level='error')
+
+
+send_waitlist_confirmation_now.short_description = 'Send confirmation email now'
+
 @admin.register(WaitlistLead)
 class WaitlistLeadAdmin(admin.ModelAdmin):
     list_display = (
@@ -39,6 +71,7 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
     search_fields = ('name', 'email', 'notes')
     list_filter = ('created_at', 'confirmation_email_sent')
     readonly_fields = ('created_at', 'confirmation_email_error')
+    actions = [send_waitlist_confirmation_now]
 
     @admin.display(boolean=True, description='Invited (y/n)')
     def invited_yn(self, obj):
