@@ -255,6 +255,7 @@ SITE_URL = _env('SITE_URL', 'http://localhost:8000')
 # Waitlist confirmation delivery strategy.
 # In production, default to async so slow SMTP does not block form submissions.
 WAITLIST_CONFIRMATION_EMAIL_ASYNC = _bool_env('WAITLIST_CONFIRMATION_EMAIL_ASYNC', not DEBUG)
+RESEND_API_ENABLED = _bool_env('RESEND_API_ENABLED', not DEBUG)
 
 CSRF_TRUSTED_ORIGINS = [SITE_URL]
 if DEBUG:

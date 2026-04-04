@@ -61,8 +61,11 @@ def _send_lead_confirmation_background(lead, generated_invite_code):
     try:
         send_waitlist_lead_confirmation(lead, generated_invite_code=generated_invite_code)
         lead.confirmation_email_sent = True
-        lead.save(update_fields=['confirmation_email_sent'])
-    except Exception:
+        lead.confirmation_email_error = ''
+        lead.save(update_fields=['confirmation_email_sent', 'confirmation_email_error'])
+    except Exception as exc:
+        lead.confirmation_email_error = str(exc)
+        lead.save(update_fields=['confirmation_email_error'])
         logger.exception('Waitlist lead confirmation email failed for lead_id=%s', lead.id)
 
 
@@ -133,9 +136,13 @@ def waitlist_landing_view(request):
                             generated_invite_code=generated_code,
                         )
                         lead.confirmation_email_sent = True
-                        lead.save(update_fields=['confirmation_email_sent'])
+                        lead.confirmation_email_error = ''
+                        lead.save(update_fields=['confirmation_email_sent', 'confirmation_email_error'])
                     context["success"] = True
             except Exception as e:
+                if 'lead' in locals() and lead is not None:
+                    lead.confirmation_email_error = str(e)
+                    lead.save(update_fields=['confirmation_email_error'])
                 context["error"] = str(e)
         if context["success"]:
             # Pass the new invite code (if any) to the confirmation template

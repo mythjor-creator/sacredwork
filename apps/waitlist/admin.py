@@ -38,7 +38,7 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
     )
     search_fields = ('name', 'email', 'notes')
     list_filter = ('created_at', 'confirmation_email_sent')
-    readonly_fields = ('created_at',)
+    readonly_fields = ('created_at', 'confirmation_email_error')
 
     @admin.display(boolean=True, description='Invited (y/n)')
     def invited_yn(self, obj):
@@ -68,6 +68,21 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
         if not code:
             return '-'
         return WaitlistLead.objects.filter(invite_code=code).count()
+
+    fieldsets = (
+        (None, {
+            'fields': (
+                'name',
+                'email',
+                'role',
+                'invite_code',
+                'notes',
+                'confirmation_email_sent',
+                'confirmation_email_error',
+                'created_at',
+            )
+        }),
+    )
 
 @admin.register(PractitionerWaitlistProfile)
 class PractitionerWaitlistProfileAdmin(admin.ModelAdmin):

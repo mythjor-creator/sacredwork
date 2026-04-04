@@ -1,3 +1,8 @@
+import json
+import logging
+from urllib import error as urllib_error
+from urllib import request as urllib_request
+
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.core.mail import send_mail
@@ -8,12 +13,65 @@ FROM_EMAIL = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@sacredwork.app')
 SITE_URL = getattr(settings, 'SITE_URL', 'http://localhost:8000')
 
 
+logger = logging.getLogger(__name__)
+
+
 def _waitlist_confirmation_code(lead):
     return f"SW-{lead.id:06d}"
 
 
 def _waitlist_reply_to_email():
     return getattr(settings, 'WAITLIST_REPLY_TO_EMAIL', FROM_EMAIL)
+
+
+def _resend_api_key():
+    explicit_key = getattr(settings, 'RESEND_API_KEY', '')
+    if explicit_key:
+        return explicit_key
+    email_host = getattr(settings, 'EMAIL_HOST', '')
+    email_password = getattr(settings, 'EMAIL_HOST_PASSWORD', '')
+    if email_host == 'smtp.resend.com' and email_password.startswith('re_'):
+        return email_password
+    return ''
+
+
+def _send_via_resend_api(subject, message, to_email, reply_to=None):
+    if not getattr(settings, 'RESEND_API_ENABLED', False):
+        return False
+
+    api_key = _resend_api_key()
+    if not api_key:
+        return False
+
+    payload = {
+        'from': FROM_EMAIL,
+        'to': [to_email],
+        'subject': subject,
+        'text': message,
+    }
+    if reply_to:
+        payload['reply_to'] = [reply_to]
+
+    request = urllib_request.Request(
+        getattr(settings, 'RESEND_API_URL', 'https://api.resend.com/emails'),
+        data=json.dumps(payload).encode('utf-8'),
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        },
+        method='POST',
+    )
+    timeout = getattr(settings, 'EMAIL_TIMEOUT', 10)
+    try:
+        with urllib_request.urlopen(request, timeout=timeout) as response:
+            response_body = response.read().decode('utf-8', errors='replace')
+        logger.info('Resend API accepted waitlist email for %s: %s', to_email, response_body)
+        return True
+    except urllib_error.HTTPError as exc:
+        error_body = exc.read().decode('utf-8', errors='replace')
+        raise RuntimeError(f'Resend API HTTP {exc.code}: {error_body}') from exc
+    except urllib_error.URLError as exc:
+        raise RuntimeError(f'Resend API connection failed: {exc.reason}') from exc
 
 
 def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
@@ -50,6 +108,14 @@ def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
             f"— The {SITE_NAME} team\n\n"
             f"Questions? Reply to this email."
         )
+
+    if _send_via_resend_api(
+        subject=subject,
+        message=message,
+        to_email=lead.email,
+        reply_to=_waitlist_reply_to_email(),
+    ):
+        return
 
     EmailMessage(
         subject=subject,
