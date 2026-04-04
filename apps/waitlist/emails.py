@@ -58,6 +58,12 @@ def _send_via_resend_api(subject, message, to_email, reply_to=None):
         headers={
             'Authorization': f'Bearer {api_key}',
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'User-Agent': getattr(
+                settings,
+                'RESEND_API_USER_AGENT',
+                'clairbook/1.0 (+https://clairbook.com)',
+            ),
         },
         method='POST',
     )
