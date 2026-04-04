@@ -54,6 +54,7 @@ class WaitlistLead(models.Model):
     role = models.CharField(max_length=64, blank=True)
     invite_code = models.ForeignKey(InviteCode, null=True, blank=True, on_delete=models.PROTECT)
     notes = models.TextField(blank=True, default='')
+    confirmation_email_sent = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

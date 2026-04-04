@@ -28,6 +28,7 @@ mark_as_invited.short_description = 'Mark selected as Invited'
 class WaitlistLeadAdmin(admin.ModelAdmin):
     list_display = (
         'invited_yn',
+        'confirmation_email_sent',
         'name_last_first',
         'referred_by_name',
         'current_referral_code',
@@ -36,7 +37,7 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
         'notes',
     )
     search_fields = ('name', 'email', 'notes')
-    list_filter = ('created_at',)
+    list_filter = ('created_at', 'confirmation_email_sent')
     readonly_fields = ('created_at',)
 
     @admin.display(boolean=True, description='Invited (y/n)')

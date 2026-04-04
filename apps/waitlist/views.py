@@ -60,6 +60,8 @@ def _send_waitlist_confirmation_background(profile):
 def _send_lead_confirmation_background(lead, generated_invite_code):
     try:
         send_waitlist_lead_confirmation(lead, generated_invite_code=generated_invite_code)
+        lead.confirmation_email_sent = True
+        lead.save(update_fields=['confirmation_email_sent'])
     except Exception:
         logger.exception('Waitlist lead confirmation email failed for lead_id=%s', lead.id)
 
@@ -130,6 +132,8 @@ def waitlist_landing_view(request):
                             lead,
                             generated_invite_code=generated_code,
                         )
+                        lead.confirmation_email_sent = True
+                        lead.save(update_fields=['confirmation_email_sent'])
                     context["success"] = True
             except Exception as e:
                 context["error"] = str(e)
