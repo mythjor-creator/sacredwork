@@ -25,7 +25,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.shortcuts import redirect, render
 
-from .emails import send_waitlist_confirmation, send_waitlist_lead_confirmation
+from .emails import send_waitlist_confirmation, send_waitlist_lead_confirmation, send_waitlist_signup_notification
 from .forms import PractitionerWaitlistForm
 from .models import PractitionerWaitlistProfile
 
@@ -55,6 +55,13 @@ def _send_waitlist_confirmation_background(profile):
         send_waitlist_confirmation(profile)
     except Exception:
         logger.exception('Waitlist confirmation email failed for profile_id=%s', profile.id)
+
+
+def _send_notification_background(lead):
+    try:
+        send_waitlist_signup_notification(lead)
+    except Exception:
+        logger.exception('Waitlist signup notification failed for lead_id=%s', lead.id)
 
 
 def _send_lead_confirmation_background(lead, generated_invite_code):
@@ -122,6 +129,12 @@ def waitlist_landing_view(request):
                         new_invite_code = InviteCode.objects.create(code=code, is_active=True, owner=lead)
 
                     generated_code = new_invite_code.code if new_invite_code else None
+                    # Notify the site owner of every new signup (fire-and-forget).
+                    Thread(
+                        target=_send_notification_background,
+                        args=(lead,),
+                        daemon=False,
+                    ).start()
                     if getattr(settings, "WAITLIST_CONFIRMATION_EMAIL_ASYNC", False):
                         # Background mode keeps slow SMTP from blocking responses.
                         Thread(

@@ -83,11 +83,9 @@ def _send_via_resend_api(subject, message, to_email, reply_to=None):
 def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
     """Send signup confirmation to a WaitlistLead.
 
-    Every signup receives a confirmation code. Referred signups also receive
-    their newly generated invite code in the same email.
+    Referred signups also receive their newly generated invite code in the same email.
     """
     first_name = (lead.name or '').split()[0] if lead.name else 'there'
-    confirmation_code = _waitlist_confirmation_code(lead)
     used_referral = lead.invite_code_id is not None
 
     if used_referral:
@@ -96,7 +94,6 @@ def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
         message = (
             f"Hi {first_name},\n\n"
             f"You're officially on the {SITE_NAME} waitlist.\n\n"
-            f"Confirmation code: {confirmation_code}\n"
             f"Your invite code: {invite_line}\n\n"
             f"You can share your invite code with trusted peers.\n"
             f"We'll email you as we roll out onboarding.\n\n"
@@ -108,7 +105,6 @@ def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
         message = (
             f"Hi {first_name},\n\n"
             f"You're officially on the {SITE_NAME} waitlist.\n\n"
-            f"Confirmation code: {confirmation_code}\n\n"
             f"Thanks for sharing your info with us. We'll follow up with next steps\n"
             f"as soon as your cohort is ready.\n\n"
             f"— The {SITE_NAME} team\n\n"
@@ -129,6 +125,40 @@ def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
         from_email=FROM_EMAIL,
         to=[lead.email],
         reply_to=[_waitlist_reply_to_email()],
+    ).send(fail_silently=False)
+
+
+def send_waitlist_signup_notification(lead):
+    """Send an internal alert to the site owner whenever a new lead signs up."""
+    notify_email = getattr(settings, 'WAITLIST_NOTIFY_EMAIL', None) or _waitlist_reply_to_email()
+
+    referral_line = (
+        f"Referral code used: {lead.invite_code.code}" if lead.invite_code_id else "No referral"
+    )
+    admin_url = f"{SITE_URL}/admin/waitlist/waitlistlead/{lead.id}/change/"
+    message = (
+        f"New waitlist signup\n"
+        f"──────────────────\n"
+        f"Name:   {lead.name or '(none)'}\n"
+        f"Email:  {lead.email}\n"
+        f"Role:   {lead.role or '(none)'}\n"
+        f"{referral_line}\n"
+        f"Notes:  {lead.notes or '(none)'}\n\n"
+        f"Admin: {admin_url}"
+    )
+
+    if _send_via_resend_api(
+        subject=f"New waitlist signup: {lead.name or lead.email}",
+        message=message,
+        to_email=notify_email,
+    ):
+        return
+
+    EmailMessage(
+        subject=f"New waitlist signup: {lead.name or lead.email}",
+        body=message,
+        from_email=FROM_EMAIL,
+        to=[notify_email],
     ).send(fail_silently=False)
 
 

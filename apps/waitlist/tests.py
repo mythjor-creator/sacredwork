@@ -28,9 +28,10 @@ class WaitlistSmokeTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'waitlist/success.html')
         self.assertTrue(WaitlistLead.objects.filter(email='smoke-user@example.com').exists())
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Confirmation code: SW-', mail.outbox[0].body)
-        self.assertNotIn('Your invite code:', mail.outbox[0].body)
+        self.assertEqual(len(mail.outbox), 2)
+        confirmation = next(m for m in mail.outbox if 'smoke-user@example.com' in m.to)
+        self.assertNotIn('Confirmation code:', confirmation.body)
+        self.assertNotIn('Your invite code:', confirmation.body)
 
     @override_settings(WAITLIST_REPLY_TO_EMAIL='support@clairbook.com')
     def test_waitlist_landing_post_with_referral_creates_lead_and_new_code(self):
@@ -60,10 +61,11 @@ class WaitlistSmokeTests(TestCase):
         generated_code = InviteCode.objects.filter(owner=lead).exclude(id=inviter_code.id).first()
         self.assertIsNotNone(generated_code)
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Confirmation code: SW-', mail.outbox[0].body)
-        self.assertIn(f'Your invite code: {generated_code.code}', mail.outbox[0].body)
-        self.assertEqual(mail.outbox[0].reply_to, ['support@clairbook.com'])
+        self.assertEqual(len(mail.outbox), 2)
+        confirmation = next(m for m in mail.outbox if 'referred-user@example.com' in m.to)
+        self.assertNotIn('Confirmation code:', confirmation.body)
+        self.assertIn(f'Your invite code: {generated_code.code}', confirmation.body)
+        self.assertEqual(confirmation.reply_to, ['support@clairbook.com'])
 
 
 class WaitlistLandingTests(TestCase):
