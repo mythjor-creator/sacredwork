@@ -19,13 +19,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def _env(name, default=None):
+    raw_value = os.environ.get(name)
+    if raw_value is None:
+        return default
+    value = raw_value.strip()
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+        value = value[1:-1]
+    return value
+
+
 def _csv_env(name, default=''):
-    raw_value = os.environ.get(name, default)
+    raw_value = _env(name, default) or ''
     return [item.strip() for item in raw_value.split(',') if item.strip()]
 
 
 def _bool_env(name, default=False):
-    raw_value = os.environ.get(name)
+    raw_value = _env(name)
     if raw_value is None:
         return default
     return raw_value.strip().lower() in {'1', 'true', 't', 'yes', 'y', 'on'}
@@ -38,7 +48,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['DJANGO_SECRET_KEY']
+SECRET_KEY = _env('DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = _bool_env('DEBUG', True)
@@ -176,30 +186,30 @@ LOGOUT_REDIRECT_URL = 'accounts:login'
 
 # Email — uses SMTP when configured, falls back to console in development.
 # Set EMAIL_PROVIDER=mailgun to use MAILGUN_* defaults without custom SMTP host wiring.
-_email_provider = os.environ.get('EMAIL_PROVIDER', '').strip().lower()
-_email_host = os.environ.get('EMAIL_HOST', '').strip()
+_email_provider = (_env('EMAIL_PROVIDER', '') or '').strip().lower()
+_email_host = (_env('EMAIL_HOST', '') or '').strip()
 if _email_provider == 'mailgun' and not _email_host:
-    _email_host = os.environ.get('MAILGUN_SMTP_HOST', 'smtp.mailgun.org').strip()
+    _email_host = (_env('MAILGUN_SMTP_HOST', 'smtp.mailgun.org') or '').strip()
 
 if _email_host:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     EMAIL_HOST = _email_host
     if _email_provider == 'mailgun':
-        EMAIL_PORT = int(os.environ.get('EMAIL_PORT', os.environ.get('MAILGUN_SMTP_PORT', '587')))
-        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', os.environ.get('MAILGUN_SMTP_LOGIN', ''))
-        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', os.environ.get('MAILGUN_SMTP_PASSWORD', ''))
+        EMAIL_PORT = int(_env('EMAIL_PORT', _env('MAILGUN_SMTP_PORT', '587')))
+        EMAIL_HOST_USER = _env('EMAIL_HOST_USER', _env('MAILGUN_SMTP_LOGIN', ''))
+        EMAIL_HOST_PASSWORD = _env('EMAIL_HOST_PASSWORD', _env('MAILGUN_SMTP_PASSWORD', ''))
     else:
-        EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
-        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+        EMAIL_PORT = int(_env('EMAIL_PORT', '587'))
+        EMAIL_HOST_USER = _env('EMAIL_HOST_USER', '')
+        EMAIL_HOST_PASSWORD = _env('EMAIL_HOST_PASSWORD', '')
     EMAIL_USE_TLS = _bool_env('EMAIL_USE_TLS', True)
     EMAIL_USE_SSL = _bool_env('EMAIL_USE_SSL', False)
-    EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
+    EMAIL_TIMEOUT = int(_env('EMAIL_TIMEOUT', '10'))
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'clairbook <noreply@sacredwork.app>')
-SUPPORT_INBOX_EMAIL = os.environ.get('SUPPORT_INBOX_EMAIL', 'support@sacredwork.app')
-WAITLIST_REPLY_TO_EMAIL = os.environ.get('WAITLIST_REPLY_TO_EMAIL', SUPPORT_INBOX_EMAIL)
+DEFAULT_FROM_EMAIL = _env('DEFAULT_FROM_EMAIL', 'clairbook <noreply@sacredwork.app>')
+SUPPORT_INBOX_EMAIL = _env('SUPPORT_INBOX_EMAIL', 'support@sacredwork.app')
+WAITLIST_REPLY_TO_EMAIL = _env('WAITLIST_REPLY_TO_EMAIL', SUPPORT_INBOX_EMAIL)
 
 # ── Production security ──────────────────────────────────────────────────────
 # These are enforced only when DEBUG=False (i.e. in production).
@@ -240,7 +250,7 @@ STRIPE_PRO_FOUNDING_PRICE_ID = os.environ.get('STRIPE_PRO_FOUNDING_PRICE_ID', ''
 STRIPE_BILLING_WEBHOOK_SECRET = os.environ.get('STRIPE_BILLING_WEBHOOK_SECRET', STRIPE_WEBHOOK_SECRET).strip()
 
 # Site URL for email links and GDPR exports
-SITE_URL = os.environ.get('SITE_URL', 'http://localhost:8000')
+SITE_URL = _env('SITE_URL', 'http://localhost:8000')
 
 # Waitlist confirmation delivery strategy.
 # In production, default to async so slow SMTP does not block form submissions.
