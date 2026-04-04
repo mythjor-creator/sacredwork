@@ -29,6 +29,7 @@ mark_as_invited.short_description = 'Mark selected as Invited'
 def send_waitlist_confirmation_now(modeladmin, request, queryset):
     sent_count = 0
     failed_count = 0
+    last_error = ''
     for lead in queryset:
         generated_invite_code = None
         owned_code = lead.owned_invite_codes.order_by('-created_at').first()
@@ -46,12 +47,16 @@ def send_waitlist_confirmation_now(modeladmin, request, queryset):
         except Exception as exc:
             lead.confirmation_email_error = str(exc)
             lead.save(update_fields=['confirmation_email_error'])
+            last_error = str(exc)
             failed_count += 1
 
     if sent_count:
         modeladmin.message_user(request, f'{sent_count} confirmation email(s) sent successfully.')
     if failed_count:
-        modeladmin.message_user(request, f'{failed_count} confirmation email(s) failed. Open the lead record to inspect the error.', level='error')
+        if failed_count == 1 and len(queryset) == 1 and last_error:
+            modeladmin.message_user(request, f'Confirmation email failed: {last_error}', level='error')
+        else:
+            modeladmin.message_user(request, f'{failed_count} confirmation email(s) failed. Check the Email Error column or open the lead record.', level='error')
 
 
 send_waitlist_confirmation_now.short_description = 'Send confirmation email now'
@@ -61,6 +66,7 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
     list_display = (
         'invited_yn',
         'confirmation_email_sent',
+        'confirmation_email_error_preview',
         'name_last_first',
         'referred_by_name',
         'current_referral_code',
@@ -68,7 +74,7 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
         'email',
         'notes',
     )
-    search_fields = ('name', 'email', 'notes')
+    search_fields = ('name', 'email', 'notes', 'confirmation_email_error')
     list_filter = ('created_at', 'confirmation_email_sent')
     readonly_fields = ('created_at', 'confirmation_email_error')
     actions = [send_waitlist_confirmation_now]
@@ -101,6 +107,14 @@ class WaitlistLeadAdmin(admin.ModelAdmin):
         if not code:
             return '-'
         return WaitlistLead.objects.filter(invite_code=code).count()
+
+    @admin.display(description='Email Error')
+    def confirmation_email_error_preview(self, obj):
+        if not obj.confirmation_email_error:
+            return '-'
+        if len(obj.confirmation_email_error) <= 80:
+            return obj.confirmation_email_error
+        return f'{obj.confirmation_email_error[:77]}...'
 
     fieldsets = (
         (None, {
