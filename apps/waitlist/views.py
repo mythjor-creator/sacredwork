@@ -116,13 +116,20 @@ def waitlist_landing_view(request):
                                 break
                         new_invite_code = InviteCode.objects.create(code=code, is_active=True, owner=lead)
 
-                    # Send confirmation email in a background thread so slow
-                    # SMTP does not block the form response in production.
-                    Thread(
-                        target=_send_lead_confirmation_background,
-                        args=(lead, new_invite_code.code if new_invite_code else None),
-                        daemon=True,
-                    ).start()
+                    generated_code = new_invite_code.code if new_invite_code else None
+                    if getattr(settings, "WAITLIST_CONFIRMATION_EMAIL_ASYNC", False):
+                        # Background mode keeps slow SMTP from blocking responses.
+                        Thread(
+                            target=_send_lead_confirmation_background,
+                            args=(lead, generated_code),
+                            daemon=False,
+                        ).start()
+                    else:
+                        # Synchronous mode is useful for debugging delivery issues.
+                        send_waitlist_lead_confirmation(
+                            lead,
+                            generated_invite_code=generated_code,
+                        )
                     context["success"] = True
             except Exception as e:
                 context["error"] = str(e)
