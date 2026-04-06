@@ -95,7 +95,7 @@ def send_waitlist_lead_confirmation(lead, generated_invite_code=None):
             f"Hi {first_name},\n\n"
             f"You're officially on the {SITE_NAME} waitlist.\n\n"
             f"Your invite code: {invite_line}\n\n"
-            f"You can share your invite code with trusted peers.\n"
+            f"You can share your invite code with as many trusted peers as you'd like—it works unlimited times.\n"
             f"We'll email you as we roll out onboarding.\n\n"
             f"— The {SITE_NAME} team\n\n"
             f"Questions? Reply to this email."
