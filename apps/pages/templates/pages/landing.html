@@ -5,9 +5,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clairbook</title>
+    <title>Clairbook | Booking Platform for Spiritual Practitioners</title>
+    <meta name="description" content="Clairbook is purpose-built booking infrastructure for spiritual practitioners, energy workers, and wellness coaches. Simple discovery, booking, and payment management—designed for your sacred work.">
+    <meta name="keywords" content="booking platform, spiritual practitioners, energy workers, wellness coaching, appointment scheduling">
+    
+    <!-- Open Graph / Social Media -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://clairbook.com">
+    <meta property="og:title" content="Clairbook | Booking for Your Sacred Work">
+    <meta property="og:description" content="Purpose-built booking infrastructure for spiritual practitioners, energy workers, and wellness coaches.">
+    <meta property="og:image" content="{% static 'pages/logo/Clairbook-logo-text.png' %}">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Clairbook | Booking for Your Sacred Work">
+    <meta name="twitter:description" content="Purpose-built booking infrastructure for spiritual practitioners and wellness coaches.">
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="https://clairbook.com">
+    
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="icon" type="image/png" href="{% static 'pages/logo/Clairbook-logo-moon.png' %}">
+    
+    <!-- JSON-LD Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Clairbook",
+        "url": "https://clairbook.com",
+        "logo": "{% static 'pages/logo/Clairbook-logo-text.png' %}",
+        "description": "Purpose-built booking infrastructure for spiritual practitioners and wellness professionals",
+        "sameAs": [
+            "https://twitter.com/clairbook",
+            "https://instagram.com/clairbook"
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+1-XXXX-XXXX",
+            "contactType": "General"
+        }
+    }
+    </script>
 </head>
 
 <body class="bg-gray-50 text-black">
@@ -183,7 +222,8 @@
             <div class="mb-8 flex flex-col items-start gap-8 md:flex-row md:items-center md:justify-between">
                 <!-- Logo -->
                 <div class="flex items-center">
-                    <img src="{% static 'pages/logo/Clairbook-logo-text.png' %}" alt="Clairbook logo" class="h-10 w-auto">
+                    <img src="{% static 'pages/logo/Clairbook-logo-text.png' %}" alt="Clairbook logo"
+                        class="h-10 w-auto">
                 </div>
 
                 <!-- Email Link -->

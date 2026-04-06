@@ -5,8 +5,27 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}clairbook{% endblock %}</title>
+    <title>{% block title %}Clairbook - Booking Platform for Spiritual Practitioners{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Clairbook is purpose-built booking infrastructure for spiritual practitioners and wellness professionals. Simple discovery, booking, and payment management.{% endblock %}">
+    <meta name="theme-color" content="#0f434e">
+    
+    <!-- Open Graph -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}https://clairbook.com{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}Clairbook - Booking for Your Sacred Work{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Purpose-built booking infrastructure for spiritual practitioners and wellness coaches.{% endblock %}">
+    <meta property="og:site_name" content="Clairbook">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}Clairbook - Booking for Your Sacred Work{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Purpose-built booking infrastructure for spiritual practitioners.{% endblock %}">
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="{% block canonical %}https://clairbook.com{% endblock %}">
+    
     <link rel="icon" type="image/png" href="{% static 'pages/logo/Clairbook-logo-moon.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'pages/logo/Clairbook-logo-moon.png' %}">>
     {% if analytics_ga4_measurement_id %}
     <script async src="https://www.googletagmanager.com/gtag/js?id={{ analytics_ga4_measurement_id }}"></script>
     <script>

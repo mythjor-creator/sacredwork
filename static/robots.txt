@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /accounts/login/
+Disallow: /accounts/signup/
+
+Sitemap: https://clairbook.com/sitemap.xml
+
+# Crawl delay (in seconds)
+Crawl-delay: 1

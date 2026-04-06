@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Prefetch
 from django.core.serializers.json import DjangoJSONEncoder
+from django.views.decorators.http import require_GET
 
 from datetime import datetime
 from apps.waitlist.models import PractitionerWaitlistProfile, StatusTransition
@@ -309,3 +310,42 @@ def admin_gdpr_audit_view(request):
         'deletions': deletions,
     }
     return render(request, 'pages/admin_gdpr_audit.html', context)
+
+
+@require_GET
+def robots_txt_view(request):
+    """Serve robots.txt for SEO."""
+    robots_content = """User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /accounts/login/
+Disallow: /accounts/signup/
+
+Sitemap: https://clairbook.com/sitemap.xml
+
+Crawl-delay: 1
+"""
+    return HttpResponse(robots_content, content_type='text/plain')
+
+
+@require_GET
+def sitemap_xml_view(request):
+    """Serve sitemap.xml for SEO."""
+    sitemap_content = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://clairbook.com/</loc>
+        <lastmod>2026-04-05</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+    <url>
+        <loc>https://clairbook.com/waitlist/</loc>
+        <lastmod>2026-04-05</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+</urlset>
+"""
+    return HttpResponse(sitemap_content, content_type='application/xml')
